@@ -5,12 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#03121f">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Кліматична лабораторія — реальна карта світу з прозорими кліматичними поясами.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Клімат-лаб">
-<meta name="format-detection" content="telephone=no">
 <title>🌍 Кліматична лабораторія — Кліматичні пояси</title>
 
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
@@ -30,65 +27,50 @@
   --sky-700:#0f3a5f; --sky-600:#15507f; --sky-500:#1f6ea6; --sky-400:#3c9fd4;
   --rain:#4cc9f0; --rain-soft:#8fdcf5;
   --sun:#ffb703; --sun-soft:#ffd166;
-  --warm:#ff6b35; --mint:#2ec4b6; --danger:#ff5470;
+  --warm:#ff6b35; --mint:#2ec4b6; --danger:#ff5470; --success:#2ec4b6;
   --ocean-deep:#04182e; --ocean-mid:#062a4a;
-  /* Суходіл — світліший, щоб просвічував крізь пояси */
-  --land:#1e4d78; --land-hi:#2b6ea6;
-  --land-stroke:#4a8cb8;
+  --land:#1e4d78; --land-hi:#2b6ea6; --land-stroke:#4a8cb8;
   --text:#eaf4fb; --text-dim:#a8c4d8; --text-mute:#7d9bb3;
   --line:rgba(111,198,234,.20); --line-strong:rgba(111,198,234,.38);
-  --r-lg:16px; --r-md:12px; --r-sm:9px; --tap:44px;
+  --r-md:12px; --r-sm:9px; --tap:44px;
   --shadow-1:0 2px 10px rgba(0,0,0,.35);
   --shadow-2:0 10px 34px rgba(0,0,0,.5);
   --dur:.18s; --ease:cubic-bezier(.4,0,.2,1);
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",
          "Noto Sans",Arial,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
 }
-
 *,*::before,*::after{box-sizing:border-box}
 html,body{margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-
-body{
-  font-family:var(--font); font-size:16px; line-height:1.45; color:var(--text);
+body{font-family:var(--font);font-size:16px;line-height:1.45;color:var(--text);
   background-color:var(--sky-950);
   background-image:
     radial-gradient(1200px 620px at 12% -12%, rgba(76,201,240,.16), transparent 62%),
     radial-gradient(900px 520px at 92% -6%, rgba(255,183,3,.10), transparent 60%),
     linear-gradient(180deg,#03121f 0%,#061a2b 46%,#0a2540 100%);
-  background-attachment:fixed; overflow:hidden; overscroll-behavior:none;
-  min-height:100vh; min-height:100dvh;
-  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-  -webkit-tap-highlight-color:transparent;
-}
-
+  background-attachment:fixed;overflow:hidden;overscroll-behavior:none;
+  min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,textarea{font:inherit;color:inherit}
 :focus{outline:none}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:6px}
-
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
-    transition-duration:.001ms !important;scroll-behavior:auto !important;}
-}
-@media (prefers-contrast:more){:root{--line:rgba(160,220,255,.55);--text-dim:#d6e9f6;}}
-
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{
+  animation-duration:.001ms !important;transition-duration:.001ms !important;}}
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
   overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 
 .app{display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;
   height:100vh;height:100dvh;width:100%;}
 
-/* ---------- ШАПКА ---------- */
-.app-header{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:10px 12px; padding-top:calc(10px + env(safe-area-inset-top));
+/* ШАПКА */
+.app-header{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top));
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
   background:linear-gradient(180deg, rgba(15,58,95,.95), rgba(8,33,54,.88));
-  border-bottom:1px solid var(--line);
-  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:20;
-}
+  border-bottom:1px solid var(--line);backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);z-index:20;}
 .app-title{display:flex;align-items:center;gap:8px;
   font-size:clamp(14px,3.4vw,18px);font-weight:700;letter-spacing:-.01em;margin:0;min-width:0;}
 .app-title__text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -98,10 +80,36 @@ input,textarea{font:inherit;color:inherit}
   background:rgba(76,201,240,.14);border:1px solid var(--line-strong);
   color:var(--rain-soft);white-space:nowrap;}
 .header-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto}
-.timer{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;
-  font-weight:700;font-size:15px;letter-spacing:.02em;padding:7px 14px;
-  border-radius:999px;background:linear-gradient(135deg,var(--sun),#ff9500);
-  color:#25180a;box-shadow:0 2px 12px rgba(255,183,3,.28);min-width:74px;text-align:center;}
+
+/* ІНДИКАТОР ЗВ'ЯЗКУ */
+.net-indicator{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:999px;
+  font-size:11px;font-weight:700;
+  background:rgba(46,196,182,.2);color:#8ef0e2;
+  border:1px solid rgba(46,196,182,.4);
+  white-space:nowrap;
+}
+.net-indicator[data-online="false"]{
+  background:rgba(255,84,112,.2);color:#ffb1c2;
+  border-color:rgba(255,84,112,.4);
+}
+.net-indicator[data-online="unknown"]{
+  background:rgba(255,183,3,.2);color:#ffdf8a;
+  border-color:rgba(255,183,3,.4);
+}
+.net-indicator__dot{
+  width:7px;height:7px;border-radius:50%;background:currentColor;
+  box-shadow:0 0 6px currentColor;
+}
+@media (max-width:520px){
+  .net-indicator span:not(.net-indicator__dot){display:none}
+}
+
+.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;
+  letter-spacing:.02em;padding:7px 14px;border-radius:999px;
+  background:linear-gradient(135deg,var(--sun),#ff9500);color:#25180a;
+  box-shadow:0 2px 12px rgba(255,183,3,.28);min-width:74px;text-align:center;}
 .timer[data-low="true"]{background:linear-gradient(135deg,var(--danger),#c9184a);
   color:#fff;animation:pulse 1.4s ease-in-out infinite;}
 @keyframes pulse{50%{opacity:.68}}
@@ -116,11 +124,9 @@ input,textarea{font:inherit;color:inherit}
 .btn:active{transform:scale(.96)}
 .btn--primary{background:linear-gradient(135deg,var(--sun),#ff9500);
   border-color:transparent;color:#25180a;font-weight:700;}
-.btn--primary:hover{filter:brightness(1.06);border-color:transparent}
 .btn--ghost{background:transparent;border-color:transparent}
-.btn--ghost:hover{background:rgba(76,201,240,.12);border-color:transparent}
+.btn--ghost:hover{background:rgba(76,201,240,.12)}
 
-/* ---------- ГРУПИ ---------- */
 .group-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
@@ -137,7 +143,6 @@ input,textarea{font:inherit;color:inherit}
 .group-btn[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
   border-color:transparent;color:#03121f;box-shadow:0 3px 14px rgba(76,201,240,.32);}
 
-/* ---------- ВКЛАДКИ ---------- */
 .tabs{display:flex;gap:6px;padding:9px 12px;
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
@@ -170,9 +175,7 @@ input,textarea{font:inherit;color:inherit}
 .icon-item:hover{background:rgba(31,110,166,.8);border-color:var(--rain);transform:translateY(-2px)}
 .icon-item:active{transform:scale(.92)}
 
-/* ============================================================
-   КАРТА — ГОЛОВНЕ
-   ============================================================ */
+/* КАРТА */
 .map-container{position:relative;flex:1 1 auto;min-height:200px;overflow:hidden;
   background:radial-gradient(120% 90% at 50% 45%, #0a3d68 0%, #062a4a 42%, #04182e 78%, #020a14 100%);
   touch-action:manipulation;}
@@ -180,116 +183,77 @@ input,textarea{font:inherit;color:inherit}
 
 .ocean-sphere{fill:url(#oceanGrad)}
 .ocean-glow{fill:url(#oceanGlow);pointer-events:none}
-
 .graticule{fill:none;stroke:rgba(120,190,230,.13);stroke-width:.5;
   vector-effect:non-scaling-stroke;pointer-events:none;}
 .graticule--major{stroke:rgba(120,190,230,.24);stroke-width:.7}
 
-/* ---------- КЛІМАТИЧНІ ПОЯСИ ---------- */
-/* Дуже прозорий базовий шар — материки чітко видно */
 .climate-zone{
-  stroke:none;
-  cursor:pointer;
-  transition:fill-opacity .25s var(--ease);
+  stroke:rgba(255,255,255,.05);stroke-width:.5;cursor:pointer;
+  transition:fill-opacity .25s var(--ease), stroke .25s var(--ease);
 }
-.climate-zone:hover{stroke:rgba(255,255,255,.9);stroke-width:1.4}
-.climate-zone[data-user-colored="true"]{
-  stroke-width:1.2;stroke-dasharray:5 3;
-}
+.climate-zone:hover{stroke:rgba(255,255,255,.95);stroke-width:1.6;}
+.climate-zone[data-user-colored="true"]{stroke-width:2.2;}
 
-/* ЖИРНІ МЕЖІ МІЖ ПОЯСАМИ */
-.zone-boundary{
-  fill:none;
-  stroke:rgba(255,255,255,.7);
-  stroke-width:1.6;
-  stroke-dasharray:7 4;
-  stroke-linecap:round;
+@keyframes zoneFilledPulse{
+  0%   { stroke-width:2.2; filter:brightness(1); }
+  50%  { stroke-width:4;   filter:brightness(1.35); }
+  100% { stroke-width:2.2; filter:brightness(1); }
+}
+.climate-zone.zone-filled-anim{animation:zoneFilledPulse .55s ease-out;}
+
+.zone-boundary{fill:none;stroke:rgba(255,255,255,.78);stroke-width:1.8;
+  stroke-dasharray:8 4;stroke-linecap:round;vector-effect:non-scaling-stroke;
+  pointer-events:none;filter:drop-shadow(0 0 2px rgba(0,0,0,.6));}
+.zone-boundary--equator{stroke:#ffffff;stroke-width:2.6;stroke-dasharray:none;}
+.zone-boundary--tropic{stroke:#ffe066;stroke-width:2;stroke-dasharray:9 4;}
+
+.country{fill:var(--land);stroke:var(--land-stroke);stroke-width:.6;
   vector-effect:non-scaling-stroke;
-  pointer-events:none;
-  filter:drop-shadow(0 0 2px rgba(0,0,0,.6));
-}
-.zone-boundary--equator{
-  stroke:rgba(255,255,255,1);
-  stroke-width:2.4;
-  stroke-dasharray:none;
-}
-.zone-boundary--tropic{
-  stroke:rgba(255,224,130,.85);
-  stroke-width:1.8;
-  stroke-dasharray:8 4;
-}
+  transition:fill var(--dur) var(--ease),stroke var(--dur) var(--ease);cursor:pointer;}
+.country:hover{fill:var(--land-hi);stroke:var(--sun);stroke-width:1.2;}
+.country-dot{fill:var(--sun);stroke:#03121f;stroke-width:.9;pointer-events:none;opacity:.9;}
 
-/* ---------- КРАЇНИ — поверх океану, під поясами ---------- */
-.country{
-  fill:var(--land);
-  stroke:var(--land-stroke);
-  stroke-width:.6;
-  vector-effect:non-scaling-stroke;
-  transition:fill var(--dur) var(--ease),stroke var(--dur) var(--ease);
-  cursor:pointer;
-  filter:drop-shadow(0 0 0.6px rgba(0,0,0,.5));
-}
-.country:hover{
-  fill:var(--land-hi);
-  stroke:var(--sun);
-  stroke-width:1.2;
-}
-.country--has-data .country-dot{opacity:1}
-.country-dot{
-  fill:var(--sun);stroke:#03121f;stroke-width:.9;
-  pointer-events:none;opacity:0;
-  transition:opacity var(--dur) var(--ease);
-}
-
-/* ---------- ПІДПИСИ ПОЯСІВ ---------- */
-.climate-zone__label{
-  font-size:10px;font-weight:800;letter-spacing:.05em;
+.climate-zone__label{font-size:10px;font-weight:800;letter-spacing:.05em;
   paint-order:stroke;stroke:#04121c;stroke-width:3.2px;stroke-linejoin:round;
   pointer-events:none;text-anchor:middle;font-family:var(--font);
-  text-transform:uppercase;opacity:.98;
-  transition:opacity var(--dur) var(--ease);
-}
+  text-transform:uppercase;opacity:.98;}
 .climate-zone__label--small{font-size:8px;letter-spacing:.02em}
 
-/* ---------- ПАРАЛЕЛІ ---------- */
-.lat-label{
-  fill:#fff;font-size:9px;font-weight:800;
+.lat-label{fill:#fff;font-size:9px;font-weight:800;
   paint-order:stroke;stroke:#04121c;stroke-width:3.2px;stroke-linejoin:round;
-  pointer-events:none;font-family:var(--font);letter-spacing:.02em;
-}
+  pointer-events:none;font-family:var(--font);letter-spacing:.02em;}
 .lat-label--equator{fill:#ffe066}
 
-/* ---------- ПОЛОТНО ---------- */
-#drawCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;
-  touch-action:none;cursor:crosshair;display:block;}
+/* ПОЛОТНО — ТЕПЕР НАДІЙНО ЛОВИТЬ ПАЛЕЦЬ */
+#drawCanvas{
+  position:absolute;inset:0;width:100%;height:100%;z-index:2;
+  touch-action:none;
+  -webkit-user-select:none;user-select:none;
+  cursor:crosshair;display:block;
+}
 #drawCanvas[data-tool="eraser"]{cursor:cell}
 #drawCanvas[data-tool="fill"]{pointer-events:none;cursor:pointer}
 #stickersLayer{position:absolute;inset:0;z-index:3;pointer-events:none;}
 
-/* ---------- СТІКЕРИ ---------- */
 .sticker{position:absolute;width:170px;min-height:64px;padding:20px 10px 10px;
   border-radius:var(--r-md);box-shadow:var(--shadow-2);pointer-events:auto;
-  color:#1b2733;touch-action:none;user-select:none;-webkit-user-select:none;
-  transition:box-shadow var(--dur) var(--ease);}
-.sticker:hover{box-shadow:0 14px 40px rgba(0,0,0,.55)}
+  color:#1b2733;touch-action:none;user-select:none;-webkit-user-select:none;}
 .sticker textarea{width:100%;min-height:44px;max-height:200px;border:0;
   background:transparent;resize:none;outline:none;font-size:13px;line-height:1.4;
   color:#1b2733;font-family:var(--font);overflow:hidden;display:block;}
 .sticker textarea::placeholder{color:rgba(27,39,51,.42)}
 .sticker__del{position:absolute;top:2px;right:2px;width:28px;height:28px;
   display:flex;align-items:center;justify-content:center;border-radius:8px;
-  font-size:13px;font-weight:700;color:rgba(27,39,51,.55);
-  transition:all var(--dur) var(--ease);}
+  font-size:13px;font-weight:700;color:rgba(27,39,51,.55);}
 .sticker__del:hover{background:rgba(255,84,112,.9);color:#fff}
 
 .placed-icon{position:absolute;font-size:34px;line-height:1;padding:4px;
   cursor:grab;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;
-  filter:drop-shadow(0 3px 8px rgba(0,0,0,.55));transition:transform var(--dur) var(--ease);}
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.55));}
 .placed-icon:active{cursor:grabbing;transform:scale(1.12)}
 
-/* ---------- ІНФО-КАРТКА ---------- */
 .zone-info{position:absolute;top:10px;left:10px;z-index:6;
-  max-width:min(360px, calc(100% - 20px));padding:11px 42px 11px 14px;
+  max-width:min(380px, calc(100% - 20px));padding:11px 42px 11px 14px;
   border-radius:var(--r-md);border:1px solid var(--line-strong);
   border-left:4px solid var(--sun);background:rgba(6,26,43,.94);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
@@ -308,14 +272,15 @@ input,textarea{font:inherit;color:inherit}
   border-color:rgba(255,183,3,.3);color:var(--sun-soft);}
 .zone-info__chip--cool{background:rgba(143,220,245,.14);
   border-color:rgba(143,220,245,.3);color:var(--rain-soft);}
+.zone-info__chip--fill{color:#03121f !important;
+  border:1px solid rgba(255,255,255,.35);}
 .zone-info__hint{display:block;margin-top:6px;font-size:11.5px;
   color:var(--rain-soft);font-weight:600;}
 .zone-info__close{position:absolute;top:6px;right:6px;width:30px;height:30px;
   display:flex;align-items:center;justify-content:center;border-radius:8px;
-  font-size:14px;color:var(--text-mute);transition:all var(--dur) var(--ease);}
+  font-size:14px;color:var(--text-mute);}
 .zone-info__close:hover{background:rgba(76,201,240,.16);color:#fff}
 
-/* ---------- ЛЕГЕНДА ---------- */
 .legend{position:absolute;top:10px;right:10px;z-index:6;
   max-width:230px;padding:10px 12px;border-radius:var(--r-md);
   background:rgba(6,26,43,.9);border:1px solid var(--line-strong);
@@ -331,12 +296,11 @@ input,textarea{font:inherit;color:inherit}
   border:1px solid rgba(255,255,255,.28);}
 .legend__toggle{position:absolute;top:6px;right:6px;width:24px;height:24px;
   display:flex;align-items:center;justify-content:center;border-radius:6px;
-  font-size:12px;color:var(--text-mute);transition:all var(--dur) var(--ease);}
+  font-size:12px;color:var(--text-mute);}
 .legend__toggle:hover{background:rgba(76,201,240,.16);color:#fff}
 .legend[data-collapsed="true"] ul{display:none}
 .legend[data-collapsed="true"]{max-width:120px}
 
-/* ---------- КНОПКИ ШАРІВ ---------- */
 .layers{position:absolute;top:10px;right:10px;z-index:7;
   display:flex;flex-direction:column;gap:6px;}
 .layer-toggle{display:inline-flex;align-items:center;gap:6px;
@@ -348,19 +312,26 @@ input,textarea{font:inherit;color:inherit}
 .layer-toggle[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
   color:#03121f;border-color:transparent;}
 .layer-toggle[aria-pressed="false"]{opacity:.75}
-.layer-toggle__dot{width:8px;height:8px;border-radius:50%;
-  background:currentColor;flex:0 0 auto;}
+.layer-toggle__dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 
-/* ---------- СТАТУС ---------- */
 .status{position:absolute;bottom:10px;right:10px;z-index:6;
   max-width:calc(100% - 20px);padding:8px 14px;border-radius:999px;
   font-size:12px;font-weight:700;background:rgba(46,196,182,.92);color:#04231f;
-  box-shadow:var(--shadow-1);transition:background var(--dur) var(--ease),color var(--dur) var(--ease);}
+  box-shadow:var(--shadow-1);}
 .status[data-state="warn"]{background:rgba(255,183,3,.94);color:#2a1c00}
 .status[data-state="error"]{background:rgba(255,84,112,.94);color:#fff}
 .status[data-state="busy"]{background:rgba(76,201,240,.94);color:#03121f}
 
-/* ---------- ТУЛБАР ---------- */
+.toast{position:absolute;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);
+  z-index:9;padding:10px 18px;border-radius:999px;
+  font-size:13px;font-weight:700;color:#03121f;
+  background:linear-gradient(135deg,var(--sun-soft),var(--sun));
+  box-shadow:0 8px 30px rgba(0,0,0,.5);
+  opacity:0;pointer-events:none;
+  transition:opacity .25s var(--ease), transform .25s var(--ease);
+  max-width:calc(100% - 40px);text-align:center;}
+.toast[data-show="true"]{opacity:1;transform:translateX(-50%) translateY(0);}
+
 .toolbar{display:flex;align-items:center;gap:6px;padding:8px 12px;
   padding-bottom:calc(8px + env(safe-area-inset-bottom));
   padding-left:max(12px, env(safe-area-inset-left));
@@ -381,7 +352,6 @@ input,textarea{font:inherit;color:inherit}
 .tool-btn:active{transform:scale(.96)}
 .tool-btn[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
   color:#03121f;font-weight:700;box-shadow:0 3px 14px rgba(76,201,240,.3);}
-
 .color-swatch{width:34px;height:34px;border-radius:50%;
   border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.16) inset;
   transition:transform var(--dur) var(--ease),border-color var(--dur) var(--ease);flex:0 0 auto;}
@@ -398,8 +368,7 @@ input[type="range"]{-webkit-appearance:none;appearance:none;
 input[type="range"]::-webkit-slider-runnable-track{height:6px;border-radius:999px;
   background:linear-gradient(90deg,var(--rain),var(--sun));}
 input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
-  margin-top:-7px;border-radius:50%;background:#fff;border:2px solid var(--sky-800);
-  box-shadow:0 2px 6px rgba(0,0,0,.4);}
+  margin-top:-7px;border-radius:50%;background:#fff;border:2px solid var(--sky-800);}
 input[type="range"]::-moz-range-track{height:6px;border-radius:999px;
   background:linear-gradient(90deg,var(--rain),var(--sun));}
 input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
@@ -407,7 +376,6 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 .size-label{font-size:12px;font-variant-numeric:tabular-nums;
   color:var(--text-mute);min-width:20px;text-align:center;font-weight:700;}
 
-/* ---------- АДАПТАЦІЯ ---------- */
 @media (min-width:900px){
   .workspace{flex-direction:row}
   .icon-gallery{flex-direction:column;width:76px;padding:10px 0;
@@ -415,7 +383,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
     overflow-x:hidden;overflow-y:auto;align-items:center;}
   .icon-item{width:52px;height:52px;font-size:26px}
   .toolbar{flex-wrap:wrap;overflow:visible}
-  .zone-info{max-width:400px;font-size:13.5px}
+  .zone-info{max-width:420px;font-size:13.5px}
   .zone-info h2{font-size:15px}
   .legend{max-width:270px}
 }
@@ -443,17 +411,11 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .zone-info{font-size:12px;padding:8px 34px 8px 11px}
   .legend,.layers{display:none}
 }
-@media (min-width:1400px){
-  .app-header{padding-left:24px;padding-right:24px}
-  .toolbar{padding-left:24px;padding-right:24px}
-  .tabs{padding-left:24px;padding-right:24px}
-}
 </style>
 </head>
 <body>
 
 <div class="app">
-
   <header class="app-header">
     <h1 class="app-title">
       <span class="app-title__icon" aria-hidden="true">🌍</span>
@@ -461,10 +423,18 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
       <span class="badge">Група <span id="currentGroupNum">1</span></span>
     </h1>
     <div class="header-controls">
+      <span class="net-indicator" id="netIndicator" data-online="unknown"
+            role="status" aria-live="polite" title="Стан синхронізації">
+        <span class="net-indicator__dot" aria-hidden="true"></span>
+        <span id="netLabel">З’єднання…</span>
+      </span>
       <div class="timer" id="timer" role="timer" aria-label="Залишилось часу">30:00</div>
       <button class="btn btn--ghost" id="timerBtn" type="button"
               aria-label="Пауза таймера" aria-pressed="false">
         <span aria-hidden="true" id="timerBtnIcon">⏸</span>
+      </button>
+      <button class="btn btn--ghost" id="syncBtn" type="button" aria-label="Синхронізувати зараз">
+        <span aria-hidden="true">🔄</span>
       </button>
       <button class="btn btn--primary" id="exportBtn" type="button" aria-label="Зберегти зображення дошки">
         <span aria-hidden="true">📸</span><span class="btn-label">PNG</span>
@@ -485,18 +455,17 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
     <div class="icon-gallery" id="iconGallery" role="group" aria-label="Погодні іконки"></div>
 
     <div class="map-container" id="mapContainer" role="tabpanel" aria-label="Інтерактивна карта світу">
-
       <svg id="svgMap" xmlns="http://www.w3.org/2000/svg"
            aria-label="Реальна географічна карта світу з кліматичними поясами" role="img">
         <defs>
           <radialGradient id="oceanGrad" cx="50%" cy="45%" r="75%">
-            <stop offset="0%"   stop-color="#0d3f6b"/>
-            <stop offset="45%"  stop-color="#082a4a"/>
+            <stop offset="0%" stop-color="#0d3f6b"/>
+            <stop offset="45%" stop-color="#082a4a"/>
             <stop offset="100%" stop-color="#04162a"/>
           </radialGradient>
           <radialGradient id="oceanGlow" cx="50%" cy="45%" r="60%">
-            <stop offset="0%"   stop-color="#2a72b0" stop-opacity=".35"/>
-            <stop offset="70%"  stop-color="#0a3d68" stop-opacity="0"/>
+            <stop offset="0%" stop-color="#2a72b0" stop-opacity=".35"/>
+            <stop offset="70%" stop-color="#0a3d68" stop-opacity="0"/>
             <stop offset="100%" stop-color="#020a14" stop-opacity="0"/>
           </radialGradient>
         </defs>
@@ -508,8 +477,8 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
       </canvas>
 
       <div id="stickersLayer"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-      <!-- КНОПКИ ШАРІВ -->
       <div class="layers" role="group" aria-label="Керування шарами карти">
         <button class="layer-toggle" id="zonesToggle" type="button"
                 aria-pressed="true" aria-label="Увімкнути / вимкнути кольорове зафарбування кліматичних поясів">
@@ -518,13 +487,11 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
         </button>
         <button class="layer-toggle" id="labelsToggle" type="button"
                 aria-pressed="true" aria-label="Увімкнути / вимкнути підписи поясів">
-          <span aria-hidden="true">🔤</span>
-          <span>Підписи</span>
+          <span aria-hidden="true">🔤</span><span>Підписи</span>
         </button>
         <button class="layer-toggle" id="bordersToggle" type="button"
                 aria-pressed="true" aria-label="Увімкнути / вимкнути жирні межі між поясами">
-          <span aria-hidden="true">━━</span>
-          <span>Межі</span>
+          <span aria-hidden="true">━━</span><span>Межі</span>
         </button>
       </div>
 
@@ -550,10 +517,10 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 
   <footer class="toolbar" aria-label="Інструменти малювання">
     <div class="tool-group" role="group" aria-label="Інструмент">
-      <button class="tool-btn" type="button" data-tool="brush"  aria-pressed="true">
+      <button class="tool-btn" type="button" data-tool="brush" aria-pressed="true">
         <span aria-hidden="true">✏️</span><span class="btn-label">Пензель</span>
       </button>
-      <button class="tool-btn" type="button" data-tool="fill"   aria-pressed="false">
+      <button class="tool-btn" type="button" data-tool="fill" aria-pressed="false">
         <span aria-hidden="true">🎨</span><span class="btn-label">Позначити пояс</span>
       </button>
       <button class="tool-btn" type="button" data-tool="eraser" aria-pressed="false">
@@ -608,129 +575,117 @@ const firebaseConfig = {
   appId: "1:154142013253:web:2b3bfde1a8ecea5565f02c"
 };
 let db = null;
-try { firebase.initializeApp(firebaseConfig); db = firebase.database(); }
-catch (err) { console.error("Firebase init error:", err); }
+let fbError = null;
+try {
+  if (typeof firebase === 'undefined') throw new Error('Firebase SDK не завантажено');
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  console.log('[Firebase] OK — db готово');
+} catch (err) {
+  fbError = err;
+  console.error('[Firebase] Помилка ініціалізації:', err);
+}
 
 /* ============================================================
-   1. ДАНІ КЛІМАТУ
+   1. ДАНІ
    ============================================================ */
-/* Дуже прозорі базові кольори — материки просвічують */
-const ZONE_BASE_OPACITY = 0.13;   // було 0.34 → тепер ледь помітний відтінок
-const ZONE_USER_OPACITY = 0.42;   // коли дитина сама зафарбувала пояс
+const ZONE_BASE_OPACITY = 0.13;
+const ZONE_USER_OPACITY = 0.68;
 
 const CLIMATE_BANDS = [
-  { id:'arctic',        name:'Арктичний',          short:'АРКТ.',
-    lat:[ 66.5,  90 ], color:'#bfe6ff',
+  { id:'arctic',        name:'Арктичний',          short:'АРКТ.',          lat:[ 66.5,  90 ], color:'#bfe6ff',
     desc:'Полярна ніч і день, вічна мерзлота, t° ≈ −30…0 °C.' },
-  { id:'subarctic',     name:'Субарктичний',       short:'СУБАРКТ.',
-    lat:[ 50,   66.5], color:'#79c8e8',
+  { id:'subarctic',     name:'Субарктичний',       short:'СУБАРКТ.',       lat:[ 50,   66.5], color:'#79c8e8',
     desc:'Коротке прохолодне літо, сувора зима, тайга.' },
-  { id:'temperate_n',   name:'Помірний (пн.)',     short:'ПОМІРНИЙ ПН.',
-    lat:[ 35,   50   ], color:'#7fd07f',
+  { id:'temperate_n',   name:'Помірний (пн.)',     short:'ПОМІРНИЙ ПН.',   lat:[ 35,   50   ], color:'#7fd07f',
     desc:'Чотири пори року, помірні опади, ліси й степи.' },
-  { id:'subtropical_n', name:'Субтропічний (пн.)', short:'СУБТРОП. ПН.',
-    lat:[ 23.5, 35   ], color:'#f6c945',
+  { id:'subtropical_n', name:'Субтропічний (пн.)', short:'СУБТРОП. ПН.',   lat:[ 23.5, 35   ], color:'#f6c945',
     desc:'Спекотне літо, м’яка зима, сухі й вологі області.' },
-  { id:'tropical',      name:'Тропічний',          short:'ТРОПІЧНИЙ',
-    lat:[-23.5, 23.5 ], color:'#ff8c42',
+  { id:'tropical',      name:'Тропічний',          short:'ТРОПІЧНИЙ',      lat:[-23.5, 23.5 ], color:'#ff8c42',
     desc:'Спекотно цілий рік, тропічні ліси, савани, пустелі.' },
-  { id:'subtropical_s', name:'Субтропічний (пд.)', short:'СУБТРОП. ПД.',
-    lat:[-35,  -23.5 ], color:'#f6c945',
+  { id:'subtropical_s', name:'Субтропічний (пд.)', short:'СУБТРОП. ПД.',   lat:[-35,  -23.5 ], color:'#f6c945',
     desc:'Спекотне літо, м’яка зима, середземноморський клімат.' },
-  { id:'temperate_s',   name:'Помірний (пд.)',     short:'ПОМІРНИЙ ПД.',
-    lat:[-50,  -35   ], color:'#7fd07f',
+  { id:'temperate_s',   name:'Помірний (пд.)',     short:'ПОМІРНИЙ ПД.',   lat:[-50,  -35   ], color:'#7fd07f',
     desc:'Прохолодне літо, помірні опади, океанічний вплив.' },
-  { id:'subantarctic',  name:'Субантарктичний',    short:'СУБАНТАРКТ.',
-    lat:[-66.5,-50   ], color:'#79c8e8',
+  { id:'subantarctic',  name:'Субантарктичний',    short:'СУБАНТАРКТ.',    lat:[-66.5,-50   ], color:'#79c8e8',
     desc:'Холодне літо, сильні вітри, тундра.' },
-  { id:'antarctic',     name:'Антарктичний',       short:'АНТАРКТ.',
-    lat:[-90,  -66.5 ], color:'#bfe6ff',
+  { id:'antarctic',     name:'Антарктичний',       short:'АНТАРКТ.',       lat:[-90,  -66.5 ], color:'#bfe6ff',
     desc:'Крижаний щит, t° до −60 °C, полярні станції.' }
 ];
 
-/* Межі між поясами (унікальні значення) */
 const ZONE_BOUNDARIES = [
-  { lat: 66.5, type:'polar' },
-  { lat: 50,   type:'mid'   },
-  { lat: 35,   type:'mid'   },
-  { lat: 23.5, type:'tropic'},
-  { lat: 0,    type:'equator'},
-  { lat:-23.5, type:'tropic'},
-  { lat:-35,   type:'mid'   },
-  { lat:-50,   type:'mid'   },
-  { lat:-66.5, type:'polar' }
+  { lat: 66.5, type:'polar' }, { lat: 50, type:'mid' }, { lat: 35, type:'mid' },
+  { lat: 23.5, type:'tropic' }, { lat: 0, type:'equator' }, { lat:-23.5, type:'tropic' },
+  { lat:-35, type:'mid' }, { lat:-50, type:'mid' }, { lat:-66.5, type:'polar' }
 ];
 
 const LAT_LABELS = [
   { lat: 66.5, label:'Полярне коло (66.5°N)' },
   { lat: 23.5, label:'Тропік Рака (23.5°N)' },
-  { lat: 0,    label:'ЕКВАТОР (0°)', equator:true },
+  { lat: 0, label:'ЕКВАТОР (0°)', equator:true },
   { lat:-23.5, label:'Тропік Козерога (23.5°S)' },
   { lat:-66.5, label:'Полярне коло (66.5°S)' }
 ];
 
 const COUNTRY_CLIMATE = {
-  'Ukraine':       { uk:'Україна',            zone:'Помірний континентальний', t:'+8 °C',  rain:'600 мм/рік',  note:'Чотири пори року, чорноземи.' },
-  'Poland':        { uk:'Польща',              zone:'Помірний',                t:'+8 °C',  rain:'600 мм/рік',  note:'Перехідний між морським і континентальним.' },
-  'Germany':       { uk:'Німеччина',           zone:'Помірний',                t:'+9 °C',  rain:'700 мм/рік',  note:'Морський вплив Атлантики.' },
-  'France':        { uk:'Франція',             zone:'Помірний / субтропічний', t:'+11 °C', rain:'750 мм/рік',  note:'Океанічний на заході, середземноморський на півдні.' },
-  'Spain':         { uk:'Іспанія',             zone:'Середземноморський',      t:'+15 °C', rain:'500 мм/рік',  note:'Спекотне сухе літо.' },
-  'Italy':         { uk:'Італія',              zone:'Середземноморський',      t:'+15 °C', rain:'700 мм/рік',  note:'Типовий субтропічний.' },
-  'United Kingdom':{ uk:'Велика Британія',     zone:'Помірний морський',       t:'+10 °C', rain:'1000 мм/рік', note:'М’яка зима, прохолодне літо.' },
-  'Norway':        { uk:'Норвегія',            zone:'Субарктичний / помірний', t:'+3 °C',  rain:'800 мм/рік',  note:'Фіорди, тепла течія Гольфстрім.' },
-  'Sweden':        { uk:'Швеція',              zone:'Помірний / субарктичний', t:'+3 °C',  rain:'600 мм/рік',  note:'Довга зима на півночі.' },
-  'Finland':       { uk:'Фінляндія',           zone:'Субарктичний',            t:'+2 °C',  rain:'600 мм/рік',  note:'Тисячі озер, полярні ночі.' },
-  'Russia':        { uk:'Росія',               zone:'Від арктичного до субтроп.', t:'−5 °C', rain:'450 мм/рік', note:'Найбільша країна за площею.' },
-  'Turkey':        { uk:'Туреччина',           zone:'Середземноморський / контин.', t:'+12 °C', rain:'600 мм/рік', note:'Між Європою та Азією.' },
-  'Egypt':         { uk:'Єгипет',              zone:'Тропічний пустельний',    t:'+25 °C', rain:'25 мм/рік',   note:'Долина Нілу — оаза життя.' },
-  'Morocco':       { uk:'Марокко',             zone:'Середземноморський / пустельний', t:'+18 °C', rain:'300 мм/рік', note:'Атлас, Сахара.' },
-  'Nigeria':       { uk:'Нігерія',             zone:'Тропічний',               t:'+27 °C', rain:'1200 мм/рік', note:'Савана й тропічні ліси.' },
-  'Kenya':         { uk:'Кенія',               zone:'Тропічний (височинний)',  t:'+22 °C', rain:'700 мм/рік',  note:'Савана, Великий рифт.' },
-  'South Africa':  { uk:'ПАР',                 zone:'Субтропічний / помірний', t:'+17 °C', rain:'500 мм/рік',  note:'Мис Доброї Надії.' },
-  'Ethiopia':      { uk:'Ефіопія',             zone:'Тропічний (височинний)',  t:'+22 °C', rain:'800 мм/рік',  note:'Нагір’я, витоки Нілу.' },
-  'Saudi Arabia':  { uk:'Саудівська Аравія',   zone:'Тропічний пустельний',    t:'+28 °C', rain:'60 мм/рік',   note:'Найбільша пустеля — Руб-ель-Халі.' },
-  'Iran':          { uk:'Іран',                zone:'Субтропічний / пустельний', t:'+17 °C', rain:'250 мм/рік', note:'Плато, гори Ельбурс.' },
-  'India':         { uk:'Індія',               zone:'Тропічний / субтропічний', t:'+25 °C', rain:'1100 мм/рік', note:'Мусони, Гімалаї.' },
-  'China':         { uk:'Китай',               zone:'Від помірного до тропічного', t:'+13 °C', rain:'600 мм/рік', note:'Найбільша різноманітність клімату.' },
-  'Japan':         { uk:'Японія',              zone:'Помірний / субтропічний', t:'+15 °C', rain:'1700 мм/рік', note:'Острівний, мусонний.' },
-  'South Korea':   { uk:'Південна Корея',      zone:'Помірний',                t:'+12 °C', rain:'1300 мм/рік', note:'Мусони, гори.' },
-  'Thailand':      { uk:'Таїланд',             zone:'Тропічний мусонний',      t:'+28 °C', rain:'1600 мм/рік', note:'Тропічні ліси, мусони.' },
-  'Vietnam':       { uk:'В’єтнам',             zone:'Тропічний мусонний',      t:'+25 °C', rain:'1800 мм/рік', note:'Довга берегова лінія.' },
-  'Indonesia':     { uk:'Індонезія',           zone:'Екваторіальний',          t:'+27 °C', rain:'2500 мм/рік', note:'Найбільший архіпелаг світу.' },
-  'Australia':     { uk:'Австралія',           zone:'Від тропічного до помірного', t:'+22 °C', rain:'450 мм/рік', note:'Пустелі в центрі, тропіки на півночі.' },
-  'New Zealand':   { uk:'Нова Зеландія',       zone:'Помірний морський',       t:'+12 °C', rain:'1200 мм/рік', note:'Океанічний, м’який.' },
-  'Mexico':        { uk:'Мексика',             zone:'Тропічний / субтропічний', t:'+22 °C', rain:'700 мм/рік',  note:'Від пустель до тропіків.' },
-  'Brazil':        { uk:'Бразилія',            zone:'Тропічний / екваторіальний', t:'+25 °C', rain:'1700 мм/рік', note:'Амазонія — «легені планети».' },
-  'Argentina':     { uk:'Аргентина',           zone:'Помірний / субтропічний', t:'+15 °C', rain:'600 мм/рік',  note:'Пампаси, Анди.' },
-  'Chile':         { uk:'Чилі',                zone:'Від пустельного до субантарктичного', t:'+10 °C', rain:'500 мм/рік', note:'Найдовша країна світу.' },
-  'Peru':          { uk:'Перу',                zone:'Тропічний (височинний)',  t:'+20 °C', rain:'400 мм/рік',  note:'Анди, узбережжя Тихого океану.' },
-  'Colombia':      { uk:'Колумбія',            zone:'Екваторіальний',          t:'+26 °C', rain:'2500 мм/рік', note:'Дві океанські берегові лінії.' },
-  'Venezuela':     { uk:'Венесуела',           zone:'Тропічний',               t:'+27 °C', rain:'1500 мм/рік', note:'Водоспад Анхель.' },
-  'Cuba':          { uk:'Куба',                zone:'Тропічний',               t:'+26 °C', rain:'1300 мм/рік', note:'Карибський острів.' },
-  'Canada':        { uk:'Канада',              zone:'Субарктичний / помірний', t:'−4 °C',  rain:'500 мм/рік',  note:'Друга за площею країна.' },
-  'United States of America': { uk:'США',      zone:'Від помірного до тропічного', t:'+10 °C', rain:'700 мм/рік', note:'Різноманіття від Аляски до Флориди.' },
-  'United States': { uk:'США',                 zone:'Від помірного до тропічного', t:'+10 °C', rain:'700 мм/рік', note:'Різноманіття від Аляски до Флориди.' },
-  'Greenland':     { uk:'Гренландія',          zone:'Арктичний',               t:'−20 °C', rain:'200 мм/рік',  note:'Крижаний щит, 80% льоду.' },
-  'Iceland':       { uk:'Ісландія',            zone:'Субарктичний морський',   t:'+4 °C',  rain:'700 мм/рік',  note:'Вулкани, гейзери, льодовики.' },
-  'Kazakhstan':    { uk:'Казахстан',           zone:'Помірний континентальний', t:'+6 °C', rain:'250 мм/рік',  note:'Степи, напівпустелі.' },
-  'Mongolia':      { uk:'Монголія',            zone:'Різко континентальний',   t:'+1 °C',  rain:'250 мм/рік',  note:'Найхолодніша столиця світу.' },
-  'Uzbekistan':    { uk:'Узбекистан',          zone:'Помірний пустельний',     t:'+14 °C', rain:'200 мм/рік',  note:'Аральське море.' },
-  'Afghanistan':   { uk:'Афганістан',          zone:'Субтропічний / контин.',  t:'+13 °C', rain:'300 мм/рік',  note:'Гіндукуш.' },
-  'Pakistan':      { uk:'Пакистан',            zone:'Тропічний / субтропічний', t:'+22 °C', rain:'300 мм/рік', note:'Каракорум, Інд.' },
-  'Bangladesh':    { uk:'Бангладеш',           zone:'Тропічний мусонний',      t:'+26 °C', rain:'2500 мм/рік', note:'Дельта Гангу.' },
-  'Myanmar':       { uk:'М’янма',              zone:'Тропічний мусонний',      t:'+26 °C', rain:'2200 мм/рік', note:'Південно-Східна Азія.' },
-  'Antarctica':    { uk:'Антарктида',          zone:'Антарктичний',            t:'−50 °C', rain:'< 50 мм/рік', note:'Найхолодніший континент.' }
+  'Ukraine':{uk:'Україна',zone:'Помірний континентальний',t:'+8 °C',rain:'600 мм/рік',note:'Чотири пори року, чорноземи.'},
+  'Poland':{uk:'Польща',zone:'Помірний',t:'+8 °C',rain:'600 мм/рік',note:'Перехідний між морським і континентальним.'},
+  'Germany':{uk:'Німеччина',zone:'Помірний',t:'+9 °C',rain:'700 мм/рік',note:'Морський вплив Атлантики.'},
+  'France':{uk:'Франція',zone:'Помірний / субтропічний',t:'+11 °C',rain:'750 мм/рік',note:'Океанічний на заході, середземноморський на півдні.'},
+  'Spain':{uk:'Іспанія',zone:'Середземноморський',t:'+15 °C',rain:'500 мм/рік',note:'Спекотне сухе літо.'},
+  'Italy':{uk:'Італія',zone:'Середземноморський',t:'+15 °C',rain:'700 мм/рік',note:'Типовий субтропічний.'},
+  'United Kingdom':{uk:'Велика Британія',zone:'Помірний морський',t:'+10 °C',rain:'1000 мм/рік',note:'М’яка зима, прохолодне літо.'},
+  'Norway':{uk:'Норвегія',zone:'Субарктичний / помірний',t:'+3 °C',rain:'800 мм/рік',note:'Фіорди, тепла течія Гольфстрім.'},
+  'Sweden':{uk:'Швеція',zone:'Помірний / субарктичний',t:'+3 °C',rain:'600 мм/рік',note:'Довга зима на півночі.'},
+  'Finland':{uk:'Фінляндія',zone:'Субарктичний',t:'+2 °C',rain:'600 мм/рік',note:'Тисячі озер, полярні ночі.'},
+  'Russia':{uk:'Росія',zone:'Від арктичного до субтроп.',t:'−5 °C',rain:'450 мм/рік',note:'Найбільша країна за площею.'},
+  'Turkey':{uk:'Туреччина',zone:'Середземноморський / контин.',t:'+12 °C',rain:'600 мм/рік',note:'Між Європою та Азією.'},
+  'Egypt':{uk:'Єгипет',zone:'Тропічний пустельний',t:'+25 °C',rain:'25 мм/рік',note:'Долина Нілу — оаза життя.'},
+  'Morocco':{uk:'Марокко',zone:'Середземноморський / пустельний',t:'+18 °C',rain:'300 мм/рік',note:'Атлас, Сахара.'},
+  'Nigeria':{uk:'Нігерія',zone:'Тропічний',t:'+27 °C',rain:'1200 мм/рік',note:'Савана й тропічні ліси.'},
+  'Kenya':{uk:'Кенія',zone:'Тропічний (височинний)',t:'+22 °C',rain:'700 мм/рік',note:'Савана, Великий рифт.'},
+  'South Africa':{uk:'ПАР',zone:'Субтропічний / помірний',t:'+17 °C',rain:'500 мм/рік',note:'Мис Доброї Надії.'},
+  'Ethiopia':{uk:'Ефіопія',zone:'Тропічний (височинний)',t:'+22 °C',rain:'800 мм/рік',note:'Нагір’я, витоки Нілу.'},
+  'Saudi Arabia':{uk:'Саудівська Аравія',zone:'Тропічний пустельний',t:'+28 °C',rain:'60 мм/рік',note:'Найбільша пустеля — Руб-ель-Халі.'},
+  'Iran':{uk:'Іран',zone:'Субтропічний / пустельний',t:'+17 °C',rain:'250 мм/рік',note:'Плато, гори Ельбурс.'},
+  'India':{uk:'Індія',zone:'Тропічний / субтропічний',t:'+25 °C',rain:'1100 мм/рік',note:'Мусони, Гімалаї.'},
+  'China':{uk:'Китай',zone:'Від помірного до тропічного',t:'+13 °C',rain:'600 мм/рік',note:'Найбільша різноманітність клімату.'},
+  'Japan':{uk:'Японія',zone:'Помірний / субтропічний',t:'+15 °C',rain:'1700 мм/рік',note:'Острівний, мусонний.'},
+  'South Korea':{uk:'Південна Корея',zone:'Помірний',t:'+12 °C',rain:'1300 мм/рік',note:'Мусони, гори.'},
+  'Thailand':{uk:'Таїланд',zone:'Тропічний мусонний',t:'+28 °C',rain:'1600 мм/рік',note:'Тропічні ліси, мусони.'},
+  'Vietnam':{uk:'В’єтнам',zone:'Тропічний мусонний',t:'+25 °C',rain:'1800 мм/рік',note:'Довга берегова лінія.'},
+  'Indonesia':{uk:'Індонезія',zone:'Екваторіальний',t:'+27 °C',rain:'2500 мм/рік',note:'Найбільший архіпелаг світу.'},
+  'Australia':{uk:'Австралія',zone:'Від тропічного до помірного',t:'+22 °C',rain:'450 мм/рік',note:'Пустелі в центрі, тропіки на півночі.'},
+  'New Zealand':{uk:'Нова Зеландія',zone:'Помірний морський',t:'+12 °C',rain:'1200 мм/рік',note:'Океанічний, м’який.'},
+  'Mexico':{uk:'Мексика',zone:'Тропічний / субтропічний',t:'+22 °C',rain:'700 мм/рік',note:'Від пустель до тропіків.'},
+  'Brazil':{uk:'Бразилія',zone:'Тропічний / екваторіальний',t:'+25 °C',rain:'1700 мм/рік',note:'Амазонія — «легені планети».'},
+  'Argentina':{uk:'Аргентина',zone:'Помірний / субтропічний',t:'+15 °C',rain:'600 мм/рік',note:'Пампаси, Анди.'},
+  'Chile':{uk:'Чилі',zone:'Від пустельного до субантарктичного',t:'+10 °C',rain:'500 мм/рік',note:'Найдовша країна світу.'},
+  'Peru':{uk:'Перу',zone:'Тропічний (височинний)',t:'+20 °C',rain:'400 мм/рік',note:'Анди, узбережжя Тихого океану.'},
+  'Colombia':{uk:'Колумбія',zone:'Екваторіальний',t:'+26 °C',rain:'2500 мм/рік',note:'Дві океанські берегові лінії.'},
+  'Venezuela':{uk:'Венесуела',zone:'Тропічний',t:'+27 °C',rain:'1500 мм/рік',note:'Водоспад Анхель.'},
+  'Cuba':{uk:'Куба',zone:'Тропічний',t:'+26 °C',rain:'1300 мм/рік',note:'Карибський острів.'},
+  'Canada':{uk:'Канада',zone:'Субарктичний / помірний',t:'−4 °C',rain:'500 мм/рік',note:'Друга за площею країна.'},
+  'United States of America':{uk:'США',zone:'Від помірного до тропічного',t:'+10 °C',rain:'700 мм/рік',note:'Різноманіття від Аляски до Флориди.'},
+  'United States':{uk:'США',zone:'Від помірного до тропічного',t:'+10 °C',rain:'700 мм/рік',note:'Різноманіття від Аляски до Флориди.'},
+  'Greenland':{uk:'Гренландія',zone:'Арктичний',t:'−20 °C',rain:'200 мм/рік',note:'Крижаний щит, 80% льоду.'},
+  'Iceland':{uk:'Ісландія',zone:'Субарктичний морський',t:'+4 °C',rain:'700 мм/рік',note:'Вулкани, гейзери, льодовики.'},
+  'Kazakhstan':{uk:'Казахстан',zone:'Помірний континентальний',t:'+6 °C',rain:'250 мм/рік',note:'Степи, напівпустелі.'},
+  'Mongolia':{uk:'Монголія',zone:'Різко континентальний',t:'+1 °C',rain:'250 мм/рік',note:'Найхолодніша столиця світу.'},
+  'Uzbekistan':{uk:'Узбекистан',zone:'Помірний пустельний',t:'+14 °C',rain:'200 мм/рік',note:'Аральське море.'},
+  'Afghanistan':{uk:'Афганістан',zone:'Субтропічний / контин.',t:'+13 °C',rain:'300 мм/рік',note:'Гіндукуш.'},
+  'Pakistan':{uk:'Пакистан',zone:'Тропічний / субтропічний',t:'+22 °C',rain:'300 мм/рік',note:'Каракорум, Інд.'},
+  'Bangladesh':{uk:'Бангладеш',zone:'Тропічний мусонний',t:'+26 °C',rain:'2500 мм/рік',note:'Дельта Гангу.'},
+  'Myanmar':{uk:'М’янма',zone:'Тропічний мусонний',t:'+26 °C',rain:'2200 мм/рік',note:'Південно-Східна Азія.'},
+  'Antarctica':{uk:'Антарктида',zone:'Антарктичний',t:'−50 °C',rain:'< 50 мм/рік',note:'Найхолодніший континент.'}
 };
 
-/* ============================================================
-   2. КОНСТАНТИ / СТАН
-   ============================================================ */
 const ZONES = [
-  { id:'hypothesis',     title:'🧠 1. Гіпотеза',     desc:'Запишіть припущення та план дослідження.' },
+  { id:'hypothesis', title:'🧠 1. Гіпотеза', desc:'Запишіть припущення та план дослідження.' },
   { id:'classification', title:'🗺 2. Класифікація', desc:'Порівняйте кліматичні пояси. Наведіть на пояс — побачите характеристики.' },
-  { id:'comfort',        title:'🏖 3. Комфорт',      desc:'Позначте 3 найкомфортніші пояси для життя.' },
-  { id:'changes',        title:'🌡 4. Зміни',        desc:'Причини та наслідки глобальних змін клімату.' },
-  { id:'history',        title:'🏛 5. Цивілізації',  desc:'Давні цивілізації та їхній кліматичний пояс.' }
+  { id:'comfort', title:'🏖 3. Комфорт', desc:'Позначте 3 найкомфортніші пояси для життя.' },
+  { id:'changes', title:'🌡 4. Зміни', desc:'Причини та наслідки глобальних змін клімату.' },
+  { id:'history', title:'🏛 5. Цивілізації', desc:'Давні цивілізації та їхній кліматичний пояс.' }
 ];
 
 const ICONS = [
@@ -755,11 +710,9 @@ const state = {
   lastLocalCanvas: null, isDrawing: false, pendingCanvas: undefined,
   timerSeconds: 0, timerRunning: true,
   mapReady: false, countriesGeo: null,
-  showZones: true,      // КОЛЬОРОВЕ ЗАФАРБУВАННЯ
-  showLabels: true,
-  showBorders: true
+  showZones: true, showLabels: true, showBorders: true,
+  listenersActive: false, syncInProgress: false
 };
-
 function emptyData(){ return { canvas:null, stickers:[], icons:[], zoneFills:{} }; }
 
 /* ============================================================
@@ -769,18 +722,21 @@ const $  = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
 
 const canvas        = $('#drawCanvas');
-const ctx           = canvas.getContext('2d', { alpha:true, desynchronized:true });
+const ctx           = canvas.getContext('2d', { alpha:true });
 const stickersLayer = $('#stickersLayer');
 const mapContainer  = $('#mapContainer');
 const svgMap        = $('#svgMap');
 const iconGallery   = $('#iconGallery');
 const tabsEl        = $('#tabs');
 const statusEl      = $('#status');
+const netIndicator  = $('#netIndicator');
+const netLabel      = $('#netLabel');
 const zoneInfoEl    = $('#zoneInfo');
 const zoneInfoTitle = $('#zoneInfoTitle');
 const zoneInfoDesc  = $('#zoneInfoDesc');
 const zoneInfoMeta  = $('#zoneInfoMeta');
 const zoneInfoHint  = $('#zoneInfoHint');
+const toastEl       = $('#toast');
 const timerEl       = $('#timer');
 
 const stickerEls = new Map();
@@ -792,7 +748,6 @@ let dpr = 1, canvasRenderToken = 0, resizeRaf = null;
    4. УТИЛІТИ
    ============================================================ */
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-
 function hexToRgba(hex, alpha){
   let h = String(hex).replace('#','');
   if (h.length === 3) h = h.split('').map(c => c + c).join('');
@@ -800,10 +755,7 @@ function hexToRgba(hex, alpha){
   if (Number.isNaN(n)) return `rgba(255,255,255,${alpha})`;
   return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`;
 }
-function setStatus(msg, variant){
-  statusEl.textContent = msg;
-  statusEl.dataset.state = variant || 'ok';
-}
+function setStatus(msg, variant){ statusEl.textContent = msg; statusEl.dataset.state = variant || 'ok'; }
 let statusTimer = null;
 function flashStatus(msg, variant, revertMs = 2600){
   clearTimeout(statusTimer);
@@ -811,6 +763,20 @@ function flashStatus(msg, variant, revertMs = 2600){
   statusTimer = setTimeout(() => {
     setStatus(isOnline ? '🟢 Синхронізовано' : '🔴 Офлайн-режим', isOnline ? 'ok' : 'warn');
   }, revertMs);
+}
+let toastTimer = null;
+function showToast(msg, ms = 2200){
+  clearTimeout(toastTimer);
+  toastEl.textContent = msg;
+  toastEl.dataset.show = 'true';
+  toastTimer = setTimeout(() => { toastEl.dataset.show = 'false'; }, ms);
+}
+
+let isOnline = false;
+function setNetIndicator(online, text){
+  isOnline = online;
+  netIndicator.dataset.online = online ? 'true' : (text === 'unknown' ? 'unknown' : 'false');
+  netLabel.textContent = text;
 }
 
 /* ============================================================
@@ -820,24 +786,18 @@ function buildIconGallery(){
   const frag = document.createDocumentFragment();
   ICONS.forEach(({ e, l }) => {
     const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'icon-item';
-    btn.textContent = e;
+    btn.type = 'button'; btn.className = 'icon-item'; btn.textContent = e;
     btn.setAttribute('aria-label', `Додати на карту: ${l}`);
-    btn.dataset.icon = e;
     btn.addEventListener('click', () => addIcon(e));
     frag.appendChild(btn);
   });
   iconGallery.appendChild(frag);
 }
-
 function buildTabs(){
   const frag = document.createDocumentFragment();
   ZONES.forEach((z, i) => {
     const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'tab';
-    btn.textContent = z.title;
+    btn.type = 'button'; btn.className = 'tab'; btn.textContent = z.title;
     btn.setAttribute('role', 'tab');
     btn.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
     btn.setAttribute('aria-controls', 'mapContainer');
@@ -847,24 +807,7 @@ function buildTabs(){
     frag.appendChild(btn);
   });
   tabsEl.appendChild(frag);
-
-  tabsEl.addEventListener('keydown', e => {
-    const tabs = $$('.tab', tabsEl);
-    const idx = tabs.indexOf(document.activeElement);
-    if (idx === -1) return;
-    let next = -1;
-    if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
-    else if (e.key === 'ArrowLeft') next = (idx - 1 + tabs.length) % tabs.length;
-    else if (e.key === 'Home') next = 0;
-    else if (e.key === 'End') next = tabs.length - 1;
-    if (next >= 0){
-      e.preventDefault();
-      tabs[next].focus();
-      switchZone(tabs[next].dataset.zone);
-    }
-  });
 }
-
 function buildLegend(){
   const list = $('#legendList');
   list.innerHTML = '';
@@ -873,7 +816,6 @@ function buildLegend(){
     li.dataset.zone = band.id;
     li.setAttribute('role', 'button');
     li.setAttribute('tabindex', '0');
-    li.setAttribute('aria-label', `Показати інформацію про ${band.name} пояс`);
     const sw = document.createElement('span');
     sw.className = 'legend__swatch';
     sw.style.background = hexToRgba(band.color, .85);
@@ -890,20 +832,8 @@ function buildLegend(){
 }
 
 /* ============================================================
-   6. КАРТА — ПОРЯДОК ШАРІВ КРИТИЧНО ВАЖЛИВИЙ:
-      1) океан, 2) сітка, 3) КРАЇНИ (знизу),
-      4) ПОЯСИ (прозорі зверху), 5) МЕЖІ ПОЯСІВ (жирні),
-      6) підписи, 7) паралелі
+   6. КАРТА
    ============================================================ */
-function makeLatBandPolygon(lat1, lat2){
-  const coords = [];
-  for (let lon = -180; lon <= 180; lon += 3) coords.push([lon, lat1]);
-  for (let lon = 180; lon >= -180; lon -= 3) coords.push([lon, lat2]);
-  coords.push([-180, lat1]);
-  return { type:'Feature', properties:{},
-    geometry:{ type:'Polygon', coordinates:[coords] } };
-}
-
 function getMapSize(){
   const r = mapContainer.getBoundingClientRect();
   return { w: Math.max(320, Math.round(r.width)),
@@ -912,8 +842,7 @@ function getMapSize(){
 
 function renderMap(){
   if (typeof d3 === 'undefined' || typeof topojson === 'undefined'){
-    console.warn('D3 / topojson not loaded');
-    return;
+    console.warn('D3 / topojson not loaded'); return;
   }
   const { w, h } = getMapSize();
   svgMap.setAttribute('viewBox', `0 0 ${w} ${h}`);
@@ -925,48 +854,61 @@ function renderMap(){
 
   const projection = d3.geoEquirectangular()
     .fitExtent([[6, 6], [w - 6, h - 6]], { type:'Sphere' });
-  const path = d3.geoPath(projection);
+  const geoPath = d3.geoPath(projection);
 
-  /* 1. Океан */
-  root.append('path').datum({ type:'Sphere' })
-    .attr('class', 'ocean-sphere').attr('d', path);
-  root.append('path').datum({ type:'Sphere' })
-    .attr('class', 'ocean-glow').attr('d', path);
+  function bandPathD(latS, latN){
+    const steps = 40, pts = [];
+    for (let i = 0; i <= steps; i++){
+      const lon = -180 + 360 * i / steps;
+      const p = projection([lon, latN]);
+      if (p) pts.push(p);
+    }
+    for (let i = steps; i >= 0; i--){
+      const lon = -180 + 360 * i / steps;
+      const p = projection([lon, latS]);
+      if (p) pts.push(p);
+    }
+    if (pts.length < 3) return '';
+    return 'M' + pts.map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' L') + ' Z';
+  }
+  function latLinePathD(lat){
+    const steps = 80, pts = [];
+    for (let i = 0; i <= steps; i++){
+      const lon = -180 + 360 * i / steps;
+      const p = projection([lon, lat]);
+      if (p) pts.push(p);
+    }
+    if (pts.length < 2) return '';
+    return 'M' + pts.map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' L');
+  }
 
-  /* 2. Сітка */
+  root.append('path').datum({ type:'Sphere' }).attr('class', 'ocean-sphere').attr('d', geoPath);
+  root.append('path').datum({ type:'Sphere' }).attr('class', 'ocean-glow').attr('d', geoPath);
+
   root.append('path').datum(d3.geoGraticule().step([30, 30])())
-    .attr('class', 'graticule').attr('d', path);
+    .attr('class', 'graticule').attr('d', geoPath);
   root.append('path').datum(d3.geoGraticule().step([60, 30])())
-    .attr('class', 'graticule graticule--major').attr('d', path);
+    .attr('class', 'graticule graticule--major').attr('d', geoPath);
 
-  /* 3. КРАЇНИ — ЗНИЗУ (під поясами). Фарбуємо світліше за океан */
   const countriesG = root.append('g').attr('class', 'countries');
-
   const drawCountries = (geo) => {
     countriesG.selectAll('path.country')
-      .data(geo.features)
-      .enter()
+      .data(geo.features).enter()
       .append('path')
       .attr('class', d => {
         const key = normalizeName(d.properties?.name || '');
         return 'country' + (COUNTRY_CLIMATE_BY_KEY.has(key) ? ' country--has-data' : '');
       })
       .attr('data-country', d => d.properties?.name || '')
-      .attr('d', path);
-
-    // Крапки-маркери для країн із даними
+      .attr('d', geoPath);
     countriesG.selectAll('circle.country-dot')
-      .data(geo.features.filter(d =>
-        COUNTRY_CLIMATE_BY_KEY.has(normalizeName(d.properties?.name || ''))))
-      .enter()
-      .append('circle')
+      .data(geo.features.filter(d => COUNTRY_CLIMATE_BY_KEY.has(normalizeName(d.properties?.name || ''))))
+      .enter().append('circle')
       .attr('class', 'country-dot')
-      .attr('cx', d => path.centroid(d)[0])
-      .attr('cy', d => path.centroid(d)[1])
+      .attr('cx', d => geoPath.centroid(d)[0])
+      .attr('cy', d => geoPath.centroid(d)[1])
       .attr('r', 1.8);
-
     state.mapReady = true;
-    // Застосувати поточні шари
     applyZoneFills();
     applyLayerVisibility();
   };
@@ -986,45 +928,30 @@ function renderMap(){
         console.error('Map load error:', err);
         flashStatus('⚠️ Карту не завантажено', 'error', 6000);
         state.mapReady = true;
-        // Все одно малюємо пояси й межі
-        drawZones();
-        drawBorders();
-        drawLabels();
-        drawLatLines();
-        applyZoneFills();
-        applyLayerVisibility();
       });
   }
 
-  /* 4. ПОЯСИ — ПРОЗОРІ ЗАЛИВКИ ЗВЕРХУ */
   const zonesG = root.append('g').attr('class', 'climate-zones');
   CLIMATE_BANDS.forEach(band => {
-    const feat = makeLatBandPolygon(band.lat[0], band.lat[1]);
+    const latS = Math.min(band.lat[0], band.lat[1]);
+    const latN = Math.max(band.lat[0], band.lat[1]);
     zonesG.append('path')
-      .datum(feat)
       .attr('class', 'climate-zone')
       .attr('data-zone', band.id)
-      .attr('data-name', band.name)
       .attr('data-user-colored', 'false')
-      .attr('d', path)
+      .attr('d', bandPathD(latS, latN))
       .attr('fill', band.color)
       .attr('fill-opacity', ZONE_BASE_OPACITY);
   });
 
-  /* 5. ЖИРНІ МЕЖІ МІЖ ПОЯСАМИ */
   const bordersG = root.append('g').attr('class', 'zone-borders');
   ZONE_BOUNDARIES.forEach(b => {
-    const feat = makeLatBandPolygon(b.lat - 0.08, b.lat + 0.08);
     let cls = 'zone-boundary';
     if (b.type === 'equator') cls += ' zone-boundary--equator';
     else if (b.type === 'tropic') cls += ' zone-boundary--tropic';
-    bordersG.append('path')
-      .datum(feat)
-      .attr('class', cls)
-      .attr('d', path);
+    bordersG.append('path').attr('class', cls).attr('d', latLinePathD(b.lat));
   });
 
-  /* 6. ПІДПИСИ ПОЯСІВ */
   const labelsG = root.append('g').attr('class', 'climate-labels');
   CLIMATE_BANDS.forEach(band => {
     const latMid = (band.lat[0] + band.lat[1]) / 2;
@@ -1034,91 +961,65 @@ function renderMap(){
     const isSmall = span < 12;
     labelsG.append('text')
       .attr('class', 'climate-zone__label' + (isSmall ? ' climate-zone__label--small' : ''))
-      .attr('x', center[0])
-      .attr('y', center[1] + 3)
-      .attr('data-zone', band.id)
-      .attr('fill', band.color)
+      .attr('x', center[0]).attr('y', center[1] + 3)
+      .attr('data-zone', band.id).attr('fill', band.color)
       .text(isSmall ? band.short : band.name);
   });
 
-  /* 7. ПАРАЛЕЛІ з підписами */
   const latG = root.append('g').attr('class', 'lat-lines');
   LAT_LABELS.forEach(line => {
     const p = projection([-172, line.lat]);
     if (!p) return;
     latG.append('text')
       .attr('class', 'lat-label' + (line.equator ? ' lat-label--equator' : ''))
-      .attr('x', p[0])
-      .attr('y', p[1] - 4)
+      .attr('x', p[0]).attr('y', p[1] - 4)
       .text(line.label);
   });
 
-  // Якщо країни вже завантажені — фарбуємо зараз
-  if (state.countriesGeo){
-    applyZoneFills();
-    applyLayerVisibility();
-  }
+  applyZoneFills();
+  applyLayerVisibility();
 }
 
-/* Допоміжні функції для випадку, якщо країни не завантажились */
-function drawZones(){ /* пропускаємо — воно вже є в renderMap */ }
-function drawBorders(){}
-function drawLabels(){}
-function drawLatLines(){}
-
 function normalizeName(s){
-  return String(s || '').toLowerCase()
-    .replace(/^the\s+/, '').replace(/[^a-z]/g, '');
+  return String(s || '').toLowerCase().replace(/^the\s+/, '').replace(/[^a-z]/g, '');
 }
 const COUNTRY_CLIMATE_BY_KEY = new Map(
   Object.entries(COUNTRY_CLIMATE).map(([k, v]) => [normalizeName(k), v])
 );
 
 /* ============================================================
-   7. ШАРИ
+   7. ШАРИ / ЗАФАРБУВАННЯ
    ============================================================ */
 function applyLayerVisibility(){
   const svg = d3.select('#svgMap');
-  // Кольорові заливки поясів
-  svg.selectAll('.climate-zone')
-    .style('display', state.showZones ? null : 'none');
-  // Підписи — тільки якщо увімкнено і заливки, і підписи
-  svg.selectAll('.climate-zone__label')
-    .style('display', (state.showZones && state.showLabels) ? null : 'none');
-  // Жирні межі
-  svg.selectAll('.zone-boundary')
-    .style('display', state.showBorders ? null : 'none');
-  // Паралелі з підписами
-  svg.selectAll('.lat-label')
-    .style('display', state.showBorders ? null : 'none');
+  svg.selectAll('.climate-zone').style('display', state.showZones ? null : 'none');
+  svg.selectAll('.climate-zone__label').style('display',
+    (state.showZones && state.showLabels) ? null : 'none');
+  svg.selectAll('.zone-boundary').style('display', state.showBorders ? null : 'none');
+  svg.selectAll('.lat-label').style('display', state.showBorders ? null : 'none');
 }
 
 function applyZoneFills(){
   const svg = d3.select('#svgMap');
-
   svg.selectAll('.climate-zone').each(function(){
     const el = d3.select(this);
     const id = el.attr('data-zone');
     const userColor = state.data.zoneFills[id];
     const band = CLIMATE_BANDS.find(b => b.id === id);
-
     if (userColor){
       el.attr('fill', userColor)
         .attr('fill-opacity', ZONE_USER_OPACITY)
         .attr('stroke', userColor)
-        .attr('stroke-width', 1.2)
-        .attr('stroke-dasharray', '5 3')
+        .attr('stroke-width', 2.2)
         .attr('data-user-colored', 'true');
     } else {
       el.attr('fill', band ? band.color : '#fff')
         .attr('fill-opacity', ZONE_BASE_OPACITY)
-        .attr('stroke', 'none')
-        .attr('stroke-dasharray', null)
+        .attr('stroke', 'rgba(255,255,255,.05)')
+        .attr('stroke-width', 0.5)
         .attr('data-user-colored', 'false');
     }
   });
-
-  // Колір підпису = колір поясу (або власний колір)
   svg.selectAll('.climate-zone__label').each(function(){
     const el = d3.select(this);
     const id = el.attr('data-zone');
@@ -1141,6 +1042,10 @@ function attachMapEvents(){
           state.data.zoneFills[id] = state.color;
         }
         applyZoneFills();
+        // Анімація успішного зафарбування
+        zoneEl.classList.remove('zone-filled-anim');
+        void zoneEl.offsetWidth;
+        zoneEl.classList.add('zone-filled-anim');
         state.dirtyBoard = true;
         scheduleSave('board');
       }
@@ -1159,9 +1064,11 @@ function showClimateInfo(band){
   zoneInfoTitle.textContent = band.name + ' пояс';
   zoneInfoDesc.textContent  = band.desc;
   const span = Math.abs(band.lat[1] - band.lat[0]);
+  const userColor = state.data.zoneFills[band.id];
   zoneInfoMeta.innerHTML = `
     <span class="zone-info__chip zone-info__chip--cool">Широта: ${band.lat[0]}°…${band.lat[1]}°</span>
     <span class="zone-info__chip">Ширина: ≈${span.toFixed(1)}°</span>
+    ${userColor ? `<span class="zone-info__chip zone-info__chip--fill" style="background:${userColor}">● Ваш колір</span>` : ''}
   `;
   updateZoneHint();
 }
@@ -1196,7 +1103,7 @@ function updateZoneHint(){
 }
 
 /* ============================================================
-   8. ПОЛОТНО
+   8. ПОЛОТНО — НАДІЙНЕ МАЛЮВАННЯ ПАЛЬЦЕМ
    ============================================================ */
 function resizeCanvasBacking(){
   const rect = canvas.getBoundingClientRect();
@@ -1225,6 +1132,7 @@ function renderCanvas(url){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   };
+  img.onerror = () => console.warn('[Canvas] Не вдалося завантажити зображення');
   img.src = url;
 }
 
@@ -1236,18 +1144,11 @@ function encodeCanvas(){
   return canvas.toDataURL('image/png');
 }
 
-function getCanvasPoint(e){
-  const r = canvas.getBoundingClientRect();
-  return { x: e.clientX - r.left, y: e.clientY - r.top };
-}
-
 let lastX = 0, lastY = 0;
-function beginStroke(e){
-  if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
+
+function beginStrokeAt(x, y){
   state.isDrawing = true;
-  canvas.setPointerCapture?.(e.pointerId);
-  const p = getCanvasPoint(e);
-  lastX = p.x; lastY = p.y;
+  lastX = x; lastY = y;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = state.size;
   if (state.tool === 'eraser'){
@@ -1258,13 +1159,13 @@ function beginStroke(e){
     ctx.strokeStyle = state.color;
   }
   ctx.beginPath();
-  ctx.arc(p.x, p.y, state.size / 2, 0, Math.PI * 2);
+  ctx.arc(x, y, state.size / 2, 0, Math.PI * 2);
   ctx.fillStyle = state.tool === 'eraser' ? 'rgba(0,0,0,1)' : state.color;
   ctx.fill();
 }
-function moveStroke(e){
+
+function moveStrokeTo(x, y){
   if (!state.isDrawing) return;
-  const p = getCanvasPoint(e);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = state.size;
   if (state.tool === 'eraser'){
@@ -1276,10 +1177,11 @@ function moveStroke(e){
   }
   ctx.beginPath();
   ctx.moveTo(lastX, lastY);
-  ctx.lineTo(p.x, p.y);
+  ctx.lineTo(x, y);
   ctx.stroke();
-  lastX = p.x; lastY = p.y;
+  lastX = x; lastY = y;
 }
+
 function endStroke(){
   if (!state.isDrawing) return;
   state.isDrawing = false;
@@ -1288,6 +1190,7 @@ function endStroke(){
   state.data.canvas = url;
   state.lastLocalCanvas = url;
   state.dirtyDrawing = true;
+  console.log('[Stroke] Завершено, довжина dataURL:', url ? url.length : 0);
   scheduleSave('drawing');
   if (state.pendingCanvas !== undefined){
     const pending = state.pendingCanvas;
@@ -1297,16 +1200,62 @@ function endStroke(){
 }
 
 function attachCanvasEvents(){
-  canvas.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'touch') e.preventDefault();
-    beginStroke(e);
+  // Допоміжна: універсальна точка з будь-якої події
+  function getPoint(e){
+    const r = canvas.getBoundingClientRect();
+    let cx, cy;
+    if (e.touches && e.touches.length > 0){
+      cx = e.touches[0].clientX; cy = e.touches[0].clientY;
+    } else if (e.changedTouches && e.changedTouches.length > 0){
+      cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY;
+    } else {
+      cx = e.clientX; cy = e.clientY;
+    }
+    return { x: cx - r.left, y: cy - r.top };
+  }
+
+  // ─── TOUCH (для пальця/стилуса) ───
+  let touching = false;
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    e.preventDefault();
+    touching = true;
+    const p = getPoint(e);
+    beginStrokeAt(p.x, p.y);
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', e => {
+    if (!touching || !state.isDrawing) return;
+    e.preventDefault();
+    const p = getPoint(e);
+    moveStrokeTo(p.x, p.y);
+  }, { passive: false });
+
+  const endTouch = e => {
+    if (!touching) return;
+    touching = false;
+    endStroke();
+  };
+  canvas.addEventListener('touchend', endTouch, { passive: false });
+  canvas.addEventListener('touchcancel', endTouch, { passive: false });
+
+  // ─── MOUSE (для мишки) ───
+  // Синтетичні mouse-події після touch ігноруємо, бо touch викликав preventDefault
+  canvas.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const p = getPoint(e);
+    beginStrokeAt(p.x, p.y);
   });
-  canvas.addEventListener('pointermove', moveStroke);
-  canvas.addEventListener('pointerup', endStroke);
-  canvas.addEventListener('pointercancel', endStroke);
-  canvas.addEventListener('lostpointercapture', endStroke);
-  canvas.addEventListener('touchstart', e => e.preventDefault(), { passive:false });
-  canvas.addEventListener('touchmove',  e => e.preventDefault(), { passive:false });
+
+  canvas.addEventListener('mousemove', e => {
+    if (!state.isDrawing) return;
+    const p = getPoint(e);
+    moveStrokeTo(p.x, p.y);
+  });
+
+  canvas.addEventListener('mouseup', () => { if (state.isDrawing) endStroke(); });
+  canvas.addEventListener('mouseleave', () => { if (state.isDrawing) endStroke(); });
 }
 
 /* ============================================================
@@ -1345,10 +1294,8 @@ function createStickerEl(s){
   el.style.background = s.color;
 
   const del = document.createElement('button');
-  del.type = 'button';
-  del.className = 'sticker__del';
-  del.setAttribute('aria-label', 'Видалити стікер');
-  del.textContent = '✕';
+  del.type = 'button'; del.className = 'sticker__del';
+  del.setAttribute('aria-label', 'Видалити стікер'); del.textContent = '✕';
 
   const ta = document.createElement('textarea');
   ta.value = s.text || '';
@@ -1401,10 +1348,8 @@ function createStickerEl(s){
   });
   const stopDrag = e => {
     if (!drag || (e && e.pointerId !== drag.pointerId)) return;
-    drag = null;
-    el.style.cursor = '';
-    state.dirtyBoard = true;
-    scheduleSave('board');
+    drag = null; el.style.cursor = '';
+    state.dirtyBoard = true; scheduleSave('board');
   };
   el.addEventListener('pointerup', stopDrag);
   el.addEventListener('pointercancel', stopDrag);
@@ -1466,7 +1411,6 @@ function createIconEl(icon){
   el.style.top  = icon.y + 'px';
   el.tabIndex = 0;
   el.setAttribute('role', 'img');
-  el.setAttribute('aria-label', `Іконка «${icon.icon}». Стрілки — перемістити, Delete — видалити.`);
 
   let drag = null;
   el.addEventListener('pointerdown', e => {
@@ -1490,51 +1434,18 @@ function createIconEl(icon){
   const stopDrag = e => {
     if (!drag || (e && e.pointerId !== drag.pointerId)) return;
     drag = null;
-    state.dirtyBoard = true;
-    scheduleSave('board');
+    state.dirtyBoard = true; scheduleSave('board');
   };
   el.addEventListener('pointerup', stopDrag);
   el.addEventListener('pointercancel', stopDrag);
   el.addEventListener('lostpointercapture', stopDrag);
 
-  el.addEventListener('keydown', e => {
-    const t = findIcon(icon.id);
-    if (!t) return;
-    const step = e.shiftKey ? 12 : 3;
-    let handled = true;
-    switch (e.key){
-      case 'ArrowLeft':  t.x -= step; break;
-      case 'ArrowRight': t.x += step; break;
-      case 'ArrowUp':    t.y -= step; break;
-      case 'ArrowDown':  t.y += step; break;
-      case 'Delete':
-      case 'Backspace':
-        state.data.icons = state.data.icons.filter(i => i.id !== icon.id);
-        iconEls.get(icon.id)?.remove();
-        iconEls.delete(icon.id);
-        state.dirtyBoard = true;
-        scheduleSave('board');
-        el.blur();
-        return;
-      default: handled = false;
-    }
-    if (handled){
-      e.preventDefault();
-      el.style.left = t.x + 'px';
-      el.style.top  = t.y + 'px';
-      state.dirtyBoard = true;
-      scheduleSave('board');
-    }
-  });
-
   el.addEventListener('dblclick', () => {
     state.data.icons = state.data.icons.filter(i => i.id !== icon.id);
     el.remove();
     iconEls.delete(icon.id);
-    state.dirtyBoard = true;
-    scheduleSave('board');
+    state.dirtyBoard = true; scheduleSave('board');
   });
-
   return el;
 }
 
@@ -1561,8 +1472,7 @@ function addIcon(emoji){
   const rect = mapContainer.getBoundingClientRect();
   const n = state.data.icons.length;
   const icon = {
-    id: uid(),
-    icon: emoji,
+    id: uid(), icon: emoji,
     x: Math.max(10, Math.round(rect.width  / 2 - 20 + (n % 6) * 18)),
     y: Math.max(10, Math.round(rect.height / 2 - 20 + (n % 6) * 18))
   };
@@ -1570,7 +1480,7 @@ function addIcon(emoji){
   renderIcons(state.data.icons);
   state.dirtyBoard = true;
   scheduleSave('board');
-  flashStatus(`${emoji} додано на карту`, 'busy', 1400);
+  showToast(`${emoji} додано на карту`);
 }
 
 /* ============================================================
@@ -1583,7 +1493,7 @@ function renderBoard(){
 }
 
 /* ============================================================
-   13. FIREBASE
+   13. FIREBASE — ОПТИМІЗОВАНА СИНХРОНІЗАЦІЯ
    ============================================================ */
 const refsFor = (g, z) => {
   const base = `groups/group${g}/zones/${z}`;
@@ -1591,28 +1501,43 @@ const refsFor = (g, z) => {
 };
 
 function detachListeners(){
-  if (state.refDrawing && state.handlerDrawing)
+  if (state.refDrawing && state.handlerDrawing){
     state.refDrawing.off('value', state.handlerDrawing);
-  if (state.refBoard && state.handlerBoard)
+  }
+  if (state.refBoard && state.handlerBoard){
     state.refBoard.off('value', state.handlerBoard);
+  }
   state.refDrawing = state.refBoard = null;
   state.handlerDrawing = state.handlerBoard = null;
+  state.listenersActive = false;
 }
 
 function attachListeners(){
-  if (!db) return;
+  if (!db){
+    console.warn('[Sync] Немає db — слухачі не підключено');
+    setNetIndicator(false, 'Firebase немає');
+    return;
+  }
   const r = refsFor(state.group, state.zone);
   state.refDrawing = r.drawing;
   state.refBoard   = r.board;
 
+  // ─── drawing ───
   state.handlerDrawing = r.drawing.on('value', snap => {
     const url = snap.val() || null;
+    console.log('[Sync] drawing отримано, довжина:', url ? url.length : 0,
+                '== наш?', url === state.lastLocalCanvas);
     if (url === state.lastLocalCanvas) return;
     if (state.isDrawing){ state.pendingCanvas = url; return; }
     state.data.canvas = url;
     renderCanvas(url);
-  }, err => console.error('drawing listener:', err));
+    flashStatus('📥 Отримано малюнок', 'busy', 1400);
+  }, err => {
+    console.error('[Sync] drawing listener error:', err);
+    setNetIndicator(false, 'Помилка читання');
+  });
 
+  // ─── board (стікери, іконки, зафарбування) ───
   state.handlerBoard = r.board.on('value', snap => {
     const data = snap.val();
     if (!data) return;
@@ -1621,46 +1546,137 @@ function attachListeners(){
     state.data.icons     = Array.isArray(data.icons)    ? data.icons    : [];
     state.data.zoneFills = data.zoneFills || {};
     renderBoard();
-  }, err => console.error('board listener:', err));
+  }, err => {
+    console.error('[Sync] board listener error:', err);
+  });
+
+  state.listenersActive = true;
+  console.log('[Sync] Слухачі підключено для', `group${state.group}/${state.zone}`);
 }
 
 function scheduleSave(kind){
+  // Швидке збереження — майже без затримки
   clearTimeout(state.saveTimer[kind]);
-  state.saveTimer[kind] = setTimeout(() => flushSave(kind), kind === 'drawing' ? 900 : 450);
+  const delay = kind === 'drawing' ? 250 : 200;
+  state.saveTimer[kind] = setTimeout(() => flushSave(kind), delay);
 }
 
-function flushSave(kind){
-  if (!db) return;
-  const kinds = kind ? [kind] : ['drawing', 'board'];
-  if (kinds.includes('drawing') && state.dirtyDrawing && state.refDrawing){
-    state.lastLocalCanvas = state.data.canvas;
-    state.refDrawing.set(state.data.canvas || null)
-      .then(() => { state.dirtyDrawing = false; })
-      .catch(err => { console.error('drawing save:', err); flashStatus('⚠️ Не збережено', 'error'); });
+function flushSave(kind, opts = {}){
+  if (!db){
+    console.warn('[Save] Немає db, збереження неможливе');
+    return;
   }
-  if (kinds.includes('board') && state.dirtyBoard && state.refBoard){
-    state.refBoard.set({
+  const kinds = kind ? [kind] : ['drawing', 'board'];
+
+  // Зберігаємо "drawing"
+  if (kinds.includes('drawing') && (state.dirtyDrawing || opts.force)){
+    if (!state.refDrawing){
+      console.warn('[Save] refDrawing відсутній, повторна спроба через 300мс');
+      setTimeout(() => flushSave('drawing', opts), 300);
+      return;
+    }
+    const toSave = state.data.canvas || null;
+    state.lastLocalCanvas = toSave;
+    console.log('[Save] Відправляємо drawing, довжина:', toSave ? toSave.length : 0);
+    state.refDrawing.set(toSave)
+      .then(() => {
+        state.dirtyDrawing = false;
+        console.log('[Save] drawing OK');
+        if (!statusTimer){
+          setStatus('🟢 Синхронізовано', 'ok');
+        }
+      })
+      .catch(err => {
+        console.error('[Save] drawing FAIL:', err);
+        flashStatus('⚠️ Не вдалося зберегти', 'error', 3500);
+        // Спробувати ще раз через 1 секунду
+        setTimeout(() => { state.dirtyDrawing = true; flushSave('drawing'); }, 1000);
+      });
+  }
+
+  // Зберігаємо "board"
+  if (kinds.includes('board') && (state.dirtyBoard || opts.force)){
+    if (!state.refBoard){
+      setTimeout(() => flushSave('board', opts), 300);
+      return;
+    }
+    const payload = {
       stickers: state.data.stickers,
       icons: state.data.icons,
       zoneFills: state.data.zoneFills,
       updatedAt: Date.now(),
       by: CLIENT_ID
-    }).then(() => { state.dirtyBoard = false; })
-      .catch(err => { console.error('board save:', err); flashStatus('⚠️ Не збережено', 'error'); });
+    };
+    state.refBoard.set(payload)
+      .then(() => {
+        state.dirtyBoard = false;
+        console.log('[Save] board OK');
+      })
+      .catch(err => {
+        console.error('[Save] board FAIL:', err);
+        flashStatus('⚠️ Не вдалося зберегти', 'error', 3500);
+        setTimeout(() => { state.dirtyBoard = true; flushSave('board'); }, 1000);
+      });
   }
+}
+
+/* Ручна синхронізація — примусово вивантажує все і перечитує */
+function forceSyncNow(){
+  if (!db){
+    showToast('❌ Firebase недоступний');
+    return;
+  }
+  if (state.syncInProgress) return;
+  state.syncInProgress = true;
+  flashStatus('🔄 Синхронізація…', 'busy', 3000);
+
+  // 1. Вивантажити локальні зміни
+  state.dirtyDrawing = true;
+  state.dirtyBoard = true;
+  flushSave(null, { force: true });
+
+  // 2. Перечитати з сервера
+  setTimeout(() => {
+    const r = refsFor(state.group, state.zone);
+    r.drawing.once('value').then(snap => {
+      const url = snap.val() || null;
+      if (url && url !== state.lastLocalCanvas){
+        state.data.canvas = url;
+        state.lastLocalCanvas = url;
+        renderCanvas(url);
+      }
+    }).catch(err => console.error('[Sync] drawing once:', err));
+
+    r.board.once('value').then(snap => {
+      const data = snap.val();
+      if (data){
+        state.data.stickers  = Array.isArray(data.stickers) ? data.stickers : [];
+        state.data.icons     = Array.isArray(data.icons)    ? data.icons    : [];
+        state.data.zoneFills = data.zoneFills || {};
+        renderBoard();
+      }
+    }).catch(err => console.error('[Sync] board once:', err));
+
+    state.syncInProgress = false;
+    showToast('✅ Синхронізовано');
+    flashStatus('✅ Готово', 'ok', 1800);
+  }, 700);
 }
 
 /* ============================================================
    14. ПЕРЕМИКАННЯ
    ============================================================ */
 function openBoard(group, zone){
-  flushSave();
+  console.log('[Board] Відкриваємо', `group${group}/${zone}`);
+  flushSave();  // зберегти поточне
   detachListeners();
   state.group = group;
   state.zone  = zone;
   state.data  = emptyData();
   state.dirtyDrawing = state.dirtyBoard = false;
   state.lastLocalCanvas = null;
+  state.pendingCanvas = undefined;
+
   stickerEls.forEach(el => el.remove()); stickerEls.clear();
   iconEls.forEach(el => el.remove());    iconEls.clear();
   renderCanvas(null);
@@ -1669,7 +1685,7 @@ function openBoard(group, zone){
 }
 
 function switchGroup(group){
-  if (group === state.group && state.refDrawing) return;
+  if (group === state.group && state.listenersActive) return;
   openBoard(group, state.zone);
   $('#currentGroupNum').textContent = group;
   $$('.group-btn').forEach(b => {
@@ -1679,7 +1695,7 @@ function switchGroup(group){
 }
 
 function switchZone(zoneId){
-  if (zoneId === state.zone && state.refDrawing) return;
+  if (zoneId === state.zone && state.listenersActive) return;
   openBoard(state.group, zoneId);
   const zone = ZONES.find(z => z.id === zoneId) || ZONES[0];
   zoneInfoTitle.textContent = zone.title;
@@ -1714,9 +1730,7 @@ function startTimer(){
     state.timerSeconds++;
     updateTimerDisplay();
     const remaining = TOTAL_TIMER_SECONDS - state.timerSeconds;
-    if (remaining === 300 || remaining === 60){
-      flashStatus(`⏰ Залишилося ${remaining / 60} хв!`, 'warn', 5000);
-    }
+    if (remaining === 300 || remaining === 60) flashStatus(`⏰ Залишилося ${remaining/60} хв!`, 'warn', 5000);
     if (remaining === 0) flashStatus('⏰ Час вийшов!', 'error', 8000);
   }, 1000);
 }
@@ -1724,7 +1738,6 @@ function toggleTimer(){
   state.timerRunning = !state.timerRunning;
   const btn = $('#timerBtn');
   btn.setAttribute('aria-pressed', state.timerRunning ? 'false' : 'true');
-  btn.setAttribute('aria-label', state.timerRunning ? 'Пауза таймера' : 'Продовжити таймер');
   $('#timerBtnIcon').textContent = state.timerRunning ? '⏸' : '▶';
 }
 
@@ -1732,10 +1745,7 @@ function toggleTimer(){
    16. ЕКСПОРТ
    ============================================================ */
 async function exportPNG(){
-  if (typeof html2canvas !== 'function'){
-    flashStatus('❌ Модуль експорту не завантажено', 'error');
-    return;
-  }
+  if (typeof html2canvas !== 'function'){ flashStatus('❌ Модуль експорту не завантажено', 'error'); return; }
   flashStatus('📸 Створюємо знімок…', 'busy', 8000);
   try {
     const shot = await html2canvas(mapContainer, {
@@ -1746,9 +1756,7 @@ async function exportPNG(){
     const link = document.createElement('a');
     link.download = `climate-g${state.group}-${state.zone}-${Date.now()}.png`;
     link.href = shot.toDataURL('image/png');
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    document.body.appendChild(link); link.click(); link.remove();
     flashStatus('✅ PNG збережено', 'ok', 3000);
   } catch (err){
     console.error('export error:', err);
@@ -1774,25 +1782,47 @@ function clearCurrent(){
   applyZoneFills();
   state.dirtyDrawing = true;
   state.dirtyBoard = true;
-  flushSave();
-  flashStatus('🗑 Дошку очищено (пояси повернуто)', 'warn', 2400);
+  flushSave(null, { force: true });
+  flashStatus('🗑 Дошку очищено', 'warn', 2400);
 }
 
 /* ============================================================
    18. МЕРЕЖА
    ============================================================ */
-let isOnline = navigator.onLine;
 function bindConnection(){
-  window.addEventListener('online',  () => { isOnline = true;  flashStatus('🟢 Знову онлайн', 'ok'); });
-  window.addEventListener('offline', () => { isOnline = false; setStatus('🔴 Офлайн-режим', 'warn'); });
+  window.addEventListener('online',  () => {
+    setNetIndicator(true, 'Онлайн');
+    flashStatus('🟢 Знову онлайн', 'ok');
+    // Після повернення онлайн — примусово зберегти
+    flushSave(null, { force: true });
+  });
+  window.addEventListener('offline', () => {
+    setNetIndicator(false, 'Офлайн');
+    setStatus('🔴 Офлайн-режим', 'warn');
+  });
+
+  if (navigator.onLine) setNetIndicator(true, 'Онлайн');
+  else setNetIndicator(false, 'Офлайн');
+
   if (db){
     db.ref('.info/connected').on('value', snap => {
-      isOnline = !!snap.val();
+      const conn = !!snap.val();
+      console.log('[Firebase] .info/connected =', conn);
+      if (conn) setNetIndicator(true, 'Онлайн');
+      else setNetIndicator(false, 'З’єднання…');
       if (!statusTimer){
-        setStatus(isOnline ? '🟢 Синхронізовано' : '🟠 Офлайн — зміни збережуться',
-                  isOnline ? 'ok' : 'warn');
+        setStatus(conn ? '🟢 Синхронізовано' : '🟠 Офлайн — зміни збережуться',
+                  conn ? 'ok' : 'warn');
       }
+    }, err => {
+      console.error('[Firebase] .info/connected error:', err);
+      setNetIndicator(false, 'Помилка');
     });
+  } else {
+    setNetIndicator(false, 'Firebase немає');
+    if (fbError) {
+      flashStatus('⚠️ Firebase: ' + (fbError.message || 'помилка'), 'error', 8000);
+    }
   }
 }
 
@@ -1823,43 +1853,35 @@ function bindUI(){
   $('#clearBtn').addEventListener('click', clearCurrent);
   $('#timerBtn').addEventListener('click', toggleTimer);
   $('#exportBtn').addEventListener('click', exportPNG);
+  $('#syncBtn').addEventListener('click', forceSyncNow);
   $('#zoneInfoClose').addEventListener('click', () => { zoneInfoEl.hidden = true; });
 
-  // ─── ШАРИ ───
   const zonesToggle = $('#zonesToggle');
   zonesToggle.addEventListener('click', () => {
     state.showZones = !state.showZones;
     zonesToggle.setAttribute('aria-pressed', state.showZones ? 'true' : 'false');
     applyLayerVisibility();
-    flashStatus(state.showZones ? '🎨 Зафарбування увімкнено' : '🎨 Зафарбування вимкнено — видно чисту карту',
-                'busy', 2000);
+    showToast(state.showZones ? '🎨 Зафарбування увімкнено' : '🎨 Зафарбування вимкнено');
   });
-
   const labelsToggle = $('#labelsToggle');
   labelsToggle.addEventListener('click', () => {
     state.showLabels = !state.showLabels;
     labelsToggle.setAttribute('aria-pressed', state.showLabels ? 'true' : 'false');
     applyLayerVisibility();
-    flashStatus(state.showLabels ? '🔤 Підписи увімкнено' : '🔤 Підписи вимкнено', 'busy', 1400);
   });
-
   const bordersToggle = $('#bordersToggle');
   bordersToggle.addEventListener('click', () => {
     state.showBorders = !state.showBorders;
     bordersToggle.setAttribute('aria-pressed', state.showBorders ? 'true' : 'false');
     applyLayerVisibility();
-    flashStatus(state.showBorders ? '━━ Межі увімкнено' : '━━ Межі вимкнено', 'busy', 1400);
   });
 
-  // Легенда
   const legend = $('#legend');
   const legendToggle = $('#legendToggle');
   legendToggle.addEventListener('click', () => {
     const collapsed = legend.dataset.collapsed === 'true';
     legend.dataset.collapsed = collapsed ? 'false' : 'true';
     legendToggle.textContent = collapsed ? '−' : '+';
-    legendToggle.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
-    legendToggle.setAttribute('aria-label', collapsed ? 'Згорнути легенду' : 'Розгорнути легенду');
   });
 
   document.addEventListener('keydown', e => {
@@ -1870,14 +1892,36 @@ function bindUI(){
     else if (e.key === 'e' || e.key === 'E') setTool('eraser');
     else if (e.key === 'f' || e.key === 'F') setTool('fill');
     else if (e.key === 'n' || e.key === 'N') addSticker();
-    else if (e.key === 'z' || e.key === 'Z') zonesToggle.click();
-    else if (e.key === 'l' || e.key === 'L') labelsToggle.click();
-    else if (e.key === 'm' || e.key === 'M') bordersToggle.click();
   });
 
-  window.addEventListener('beforeunload', () => flushSave());
+  window.addEventListener('beforeunload', () => {
+    // Спроба зберегти при закритті — синхронно
+    if (db && state.refDrawing){
+      try { state.refDrawing.set(state.data.canvas || null); } catch(_){}
+    }
+    if (db && state.refBoard){
+      try {
+        state.refBoard.set({
+          stickers: state.data.stickers,
+          icons: state.data.icons,
+          zoneFills: state.data.zoneFills,
+          updatedAt: Date.now(),
+          by: CLIENT_ID
+        });
+      } catch(_){}
+    }
+  });
+
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flushSave();
+    if (document.visibilityState === 'hidden'){
+      // При згортанні — зберегти
+      state.dirtyDrawing = true;
+      state.dirtyBoard = true;
+      flushSave(null, { force: true });
+    } else {
+      // При поверненні — перечитати з сервера
+      forceSyncNow();
+    }
   });
 }
 
@@ -1901,6 +1945,7 @@ function bindResize(){
    20. ІНІЦІАЛІЗАЦІЯ
    ============================================================ */
 function init(){
+  console.log('[App] Старт. Firebase:', db ? 'OK' : 'FAIL');
   buildIconGallery();
   buildTabs();
   buildLegend();
@@ -1924,6 +1969,13 @@ function init(){
 
   startTimer();
   updateZoneHint();
+
+  // Показати помилку Firebase якщо є
+  if (!db && fbError){
+    setTimeout(() => {
+      showToast('⚠️ Синхронізація недоступна. Перевірте інтернет.', 5000);
+    }, 800);
+  }
 }
 
 if (document.readyState === 'loading'){
