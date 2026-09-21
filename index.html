@@ -81,30 +81,17 @@ input,textarea{font:inherit;color:inherit}
   color:var(--rain-soft);white-space:nowrap;}
 .header-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 
-/* ІНДИКАТОР ЗВ'ЯЗКУ */
-.net-indicator{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:5px 10px;border-radius:999px;
-  font-size:11px;font-weight:700;
-  background:rgba(46,196,182,.2);color:#8ef0e2;
-  border:1px solid rgba(46,196,182,.4);
-  white-space:nowrap;
-}
-.net-indicator[data-online="false"]{
-  background:rgba(255,84,112,.2);color:#ffb1c2;
-  border-color:rgba(255,84,112,.4);
-}
-.net-indicator[data-online="unknown"]{
-  background:rgba(255,183,3,.2);color:#ffdf8a;
-  border-color:rgba(255,183,3,.4);
-}
-.net-indicator__dot{
-  width:7px;height:7px;border-radius:50%;background:currentColor;
-  box-shadow:0 0 6px currentColor;
-}
-@media (max-width:520px){
-  .net-indicator span:not(.net-indicator__dot){display:none}
-}
+.net-indicator{display:inline-flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700;
+  background:rgba(46,196,182,.2);color:#8ef0e2;border:1px solid rgba(46,196,182,.4);
+  white-space:nowrap;}
+.net-indicator[data-online="false"]{background:rgba(255,84,112,.2);color:#ffb1c2;
+  border-color:rgba(255,84,112,.4);}
+.net-indicator[data-online="unknown"]{background:rgba(255,183,3,.2);color:#ffdf8a;
+  border-color:rgba(255,183,3,.4);}
+.net-indicator__dot{width:7px;height:7px;border-radius:50%;background:currentColor;
+  box-shadow:0 0 6px currentColor;}
+@media (max-width:520px){.net-indicator span:not(.net-indicator__dot){display:none}}
 
 .timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;
   letter-spacing:.02em;padding:7px 14px;border-radius:999px;
@@ -175,7 +162,6 @@ input,textarea{font:inherit;color:inherit}
 .icon-item:hover{background:rgba(31,110,166,.8);border-color:var(--rain);transform:translateY(-2px)}
 .icon-item:active{transform:scale(.92)}
 
-/* КАРТА */
 .map-container{position:relative;flex:1 1 auto;min-height:200px;overflow:hidden;
   background:radial-gradient(120% 90% at 50% 45%, #0a3d68 0%, #062a4a 42%, #04182e 78%, #020a14 100%);
   touch-action:manipulation;}
@@ -224,7 +210,6 @@ input,textarea{font:inherit;color:inherit}
   pointer-events:none;font-family:var(--font);letter-spacing:.02em;}
 .lat-label--equator{fill:#ffe066}
 
-/* ПОЛОТНО — ТЕПЕР НАДІЙНО ЛОВИТЬ ПАЛЕЦЬ */
 #drawCanvas{
   position:absolute;inset:0;width:100%;height:100%;z-index:2;
   touch-action:none;
@@ -282,7 +267,7 @@ input,textarea{font:inherit;color:inherit}
 .zone-info__close:hover{background:rgba(76,201,240,.16);color:#fff}
 
 .legend{position:absolute;top:10px;right:10px;z-index:6;
-  max-width:230px;padding:10px 12px;border-radius:var(--r-md);
+  max-width:250px;padding:10px 12px;border-radius:var(--r-md);
   background:rgba(6,26,43,.9);border:1px solid var(--line-strong);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   font-size:11px;line-height:1.35;color:var(--text-dim);box-shadow:var(--shadow-1);}
@@ -385,7 +370,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .toolbar{flex-wrap:wrap;overflow:visible}
   .zone-info{max-width:420px;font-size:13.5px}
   .zone-info h2{font-size:15px}
-  .legend{max-width:270px}
+  .legend{max-width:280px}
 }
 @media (max-width:400px){
   .app-title__text{display:none}
@@ -395,7 +380,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .btn{padding:0 12px}
   .group-btn{padding:0 14px;font-size:13px}
   .tab{padding:0 13px;font-size:13px}
-  .legend{max-width:180px;font-size:10.5px}
+  .legend{max-width:200px;font-size:10.5px}
   .zone-info{font-size:12px;padding:9px 38px 9px 11px}
   .layer-toggle{padding:7px 10px;font-size:11px}
 }
@@ -563,7 +548,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 
 <script>
 /* ============================================================
-   0. FIREBASE
+   0. FIREBASE — ініціалізація ВІДКЛАДЕНА до init()
    ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyAIqa_MF4sevTfg7Za8Fly3EK97dVYm_Q8",
@@ -574,20 +559,28 @@ const firebaseConfig = {
   messagingSenderId: "154142013253",
   appId: "1:154142013253:web:2b3bfde1a8ecea5565f02c"
 };
+
 let db = null;
 let fbError = null;
-try {
-  if (typeof firebase === 'undefined') throw new Error('Firebase SDK не завантажено');
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-  console.log('[Firebase] OK — db готово');
-} catch (err) {
-  fbError = err;
-  console.error('[Firebase] Помилка ініціалізації:', err);
+
+function initFirebase(){
+  try {
+    if (typeof firebase === 'undefined') throw new Error('Firebase SDK не завантажено');
+    if (!firebase.apps || !firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    db = firebase.database();
+    console.log('[Firebase] OK — db готово');
+    return true;
+  } catch (err) {
+    fbError = err;
+    console.error('[Firebase] Помилка ініціалізації:', err);
+    return false;
+  }
 }
 
 /* ============================================================
-   1. ДАНІ
+   1. ДАНІ — 11 КЛІМАТИЧНИХ ПОЯСІВ (з екваторіальним!)
    ============================================================ */
 const ZONE_BASE_OPACITY = 0.13;
 const ZONE_USER_OPACITY = 0.68;
@@ -601,8 +594,12 @@ const CLIMATE_BANDS = [
     desc:'Чотири пори року, помірні опади, ліси й степи.' },
   { id:'subtropical_n', name:'Субтропічний (пн.)', short:'СУБТРОП. ПН.',   lat:[ 23.5, 35   ], color:'#f6c945',
     desc:'Спекотне літо, м’яка зима, сухі й вологі області.' },
-  { id:'tropical',      name:'Тропічний',          short:'ТРОПІЧНИЙ',      lat:[-23.5, 23.5 ], color:'#ff8c42',
-    desc:'Спекотно цілий рік, тропічні ліси, савани, пустелі.' },
+  { id:'tropical_n',    name:'Тропічний (пн.)',    short:'ТРОП. ПН.',      lat:[ 10,   23.5 ], color:'#ffa94d',
+    desc:'Спекотно цілий рік, сухий сезон, пустелі й савани північної півкулі.' },
+  { id:'equatorial',    name:'Екваторіальний',     short:'ЕКВАТОР.',       lat:[-10,   10   ], color:'#ff4d2e',
+    desc:'Найспекотніший і найвологіший пояс: +27 °C і до 2500 мм опадів щодня. Тропічні ліси Амазонії, Конго, Індонезії.' },
+  { id:'tropical_s',    name:'Тропічний (пд.)',    short:'ТРОП. ПД.',      lat:[-23.5,-10   ], color:'#ffa94d',
+    desc:'Спекотно цілий рік, сухий сезон, савани й пустелі південної півкулі.' },
   { id:'subtropical_s', name:'Субтропічний (пд.)', short:'СУБТРОП. ПД.',   lat:[-35,  -23.5 ], color:'#f6c945',
     desc:'Спекотне літо, м’яка зима, середземноморський клімат.' },
   { id:'temperate_s',   name:'Помірний (пд.)',     short:'ПОМІРНИЙ ПД.',   lat:[-50,  -35   ], color:'#7fd07f',
@@ -614,15 +611,25 @@ const CLIMATE_BANDS = [
 ];
 
 const ZONE_BOUNDARIES = [
-  { lat: 66.5, type:'polar' }, { lat: 50, type:'mid' }, { lat: 35, type:'mid' },
-  { lat: 23.5, type:'tropic' }, { lat: 0, type:'equator' }, { lat:-23.5, type:'tropic' },
-  { lat:-35, type:'mid' }, { lat:-50, type:'mid' }, { lat:-66.5, type:'polar' }
+  { lat: 66.5, type:'polar' },
+  { lat: 50,   type:'mid'   },
+  { lat: 35,   type:'mid'   },
+  { lat: 23.5, type:'tropic'},
+  { lat: 10,   type:'tropic'},
+  { lat: 0,    type:'equator'},
+  { lat:-10,   type:'tropic'},
+  { lat:-23.5, type:'tropic'},
+  { lat:-35,   type:'mid'   },
+  { lat:-50,   type:'mid'   },
+  { lat:-66.5, type:'polar' }
 ];
 
 const LAT_LABELS = [
   { lat: 66.5, label:'Полярне коло (66.5°N)' },
   { lat: 23.5, label:'Тропік Рака (23.5°N)' },
-  { lat: 0, label:'ЕКВАТОР (0°)', equator:true },
+  { lat: 10,   label:'10°N (межа екватор. поясу)' },
+  { lat: 0,    label:'ЕКВАТОР (0°)', equator:true },
+  { lat:-10,   label:'10°S (межа екватор. поясу)' },
   { lat:-23.5, label:'Тропік Козерога (23.5°S)' },
   { lat:-66.5, label:'Полярне коло (66.5°S)' }
 ];
@@ -643,9 +650,9 @@ const COUNTRY_CLIMATE = {
   'Egypt':{uk:'Єгипет',zone:'Тропічний пустельний',t:'+25 °C',rain:'25 мм/рік',note:'Долина Нілу — оаза життя.'},
   'Morocco':{uk:'Марокко',zone:'Середземноморський / пустельний',t:'+18 °C',rain:'300 мм/рік',note:'Атлас, Сахара.'},
   'Nigeria':{uk:'Нігерія',zone:'Тропічний',t:'+27 °C',rain:'1200 мм/рік',note:'Савана й тропічні ліси.'},
-  'Kenya':{uk:'Кенія',zone:'Тропічний (височинний)',t:'+22 °C',rain:'700 мм/рік',note:'Савана, Великий рифт.'},
+  'Kenya':{uk:'Кенія',zone:'Екваторіальний (височинний)',t:'+22 °C',rain:'700 мм/рік',note:'Савана, Великий рифт.'},
   'South Africa':{uk:'ПАР',zone:'Субтропічний / помірний',t:'+17 °C',rain:'500 мм/рік',note:'Мис Доброї Надії.'},
-  'Ethiopia':{uk:'Ефіопія',zone:'Тропічний (височинний)',t:'+22 °C',rain:'800 мм/рік',note:'Нагір’я, витоки Нілу.'},
+  'Ethiopia':{uk:'Ефіопія',zone:'Екваторіальний (височинний)',t:'+22 °C',rain:'800 мм/рік',note:'Нагір’я, витоки Нілу.'},
   'Saudi Arabia':{uk:'Саудівська Аравія',zone:'Тропічний пустельний',t:'+28 °C',rain:'60 мм/рік',note:'Найбільша пустеля — Руб-ель-Халі.'},
   'Iran':{uk:'Іран',zone:'Субтропічний / пустельний',t:'+17 °C',rain:'250 мм/рік',note:'Плато, гори Ельбурс.'},
   'India':{uk:'Індія',zone:'Тропічний / субтропічний',t:'+25 °C',rain:'1100 мм/рік',note:'Мусони, Гімалаї.'},
@@ -658,12 +665,12 @@ const COUNTRY_CLIMATE = {
   'Australia':{uk:'Австралія',zone:'Від тропічного до помірного',t:'+22 °C',rain:'450 мм/рік',note:'Пустелі в центрі, тропіки на півночі.'},
   'New Zealand':{uk:'Нова Зеландія',zone:'Помірний морський',t:'+12 °C',rain:'1200 мм/рік',note:'Океанічний, м’який.'},
   'Mexico':{uk:'Мексика',zone:'Тропічний / субтропічний',t:'+22 °C',rain:'700 мм/рік',note:'Від пустель до тропіків.'},
-  'Brazil':{uk:'Бразилія',zone:'Тропічний / екваторіальний',t:'+25 °C',rain:'1700 мм/рік',note:'Амазонія — «легені планети».'},
+  'Brazil':{uk:'Бразилія',zone:'Екваторіальний / тропічний',t:'+25 °C',rain:'1700 мм/рік',note:'Амазонія — «легені планети».'},
   'Argentina':{uk:'Аргентина',zone:'Помірний / субтропічний',t:'+15 °C',rain:'600 мм/рік',note:'Пампаси, Анди.'},
   'Chile':{uk:'Чилі',zone:'Від пустельного до субантарктичного',t:'+10 °C',rain:'500 мм/рік',note:'Найдовша країна світу.'},
-  'Peru':{uk:'Перу',zone:'Тропічний (височинний)',t:'+20 °C',rain:'400 мм/рік',note:'Анди, узбережжя Тихого океану.'},
+  'Peru':{uk:'Перу',zone:'Екваторіальний (височинний)',t:'+20 °C',rain:'400 мм/рік',note:'Анди, узбережжя Тихого океану.'},
   'Colombia':{uk:'Колумбія',zone:'Екваторіальний',t:'+26 °C',rain:'2500 мм/рік',note:'Дві океанські берегові лінії.'},
-  'Venezuela':{uk:'Венесуела',zone:'Тропічний',t:'+27 °C',rain:'1500 мм/рік',note:'Водоспад Анхель.'},
+  'Venezuela':{uk:'Венесуела',zone:'Екваторіальний / тропічний',t:'+27 °C',rain:'1500 мм/рік',note:'Водоспад Анхель.'},
   'Cuba':{uk:'Куба',zone:'Тропічний',t:'+26 °C',rain:'1300 мм/рік',note:'Карибський острів.'},
   'Canada':{uk:'Канада',zone:'Субарктичний / помірний',t:'−4 °C',rain:'500 мм/рік',note:'Друга за площею країна.'},
   'United States of America':{uk:'США',zone:'Від помірного до тропічного',t:'+10 °C',rain:'700 мм/рік',note:'Різноманіття від Аляски до Флориди.'},
@@ -1042,7 +1049,6 @@ function attachMapEvents(){
           state.data.zoneFills[id] = state.color;
         }
         applyZoneFills();
-        // Анімація успішного зафарбування
         zoneEl.classList.remove('zone-filled-anim');
         void zoneEl.offsetWidth;
         zoneEl.classList.add('zone-filled-anim');
@@ -1103,7 +1109,7 @@ function updateZoneHint(){
 }
 
 /* ============================================================
-   8. ПОЛОТНО — НАДІЙНЕ МАЛЮВАННЯ ПАЛЬЦЕМ
+   8. ПОЛОТНО — ПАЛЕЦЬ + МИШКА
    ============================================================ */
 function resizeCanvasBacking(){
   const rect = canvas.getBoundingClientRect();
@@ -1132,7 +1138,6 @@ function renderCanvas(url){
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   };
-  img.onerror = () => console.warn('[Canvas] Не вдалося завантажити зображення');
   img.src = url;
 }
 
@@ -1200,7 +1205,6 @@ function endStroke(){
 }
 
 function attachCanvasEvents(){
-  // Допоміжна: універсальна точка з будь-якої події
   function getPoint(e){
     const r = canvas.getBoundingClientRect();
     let cx, cy;
@@ -1214,7 +1218,6 @@ function attachCanvasEvents(){
     return { x: cx - r.left, y: cy - r.top };
   }
 
-  // ─── TOUCH (для пальця/стилуса) ───
   let touching = false;
   canvas.addEventListener('touchstart', e => {
     if (e.touches.length !== 1) return;
@@ -1239,21 +1242,17 @@ function attachCanvasEvents(){
   canvas.addEventListener('touchend', endTouch, { passive: false });
   canvas.addEventListener('touchcancel', endTouch, { passive: false });
 
-  // ─── MOUSE (для мишки) ───
-  // Синтетичні mouse-події після touch ігноруємо, бо touch викликав preventDefault
   canvas.addEventListener('mousedown', e => {
     if (e.button !== 0) return;
     e.preventDefault();
     const p = getPoint(e);
     beginStrokeAt(p.x, p.y);
   });
-
   canvas.addEventListener('mousemove', e => {
     if (!state.isDrawing) return;
     const p = getPoint(e);
     moveStrokeTo(p.x, p.y);
   });
-
   canvas.addEventListener('mouseup', () => { if (state.isDrawing) endStroke(); });
   canvas.addEventListener('mouseleave', () => { if (state.isDrawing) endStroke(); });
 }
@@ -1493,7 +1492,7 @@ function renderBoard(){
 }
 
 /* ============================================================
-   13. FIREBASE — ОПТИМІЗОВАНА СИНХРОНІЗАЦІЯ
+   13. FIREBASE — СИНХРОНІЗАЦІЯ
    ============================================================ */
 const refsFor = (g, z) => {
   const base = `groups/group${g}/zones/${z}`;
@@ -1522,7 +1521,6 @@ function attachListeners(){
   state.refDrawing = r.drawing;
   state.refBoard   = r.board;
 
-  // ─── drawing ───
   state.handlerDrawing = r.drawing.on('value', snap => {
     const url = snap.val() || null;
     console.log('[Sync] drawing отримано, довжина:', url ? url.length : 0,
@@ -1537,7 +1535,6 @@ function attachListeners(){
     setNetIndicator(false, 'Помилка читання');
   });
 
-  // ─── board (стікери, іконки, зафарбування) ───
   state.handlerBoard = r.board.on('value', snap => {
     const data = snap.val();
     if (!data) return;
@@ -1555,7 +1552,6 @@ function attachListeners(){
 }
 
 function scheduleSave(kind){
-  // Швидке збереження — майже без затримки
   clearTimeout(state.saveTimer[kind]);
   const delay = kind === 'drawing' ? 250 : 200;
   state.saveTimer[kind] = setTimeout(() => flushSave(kind), delay);
@@ -1568,10 +1564,8 @@ function flushSave(kind, opts = {}){
   }
   const kinds = kind ? [kind] : ['drawing', 'board'];
 
-  // Зберігаємо "drawing"
   if (kinds.includes('drawing') && (state.dirtyDrawing || opts.force)){
     if (!state.refDrawing){
-      console.warn('[Save] refDrawing відсутній, повторна спроба через 300мс');
       setTimeout(() => flushSave('drawing', opts), 300);
       return;
     }
@@ -1582,19 +1576,15 @@ function flushSave(kind, opts = {}){
       .then(() => {
         state.dirtyDrawing = false;
         console.log('[Save] drawing OK');
-        if (!statusTimer){
-          setStatus('🟢 Синхронізовано', 'ok');
-        }
+        if (!statusTimer) setStatus('🟢 Синхронізовано', 'ok');
       })
       .catch(err => {
         console.error('[Save] drawing FAIL:', err);
         flashStatus('⚠️ Не вдалося зберегти', 'error', 3500);
-        // Спробувати ще раз через 1 секунду
         setTimeout(() => { state.dirtyDrawing = true; flushSave('drawing'); }, 1000);
       });
   }
 
-  // Зберігаємо "board"
   if (kinds.includes('board') && (state.dirtyBoard || opts.force)){
     if (!state.refBoard){
       setTimeout(() => flushSave('board', opts), 300);
@@ -1620,7 +1610,6 @@ function flushSave(kind, opts = {}){
   }
 }
 
-/* Ручна синхронізація — примусово вивантажує все і перечитує */
 function forceSyncNow(){
   if (!db){
     showToast('❌ Firebase недоступний');
@@ -1630,12 +1619,10 @@ function forceSyncNow(){
   state.syncInProgress = true;
   flashStatus('🔄 Синхронізація…', 'busy', 3000);
 
-  // 1. Вивантажити локальні зміни
   state.dirtyDrawing = true;
   state.dirtyBoard = true;
   flushSave(null, { force: true });
 
-  // 2. Перечитати з сервера
   setTimeout(() => {
     const r = refsFor(state.group, state.zone);
     r.drawing.once('value').then(snap => {
@@ -1668,7 +1655,7 @@ function forceSyncNow(){
    ============================================================ */
 function openBoard(group, zone){
   console.log('[Board] Відкриваємо', `group${group}/${zone}`);
-  flushSave();  // зберегти поточне
+  flushSave();
   detachListeners();
   state.group = group;
   state.zone  = zone;
@@ -1793,7 +1780,6 @@ function bindConnection(){
   window.addEventListener('online',  () => {
     setNetIndicator(true, 'Онлайн');
     flashStatus('🟢 Знову онлайн', 'ok');
-    // Після повернення онлайн — примусово зберегти
     flushSave(null, { force: true });
   });
   window.addEventListener('offline', () => {
@@ -1895,7 +1881,6 @@ function bindUI(){
   });
 
   window.addEventListener('beforeunload', () => {
-    // Спроба зберегти при закритті — синхронно
     if (db && state.refDrawing){
       try { state.refDrawing.set(state.data.canvas || null); } catch(_){}
     }
@@ -1914,12 +1899,10 @@ function bindUI(){
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden'){
-      // При згортанні — зберегти
       state.dirtyDrawing = true;
       state.dirtyBoard = true;
       flushSave(null, { force: true });
     } else {
-      // При поверненні — перечитати з сервера
       forceSyncNow();
     }
   });
@@ -1945,6 +1928,10 @@ function bindResize(){
    20. ІНІЦІАЛІЗАЦІЯ
    ============================================================ */
 function init(){
+  // ⬇️ ГОЛОВНА ПРАВКА: ініціалізуємо Firebase ТУТ, а не вгорі файлу.
+  // На цей момент усі defer-скрипти вже завантажені.
+  initFirebase();
+
   console.log('[App] Старт. Firebase:', db ? 'OK' : 'FAIL');
   buildIconGallery();
   buildTabs();
@@ -1970,7 +1957,6 @@ function init(){
   startTimer();
   updateZoneHint();
 
-  // Показати помилку Firebase якщо є
   if (!db && fbError){
     setTimeout(() => {
       showToast('⚠️ Синхронізація недоступна. Перевірте інтернет.', 5000);
