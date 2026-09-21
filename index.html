@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>🌍 Кліматична лабораторія — Інтерактивний урок</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+  header { background: linear-gradient(90deg, #16213e, #0f3460); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e94560; }
+  header h1 { font-size: 18px; color: #fff; }
+  .tabs { display: flex; gap: 5px; padding: 8px; background: #16213e; overflow-x: auto; }
+  .tab { padding: 8px 16px; background: #0f3460; border: none; color: #eee; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 13px; transition: 0.2s; }
+  .tab.active { background: #e94560; color: #fff; }
+  .tab:hover { background: #533483; }
+  .workspace { flex: 1; position: relative; overflow: hidden; background: #0a0a1a; }
+  #mapImage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
+  #drawCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+  #stickersLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+  .sticker { position: absolute; min-width: 120px; min-height: 60px; padding: 8px; border-radius: 4px; box-shadow: 2px 4px 10px rgba(0,0,0,0.5); cursor: move; pointer-events: auto; font-size: 13px; color: #222; user-select: none; }
+  .sticker textarea { width: 100%; min-height: 50px; border: none; background: transparent; resize: both; font-family: inherit; font-size: 13px; outline: none; color: #222; }
+  .sticker .del { position: absolute; top: 2px; right: 4px; cursor: pointer; font-size: 14px; opacity: 0.5; }
+  .sticker .del:hover { opacity: 1; color: red; }
+  .toolbar { background: #16213e; padding: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; border-top: 2px solid #e94560; }
+  .tool-btn { padding: 6px 12px; background: #0f3460; border: 1px solid #533483; color: #eee; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  .tool-btn.active { background: #e94560; border-color: #e94560; }
+  .tool-btn:hover { background: #533483; }
+  input[type="color"], input[type="range"] { cursor: pointer; }
+  .color-swatch { display: inline-block; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; border: 2px solid #fff; }
+  .color-swatch.active { border-color: #e94560; transform: scale(1.1); }
+  .zone-info { position: absolute; top: 10px; left: 10px; background: rgba(15,52,96,0.9); padding: 10px 15px; border-radius: 8px; max-width: 350px; font-size: 13px; border: 1px solid #e94560; z-index: 10; }
+  .zone-info h3 { color: #e94560; margin-bottom: 5px; }
+  .status { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 4px; font-size: 12px; z-index: 10; }
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+  .modal.show { display: flex; }
+  .modal-content { background: #16213e; padding: 20px; border-radius: 8px; max-width: 500px; border: 2px solid #e94560; }
+  .modal-content h2 { color: #e94560; margin-bottom: 15px; }
+  .modal-content textarea { width: 100%; min-height: 200px; background: #0a0a1a; color: #eee; border: 1px solid #533483; padding: 8px; border-radius: 4px; font-family: monospace; }
+  .modal-content button { margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌍 Кліматична лабораторія — спільна дошка</h1>
+  <div>
+    <button class="tool-btn" onclick="saveState()">💾 Зберегти</button>
+    <button class="tool-btn" onclick="exportJSON()">📤 Експорт</button>
+    <button class="tool-btn" onclick="document.getElementById('importFile').click()">📥 Імпорт</button>
+    <button class="tool-btn" onclick="clearCurrent()">🗑 Очистити зону</button>
+    <input type="file" id="importFile" style="display:none" accept=".json" onchange="importJSON(event)">
+  </div>
+</header>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="workspace" id="workspace">
+  <div class="zone-info" id="zoneInfo"></div>
+  <img id="mapImage" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Equirectangular-projection.jpg/1280px-Equirectangular-projection.jpg" alt="Карта світу" crossorigin="anonymous">
+  <canvas id="drawCanvas"></canvas>
+  <div id="stickersLayer"></div>
+  <div class="status" id="status">Готово до роботи</div>
+</div>
+
+<div class="toolbar">
+  <button class="tool-btn active" data-tool="brush" onclick="setTool('brush')">✏️ Пензель</button>
+  <button class="tool-btn" data-tool="fill" onclick="setTool('fill')">🎨 Зафарбувати</button>
+  <button class="tool-btn" data-tool="eraser" onclick="setTool('eraser')">🧽 Ластик</button>
+  <button class="tool-btn" data-tool="sticker" onclick="addSticker()">📝 Стікер</button>
+  <button class="tool-btn" data-tool="text" onclick="addText()">🔤 Текст</button>
+  <span style="margin-left:10px">Колір:</span>
+  <span class="color-swatch active" style="background:#e94560" data-color="#e94560" onclick="setColor(this)"></span>
+  <span class="color-swatch" style="background:#4ecdc4" data-color="#4ecdc4" onclick="setColor(this)"></span>
+  <span class="color-swatch" style="background:#ffe66d" data-color="#ffe66d" onclick="setColor(this)"></span>
+  <span class="color-swatch" style="background:#95e1d3" data-color="#95e1d3" onclick="setColor(this)"></span>
+  <span class="color-swatch" style="background:#ffffff" data-color="#ffffff" onclick="setColor(this)"></span>
+  <span class="color-swatch" style="background:#222222" data-color="#222222" onclick="setColor(this)"></span>
+  <input type="color" id="colorPicker" value="#e94560" onchange="setColorCustom(this.value)">
+  <span style="margin-left:10px">Розмір:</span>
+  <input type="range" id="brushSize" min="1" max="50" value="5">
+  <span id="sizeLabel">5</span>
+</div>
+
+<div class="modal" id="exportModal">
+  <div class="modal-content">
+    <h2>Експорт роботи</h2>
+    <p style="margin-bottom:10px; font-size:13px;">Скопіюйте JSON нижче або завантажте файл. Учитель може імпортувати результат.</p>
+    <textarea id="exportData" readonly></textarea>
+    <button class="tool-btn" onclick="downloadJSON()">📥 Завантажити файл</button>
+    <button class="tool-btn" onclick="closeModal('exportModal')">Закрити</button>
+  </div>
+</div>
+
+<script>
+const ZONES = [
+  { id: 'hypothesis', title: '🧠 1. Гіпотеза та план', desc: 'Запишіть припущення: чому на одному меридіані різний клімат? Складіть план дослідження кроками.' },
+  { id: 'classification', title: '🗺 2. Класифікація кліматів', desc: 'Зафарбуйте кліматичні пояси різними кольорами. Підпишіть кожен тип клімату стікером.' },
+  { id: 'comfort', title: '🏖 3. Найкомфортніші пояси', desc: 'Позначте 3 "найкомфортніші" кліматичні пояси. Обґрунтуйте вибір стікерами-профілями.' },
+  { id: 'changes', title: '🌡 4. Глобальні зміни', desc: 'Причини змін клімату (павутина). Прогноз наслідків для регіонів: зелені стікери — позитив, червоні — негатив.' },
+  { id: 'history', title: '🏛 5. Давні цивілізації', desc: 'Розмістіть цивілізації на їхніх кліматичних поясах. Намалюйте "набір для процвітання".' }
+];
+
+let currentZone = ZONES[0].id;
+let currentTool = 'brush';
+let currentColor = '#e94560';
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+
+const canvas = document.getElementById('drawCanvas');
+const ctx = canvas.getContext('2d');
+const stickersLayer = document.getElementById('stickersLayer');
+
+// Стан для кожної зони
+const state = {};
+ZONES.forEach(z => state[z.id] = { canvas: null, stickers: [] });
+
+function resizeCanvas() {
+  const ws = document.getElementById('workspace');
+  const w = ws.clientWidth, h = ws.clientHeight;
+  // Зберігаємо поточний малюнок
+  const tmp = document.createElement('canvas');
+  tmp.width = canvas.width; tmp.height = canvas.height;
+  tmp.getContext('2d').drawImage(canvas, 0, 0);
+  canvas.width = w; canvas.height = h;
+  // Відновлюємо
+  ctx.drawImage(tmp, 0, 0);
+}
+
+function initTabs() {
+  const tabsEl = document.getElementById('tabs');
+  ZONES.forEach((z, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (i === 0 ? ' active' : '');
+    btn.textContent = z.title;
+    btn.onclick = () => switchZone(z.id, btn);
+    tabsEl.appendChild(btn);
+  });
+}
+
+function switchZone(zoneId, btn) {
+  // Зберегти поточний стан
+  state[currentZone].canvas = canvas.toDataURL();
+  // Перемкнути
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  currentZone = zoneId;
+  const zone = ZONES.find(z => z.id === zoneId);
+  document.getElementById('zoneInfo').innerHTML = `<h3>${zone.title}</h3>${zone.desc}`;
+  // Відновити
+  stickersLayer.innerHTML = '';
+  if (state[zoneId].canvas) {
+    const img = new Image();
+    img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
+    img.src = state[zoneId].canvas;
+  } else {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  state[zoneId].stickers.forEach(s => createStickerElement(s));
+  setStatus(`Зона: ${zone.title}`);
+}
+
+function setTool(tool) {
+  currentTool = tool;
+  document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
+  canvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+}
+
+function setColor(el) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  currentColor = el.dataset.color;
+  document.getElementById('colorPicker').value = currentColor;
+}
+function setColorCustom(c) { currentColor = c; document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active')); }
+
+document.getElementById('brushSize').oninput = e => document.getElementById('sizeLabel').textContent = e.target.value;
+
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return { x: (t.clientX - r.left) * (canvas.width / r.width), y: (t.clientY - r.top) * (canvas.height / r.height) };
+}
+
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', endDraw);
+canvas.addEventListener('mouseout', endDraw);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e); });
+canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e); });
+canvas.addEventListener('touchend', endDraw);
+
+function startDraw(e) {
+  if (currentTool === 'sticker' || currentTool === 'text') return;
+  isDrawing = true;
+  const p = getPos(e);
+  lastX = p.x; lastY = p.y;
+  if (currentTool === 'fill') {
+    ctx.fillStyle = currentColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    isDrawing = false;
+  }
+}
+function draw(e) {
+  if (!isDrawing) return;
+  const p = getPos(e);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = parseInt(document.getElementById('brushSize').value);
+  if (currentTool === 'eraser') {
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = currentColor;
+  }
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+  lastX = p.x; lastY = p.y;
+}
+function endDraw() { isDrawing = false; ctx.globalCompositeOperation = 'source-over'; }
+
+function addSticker() {
+  const colors = ['#ffe66d', '#ff6b6b', '#4ecdc4', '#95e1d3', '#f3a683', '#c44569'];
+  const data = { x: 100 + Math.random()*200, y: 100 + Math.random()*200, text: '', color: colors[Math.floor(Math.random()*colors.length)] };
+  state[currentZone].stickers.push(data);
+  createStickerElement(data);
+}
+
+function createStickerElement(data) {
+  const el = document.createElement('div');
+  el.className = 'sticker';
+  el.style.left = data.x + 'px';
+  el.style.top = data.y + 'px';
+  el.style.background = data.color;
+  el.innerHTML = `<span class="del">✕</span><textarea placeholder="Пишіть тут...">${data.text}</textarea>`;
+  el.querySelector('textarea').oninput = e => data.text = e.target.value;
+  el.querySelector('.del').onclick = () => {
+    state[currentZone].stickers = state[currentZone].stickers.filter(s => s !== data);
+    el.remove();
+  };
+  // Drag
+  let dragging = false, offX, offY;
+  el.onmousedown = e => {
+    if (e.target.tagName === 'TEXTAREA' || e.target.className === 'del') return;
+    dragging = true;
+    offX = e.clientX - el.offsetLeft;
+    offY = e.clientY - el.offsetTop;
+    e.preventDefault();
+  };
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    data.x = e.clientX - offX;
+    data.y = e.clientY - offY;
+    el.style.left = data.x + 'px';
+    el.style.top = data.y + 'px';
+  });
+  document.addEventListener('mouseup', () => dragging = false);
+  stickersLayer.appendChild(el);
+}
+
+function addText() {
+  const txt = prompt('Введіть текст:');
+  if (!txt) return;
+  const size = parseInt(document.getElementById('brushSize').value) * 4 + 12;
+  ctx.font = `bold ${size}px Segoe UI`;
+  ctx.fillStyle = currentColor;
+  ctx.fillText(txt, canvas.width/2 - 100, canvas.height/2);
+}
+
+function clearCurrent() {
+  if (!confirm('Очистити поточну зону?')) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  state[currentZone].stickers = [];
+  stickersLayer.innerHTML = '';
+}
+
+function saveState() {
+  state[currentZone].canvas = canvas.toDataURL();
+  localStorage.setItem('climateLab', JSON.stringify(state));
+  setStatus('✅ Збережено локально');
+}
+
+function loadState() {
+  const saved = localStorage.getItem('climateLab');
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    Object.assign(state, parsed);
+  }
+}
+
+function exportJSON() {
+  state[currentZone].canvas = canvas.toDataURL();
+  const data = {
+    version: 1,
+    timestamp: new Date().toISOString(),
+    currentZone,
+    zones: state
+  };
+  document.getElementById('exportData').value = JSON.stringify(data);
+  document.getElementById('exportModal').classList.add('show');
+}
+
+function downloadJSON() {
+  const blob = new Blob([document.getElementById('exportData').value], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `climate-lab-${Date.now()}.json`;
+  a.click();
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      Object.assign(state, data.zones);
+      // Перемкнутись на першу зону
+      const firstTab = document.querySelector('.tab');
+      switchZone(ZONES[0].id, firstTab);
+      setStatus('✅ Імпортовано');
+    } catch(err) { alert('Помилка імпорту: ' + err.message); }
+  };
+  reader.readAsText(file);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function setStatus(msg) {
+  document.getElementById('status').textContent = msg;
+  setTimeout(() => document.getElementById('status').textContent = 'Готово до роботи', 2000);
+}
+
+// Ініціалізація
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('load', () => {
+  resizeCanvas();
+  initTabs();
+  loadState();
+  switchZone(ZONES[0].id, document.querySelector('.tab'));
+});
+</script>
+</body>
+</html>
