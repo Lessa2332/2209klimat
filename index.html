@@ -306,7 +306,36 @@ input,textarea{font:inherit;color:inherit}
 .status[data-state="warn"]{background:rgba(255,183,3,.94);color:#2a1c00}
 .status[data-state="error"]{background:rgba(255,84,112,.94);color:#fff}
 .status[data-state="busy"]{background:rgba(76,201,240,.94);color:#03121f}
-
+/* Штамп для експорту PNG — видно лише на знімку */
+.export-stamp{
+  position:absolute;bottom:12px;left:12px;z-index:999;
+  padding:10px 16px;border-radius:12px;
+  background:linear-gradient(135deg, rgba(6,26,43,.96), rgba(15,58,95,.96));
+  border:2px solid var(--sun);
+  color:#fff;font-family:var(--font);
+  box-shadow:0 8px 30px rgba(0,0,0,.55);
+  text-align:left;pointer-events:none;
+  max-width:60%;
+}
+.export-stamp__group{
+  font-size:16px;font-weight:800;letter-spacing:.08em;
+  color:var(--sun-soft);text-transform:uppercase;
+  margin-bottom:3px;line-height:1.2;
+}
+.export-stamp__zone{
+  font-size:12.5px;font-weight:600;color:#fff;
+  margin-bottom:3px;line-height:1.3;
+}
+.export-stamp__time{
+  font-size:11px;font-weight:500;color:var(--rain-soft);
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;
+}
+@media (max-width:520px){
+  .export-stamp{padding:8px 12px}
+  .export-stamp__group{font-size:13px}
+  .export-stamp__zone{font-size:11px}
+  .export-stamp__time{font-size:10px}
+}
 .toast{position:absolute;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);
   z-index:9;padding:10px 18px;border-radius:999px;
   font-size:13px;font-weight:700;color:#03121f;
@@ -1732,20 +1761,67 @@ function toggleTimer(){
    16. ЕКСПОРТ
    ============================================================ */
 async function exportPNG(){
-  if (typeof html2canvas !== 'function'){ flashStatus('❌ Модуль експорту не завантажено', 'error'); return; }
+  if (typeof html2canvas !== 'function'){
+    flashStatus('❌ Модуль експорту не завантажено', 'error');
+    return;
+  }
   flashStatus('📸 Створюємо знімок…', 'busy', 8000);
+
+  // ─── Готуємо дані для штампу ───
+  const groupName = `Група ${state.group}`;
+  const zoneObj = ZONES.find(z => z.id === state.zone);
+  const zoneTitle = zoneObj ? zoneObj.title : 'Кліматична лабораторія';
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('uk-UA', {
+    day:'2-digit', month:'2-digit', year:'numeric'
+  });
+  const timeStr = now.toLocaleTimeString('uk-UA', {
+    hour:'2-digit', minute:'2-digit'
+  });
+
+  // ─── Додаємо тимчасовий штамп у карту ───
+  const stamp = document.createElement('div');
+  stamp.className = 'export-stamp';
+  stamp.innerHTML = `
+    <div class="export-stamp__group">${groupName}</div>
+    <div class="export-stamp__zone">${zoneTitle}</div>
+    <div class="export-stamp__time">${dateStr} • ${timeStr}</div>
+  `;
+  mapContainer.appendChild(stamp);
+
   try {
+    // Даємо браузеру 1 кадр, щоб DOM оновився
+    await new Promise(r => requestAnimationFrame(r));
+
     const shot = await html2canvas(mapContainer, {
       backgroundColor: '#04182e',
       scale: Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)),
-      useCORS: true, logging: false, removeContainer: true
+      useCORS: true, logging: false, removeContainer: true,
+      // Штамп має бути включений в знімок
+      ignoreElements: el => el.classList && el.classList.contains('toast')
     });
+
+    stamp.remove();
+
+    // ─── Українська назва файлу з групою ───
+    const safeZone = zoneTitle
+      .replace(/[^\w\u0400-\u04FF0-9]+/g, '-')   // все, крім літер/цифр → дефіс
+      .replace(/^-+|-+$/g, '')                    // обрізати дефіси з країв
+      .replace(/-+/g, '-');                       // подвійні дефіси → один
+    const safeDate = dateStr.replace(/\./g, '-');
+    const fname = `Клімат-Група${state.group}-${safeZone}-${safeDate}.png`;
+
     const link = document.createElement('a');
-    link.download = `climate-g${state.group}-${state.zone}-${Date.now()}.png`;
+    link.download = fname;
     link.href = shot.toDataURL('image/png');
-    document.body.appendChild(link); link.click(); link.remove();
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
     flashStatus('✅ PNG збережено', 'ok', 3000);
   } catch (err){
+    stamp.remove();
     console.error('export error:', err);
     flashStatus('❌ Не вдалося зберегти', 'error', 4000);
   }
