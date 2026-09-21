@@ -2,75 +2,41 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>🎓 Кліматична лабораторія — Групи та Трансляція</title>
+<title>🌍 Кліматична лабораторія - Спільна дошка</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Підключення бібліотеки для скріншотів -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Підключення Firebase (Compat версія для простоти в одному файлі) -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #eee; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #eee; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
   
-  /* Role Selection Screen */
-  .role-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a1a2e, #0f3460); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-  .role-screen.hidden { display: none; }
-  .role-container { background: #16213e; padding: 40px; border-radius: 20px; border: 3px solid #e94560; box-shadow: 0 10px 50px rgba(233,69,96,0.3); max-width: 600px; width: 90%; }
-  .role-container h1 { color: #e94560; margin-bottom: 30px; text-align: center; font-size: 32px; }
-  .role-buttons { display: flex; gap: 20px; margin-bottom: 30px; }
-  .role-btn { flex: 1; padding: 30px; background: #0f3460; border: 3px solid #533483; border-radius: 15px; cursor: pointer; transition: all 0.3s; text-align: center; }
-  .role-btn:hover { background: #533483; border-color: #e94560; transform: translateY(-5px); }
-  .role-btn.selected { background: #e94560; border-color: #e94560; }
-  .role-btn .icon { font-size: 48px; margin-bottom: 10px; }
-  .role-btn .label { font-size: 18px; font-weight: bold; }
-  
-  .group-selection { display: none; margin-top: 20px; }
-  .group-selection.show { display: block; }
-  .group-buttons { display: flex; gap: 15px; margin-top: 15px; }
-  .group-btn { flex: 1; padding: 20px; background: #0f3460; border: 2px solid #533483; border-radius: 10px; cursor: pointer; transition: all 0.2s; text-align: center; font-size: 16px; font-weight: bold; }
-  .group-btn:hover { background: #533483; border-color: #4ecdc4; }
-  .group-btn.selected { background: #4ecdc4; border-color: #4ecdc4; color: #1a1a2e; }
-  
-  .name-input { width: 100%; padding: 15px; background: #0a0a1a; border: 2px solid #533483; color: #eee; border-radius: 10px; font-size: 16px; margin: 15px 0; }
-  .start-btn { width: 100%; padding: 15px; background: #e94560; border: none; color: #fff; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-  .start-btn:hover { background: #ff6b6b; transform: scale(1.02); }
-  .start-btn:disabled { background: #533483; cursor: not-allowed; transform: none; }
-  
-  /* Header */
   header { background: linear-gradient(90deg, #0f3460, #16213e); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #e94560; }
   header h1 { font-size: 18px; color: #fff; }
   .header-controls { display: flex; gap: 8px; align-items: center; }
   
-  /* Teacher Panel */
-  .teacher-panel { background: #16213e; padding: 10px 20px; display: none; gap: 10px; align-items: center; border-bottom: 2px solid #4ecdc4; }
-  .teacher-panel.show { display: flex; }
-  .teacher-panel .label { font-weight: bold; color: #4ecdc4; margin-right: 10px; }
-  .group-switch { display: flex; gap: 5px; }
-  .group-switch-btn { padding: 8px 20px; background: #0f3460; border: 2px solid #533483; color: #eee; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-weight: bold; }
-  .group-switch-btn:hover { background: #533483; }
-  .group-switch-btn.active { background: #4ecdc4; border-color: #4ecdc4; color: #1a1a2e; }
-  .broadcast-btn { padding: 8px 20px; background: #e94560; border: none; color: #fff; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-  .broadcast-btn:hover { background: #ff6b6b; }
-  .broadcast-btn.active { background: #ff6b6b; animation: pulse 1s infinite; }
-  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-  
-  /* Timer */
   .timer { background: #e94560; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 16px; }
   
-  /* Tabs */
+  .group-panel { background: #16213e; padding: 10px 20px; display: flex; gap: 10px; align-items: center; border-bottom: 2px solid #4ecdc4; }
+  .group-panel .label { font-weight: bold; color: #4ecdc4; margin-right: 10px; }
+  .group-btn { padding: 8px 20px; background: #0f3460; border: 2px solid #533483; color: #eee; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-weight: bold; }
+  .group-btn:hover { background: #533483; }
+  .group-btn.active { background: #4ecdc4; border-color: #4ecdc4; color: #1a1a2e; }
+  
   .tabs { display: flex; gap: 5px; padding: 10px; background: #0f3460; overflow-x: auto; }
   .tab { padding: 10px 20px; background: #16213e; border: none; color: #aaa; border-radius: 8px; cursor: pointer; white-space: nowrap; font-size: 14px; transition: all 0.3s; font-weight: 500; }
   .tab.active { background: #e94560; color: #fff; }
   .tab:hover:not(.active) { background: #533483; color: #fff; }
   
-  /* Workspace */
   .workspace { flex: 1; position: relative; overflow: hidden; background: #0a0a1a; display: flex; }
   
-  /* Icon Gallery */
   .icon-gallery { width: 80px; background: #16213e; border-right: 2px solid #533483; padding: 10px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
   .icon-item { width: 60px; height: 60px; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: move; font-size: 32px; transition: all 0.2s; border: 2px solid transparent; user-select: none; }
   .icon-item:hover { background: #533483; transform: scale(1.1); border-color: #e94560; }
   
-  /* Map Container */
   .map-container { flex: 1; position: relative; overflow: hidden; }
   #svgMap { width: 100%; height: 100%; }
   .climate-zone { fill: rgba(255,255,255,0.1); stroke: #533483; stroke-width: 0.5; cursor: pointer; transition: all 0.3s; }
@@ -78,7 +44,6 @@
   .country { fill: #1a1a2e; stroke: #2a2a4e; stroke-width: 0.3; cursor: pointer; transition: all 0.2s; }
   .country:hover { fill: #2a2a4e; stroke: #e94560; }
   
-  /* Canvas & Layers */
   #drawCanvas { position: absolute; top: 0; left: 80px; width: calc(100% - 80px); height: 100%; cursor: crosshair; }
   #stickersLayer { position: absolute; top: 0; left: 80px; width: calc(100% - 80px); height: 100%; pointer-events: none; }
   .sticker { position: absolute; min-width: 100px; min-height: 50px; padding: 8px; border-radius: 8px; box-shadow: 3px 5px 15px rgba(0,0,0,0.4); cursor: move; pointer-events: auto; font-size: 12px; color: #222; user-select: none; }
@@ -87,7 +52,6 @@
   .sticker .del:hover { opacity: 1; color: #e94560; }
   .placed-icon { position: absolute; font-size: 32px; cursor: move; pointer-events: auto; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); user-select: none; }
   
-  /* Toolbar */
   .toolbar { background: #16213e; padding: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 3px solid #e94560; }
   .tool-btn { padding: 8px 16px; background: #0f3460; border: 2px solid #533483; color: #eee; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
   .tool-btn.active { background: #e94560; border-color: #e94560; }
@@ -98,448 +62,189 @@
   input[type="color"] { width: 40px; height: 35px; border: none; border-radius: 6px; cursor: pointer; }
   input[type="range"] { width: 100px; cursor: pointer; }
   
-  /* Zone Info */
   .zone-info { position: absolute; top: 10px; left: 90px; background: rgba(15,52,96,0.95); padding: 15px 20px; border-radius: 10px; max-width: 400px; font-size: 14px; border: 2px solid #e94560; z-index: 10; }
   .zone-info h3 { color: #e94560; margin-bottom: 8px; }
   
-  /* Status */
-  .status { position: absolute; bottom: 10px; right: 10px; background: rgba(233,69,96,0.9); padding: 8px 15px; border-radius: 6px; font-size: 12px; z-index: 10; }
-  
-  /* Broadcast Overlay */
-  .broadcast-overlay { position: absolute; top: 10px; right: 10px; background: rgba(233,69,96,0.95); padding: 10px 20px; border-radius: 10px; font-weight: bold; font-size: 16px; z-index: 100; display: none; animation: pulse 2s infinite; }
-  .broadcast-overlay.show { display: block; }
-  
-  /* Modal */
-  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
-  .modal.show { display: flex; }
-  .modal-content { background: #16213e; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; border: 3px solid #e94560; }
-  .modal-content h2 { color: #e94560; margin-bottom: 20px; }
-  .firebase-config { background: #0a0a1a; padding: 15px; border-radius: 8px; margin: 15px 0; }
-  .firebase-config input { width: 100%; padding: 8px; margin: 5px 0; background: #16213e; border: 1px solid #533483; color: #eee; border-radius: 4px; }
+  .status { position: absolute; bottom: 10px; right: 10px; background: rgba(78, 205, 196, 0.9); color: #1a1a2e; padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: bold; z-index: 10; }
 </style>
 </head>
 <body>
 
-<!-- Role Selection Screen -->
-<div class="role-screen" id="roleScreen">
-  <div class="role-container">
-    <h1>🌍 Кліматична лабораторія</h1>
-    
-    <div class="role-buttons">
-      <div class="role-btn" onclick="selectRole('teacher')" id="teacherBtn">
-        <div class="icon">👨‍🏫</div>
-        <div class="label">Вчитель</div>
-      </div>
-      <div class="role-btn" onclick="selectRole('student')" id="studentBtn">
-        <div class="icon">👨‍🎓</div>
-        <div class="label">Учень</div>
-      </div>
-    </div>
-    
-    <div class="group-selection" id="groupSelection">
-      <label style="font-size: 16px; font-weight: bold;">Оберіть групу:</label>
-      <div class="group-buttons">
-        <div class="group-btn" onclick="selectGroup(1)">Група 1</div>
-        <div class="group-btn" onclick="selectGroup(2)">Група 2</div>
-        <div class="group-btn" onclick="selectGroup(3)">Група 3</div>
-      </div>
-    </div>
-    
-    <input type="text" class="name-input" id="userName" placeholder="Введіть ваше ім'я">
-    
-    <button class="start-btn" id="startBtn" onclick="startSession()" disabled>Почати роботу</button>
+<header>
+  <h1>🌍 Кліматична лабораторія (Група <span id="currentGroupNum">1</span>)</h1>
+  <div class="header-controls">
+    <div class="timer" id="timer">30:00</div>
+    <button class="tool-btn" onclick="toggleTimer()" id="timerBtn">⏸</button>
+    <button class="tool-btn" onclick="exportPNG()">📸 Зберегти PNG</button>
   </div>
+</header>
+
+<div class="group-panel">
+  <span class="label">👥 Перемкнути групу:</span>
+  <button class="group-btn active" onclick="switchGroup(1)">Група 1</button>
+  <button class="group-btn" onclick="switchGroup(2)">Група 2</button>
+  <button class="group-btn" onclick="switchGroup(3)">Група 3</button>
 </div>
 
-<!-- Main App -->
-<div id="mainApp" style="display:none; flex-direction:column; height:100vh;">
-  <header>
-    <h1 id="appTitle">🌍 Кліматична лабораторія</h1>
-    <div class="header-controls">
-      <div class="timer" id="timer">30:00</div>
-      <button class="tool-btn" onclick="toggleTimer()" id="timerBtn">⏸</button>
-      <button class="tool-btn" onclick="exportPNG()">📸 PNG</button>
-    </div>
-  </header>
-  
-  <!-- Teacher Panel -->
-  <div class="teacher-panel" id="teacherPanel">
-    <span class="label">📺 Трансляція:</span>
-    <div class="group-switch">
-      <button class="group-switch-btn active" onclick="switchBroadcast(1)">Група 1</button>
-      <button class="group-switch-btn" onclick="switchBroadcast(2)">Група 2</button>
-      <button class="group-switch-btn" onclick="switchBroadcast(3)">Група 3</button>
-    </div>
-    <button class="broadcast-btn" onclick="toggleBroadcast()" id="broadcastBtn">🔴 Транслювати</button>
-    <button class="tool-btn" onclick="toggleTeacherDraw()">✏️ Малювати поверх</button>
+<div class="tabs" id="tabs"></div>
+
+<div class="workspace" id="workspace">
+  <div class="icon-gallery" id="iconGallery">
+    <div class="icon-item" draggable="true" data-icon="☀️">☀️</div>
+    <div class="icon-item" draggable="true" data-icon="🌤">🌤</div>
+    <div class="icon-item" draggable="true" data-icon="☁️">☁️</div>
+    <div class="icon-item" draggable="true" data-icon="🌧">🌧</div>
+    <div class="icon-item" draggable="true" data-icon="❄️">❄️</div>
+    <div class="icon-item" draggable="true" data-icon="🌡">🌡</div>
+    <div class="icon-item" draggable="true" data-icon="💧">💧</div>
+    <div class="icon-item" draggable="true" data-icon="🌪">🌪</div>
+    <div class="icon-item" draggable="true" data-icon="🔥">🔥</div>
+    <div class="icon-item" draggable="true" data-icon="🌊">🌊</div>
+    <div class="icon-item" draggable="true" data-icon="🌴">🌴</div>
+    <div class="icon-item" draggable="true" data-icon="🏔">🏔</div>
   </div>
   
-  <div class="tabs" id="tabs"></div>
-  
-  <div class="workspace" id="workspace">
-    <div class="broadcast-overlay" id="broadcastOverlay">🔴 ТРАНСЛЯЦІЯ ГРУПИ <span id="broadcastGroupNum">1</span></div>
-    
-    <div class="icon-gallery" id="iconGallery">
-      <div class="icon-item" draggable="true" data-icon="☀️">☀️</div>
-      <div class="icon-item" draggable="true" data-icon="🌤">🌤</div>
-      <div class="icon-item" draggable="true" data-icon="☁️">☁️</div>
-      <div class="icon-item" draggable="true" data-icon="🌧">🌧</div>
-      <div class="icon-item" draggable="true" data-icon="❄️">❄️</div>
-      <div class="icon-item" draggable="true" data-icon="🌡">🌡</div>
-      <div class="icon-item" draggable="true" data-icon="💧">💧</div>
-      <div class="icon-item" draggable="true" data-icon="🌪">🌪</div>
-      <div class="icon-item" draggable="true" data-icon="🔥">🔥</div>
-      <div class="icon-item" draggable="true" data-icon="🌊">🌊</div>
-      <div class="icon-item" draggable="true" data-icon="🌴">🌴</div>
-      <div class="icon-item" draggable="true" data-icon="🏔">🏔</div>
-    </div>
-    
-    <div class="map-container">
-      <div class="zone-info" id="zoneInfo"></div>
-      <svg id="svgMap" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid)"/>
-        
-        <g id="climateZones">
-          <path class="climate-zone" data-zone="arctic" data-name="Арктичний" d="M 100,50 Q 300,30 500,50 Q 700,30 900,50 L 900,100 Q 700,90 500,100 Q 300,90 100,100 Z"/>
-          <path class="climate-zone" data-zone="subarctic" data-name="Субарктичний" d="M 80,100 Q 300,90 500,100 Q 700,90 920,100 L 920,150 Q 700,140 500,150 Q 300,140 80,150 Z"/>
-          <path class="climate-zone" data-zone="temperate_n" data-name="Помірний (пн.)" d="M 60,150 Q 300,140 500,150 Q 700,140 940,150 L 940,220 Q 700,210 500,220 Q 300,210 60,220 Z"/>
-          <path class="climate-zone" data-zone="subtropical_n" data-name="Субтропічний (пн.)" d="M 50,220 Q 280,215 500,220 Q 720,215 950,220 L 950,270 Q 720,265 500,270 Q 280,265 50,270 Z"/>
-          <path class="climate-zone" data-zone="tropical" data-name="Тропічний" d="M 40,270 Q 260,268 500,270 Q 740,268 960,270 L 960,330 Q 740,332 500,330 Q 260,332 40,330 Z"/>
-          <path class="climate-zone" data-zone="subtropical_s" data-name="Субтропічний (пд.)" d="M 50,330 Q 280,332 500,330 Q 720,332 950,330 L 950,380 Q 720,382 500,380 Q 280,382 50,380 Z"/>
-          <path class="climate-zone" data-zone="temperate_s" data-name="Помірний (пд.)" d="M 80,380 Q 300,385 500,380 Q 700,385 920,380 L 920,430 Q 700,435 500,430 Q 300,435 80,430 Z"/>
-          <path class="climate-zone" data-zone="antarctic" data-name="Антарктичний" d="M 150,460 Q 350,468 500,460 Q 650,468 850,460 L 850,490 Q 650,495 500,490 Q 350,495 150,490 Z"/>
-        </g>
-        
-        <g id="countries">
-          <path class="country" data-country="Канада" d="M 120,120 L 200,110 L 220,150 L 180,180 L 130,160 Z"/>
-          <path class="country" data-country="США" d="M 130,180 L 220,170 L 240,230 L 160,240 Z"/>
-          <path class="country" data-country="Бразилія" d="M 280,300 L 380,290 L 400,380 L 320,400 Z"/>
-          <path class="country" data-country="Франція" d="M 450,170 L 490,165 L 500,200 L 460,205 Z"/>
-          <path class="country" data-country="Єгипет" d="M 540,220 L 590,215 L 595,255 L 545,260 Z"/>
-          <path class="country" data-country="Китай" d="M 680,180 L 800,175 L 820,250 L 700,255 Z"/>
-          <path class="country" data-country="Австралія" d="M 750,360 L 900,355 L 910,430 L 760,435 Z"/>
-        </g>
-      </svg>
+  <div class="map-container">
+    <div class="zone-info" id="zoneInfo"></div>
+    <svg id="svgMap" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+          <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)"/>
       
-      <canvas id="drawCanvas"></canvas>
-      <div id="stickersLayer"></div>
-    </div>
+      <g id="climateZones">
+        <path class="climate-zone" data-zone="arctic" data-name="Арктичний" d="M 100,50 Q 300,30 500,50 Q 700,30 900,50 L 900,100 Q 700,90 500,100 Q 300,90 100,100 Z"/>
+        <path class="climate-zone" data-zone="subarctic" data-name="Субарктичний" d="M 80,100 Q 300,90 500,100 Q 700,90 920,100 L 920,150 Q 700,140 500,150 Q 300,140 80,150 Z"/>
+        <path class="climate-zone" data-zone="temperate_n" data-name="Помірний (пн.)" d="M 60,150 Q 300,140 500,150 Q 700,140 940,150 L 940,220 Q 700,210 500,220 Q 300,210 60,220 Z"/>
+        <path class="climate-zone" data-zone="subtropical_n" data-name="Субтропічний (пн.)" d="M 50,220 Q 280,215 500,220 Q 720,215 950,220 L 950,270 Q 720,265 500,270 Q 280,265 50,270 Z"/>
+        <path class="climate-zone" data-zone="tropical" data-name="Тропічний" d="M 40,270 Q 260,268 500,270 Q 740,268 960,270 L 960,330 Q 740,332 500,330 Q 260,332 40,330 Z"/>
+        <path class="climate-zone" data-zone="subtropical_s" data-name="Субтропічний (пд.)" d="M 50,330 Q 280,332 500,330 Q 720,332 950,330 L 950,380 Q 720,382 500,380 Q 280,382 50,380 Z"/>
+        <path class="climate-zone" data-zone="temperate_s" data-name="Помірний (пд.)" d="M 80,380 Q 300,385 500,380 Q 700,385 920,380 L 920,430 Q 700,435 500,430 Q 300,435 80,430 Z"/>
+        <path class="climate-zone" data-zone="antarctic" data-name="Антарктичний" d="M 150,460 Q 350,468 500,460 Q 650,468 850,460 L 850,490 Q 650,495 500,490 Q 350,495 150,490 Z"/>
+      </g>
+      
+      <g id="countries">
+        <path class="country" data-country="Канада" d="M 120,120 L 200,110 L 220,150 L 180,180 L 130,160 Z"/>
+        <path class="country" data-country="США" d="M 130,180 L 220,170 L 240,230 L 160,240 Z"/>
+        <path class="country" data-country="Бразилія" d="M 280,300 L 380,290 L 400,380 L 320,400 Z"/>
+        <path class="country" data-country="Франція" d="M 450,170 L 490,165 L 500,200 L 460,205 Z"/>
+        <path class="country" data-country="Єгипет" d="M 540,220 L 590,215 L 595,255 L 545,260 Z"/>
+        <path class="country" data-country="Китай" d="M 680,180 L 800,175 L 820,250 L 700,255 Z"/>
+        <path class="country" data-country="Австралія" d="M 750,360 L 900,355 L 910,430 L 760,435 Z"/>
+      </g>
+    </svg>
     
-    <div class="status" id="status">Готово</div>
+    <canvas id="drawCanvas"></canvas>
+    <div id="stickersLayer"></div>
   </div>
   
-  <div class="toolbar">
-    <div class="tool-group">
-      <button class="tool-btn active" data-tool="brush" onclick="setTool('brush')">✏️ Пензель</button>
-      <button class="tool-btn" data-tool="fill" onclick="setTool('fill')">🎨 Зафарбувати</button>
-      <button class="tool-btn" data-tool="eraser" onclick="setTool('eraser')">🧽 Ластик</button>
-    </div>
-    
-    <div class="tool-group">
-      <span style="font-size:12px">Колір:</span>
-      <span class="color-swatch active" style="background:#e94560" data-color="#e94560" onclick="setColor(this)"></span>
-      <span class="color-swatch" style="background:#4ecdc4" data-color="#4ecdc4" onclick="setColor(this)"></span>
-      <span class="color-swatch" style="background:#ffe66d" data-color="#ffe66d" onclick="setColor(this)"></span>
-      <span class="color-swatch" style="background:#95e1d3" data-color="#95e1d3" onclick="setColor(this)"></span>
-      <input type="color" id="colorPicker" value="#e94560" onchange="setColorCustom(this.value)">
-    </div>
-    
-    <div class="tool-group">
-      <span style="font-size:12px">Розмір:</span>
-      <input type="range" id="brushSize" min="1" max="50" value="5">
-      <span id="sizeLabel" style="font-size:12px">5</span>
-    </div>
-    
-    <div class="tool-group">
-      <button class="tool-btn" onclick="addSticker()">📝 Стікер</button>
-      <button class="tool-btn" onclick="clearCurrent()">🗑 Очистити</button>
-    </div>
-  </div>
+  <div class="status" id="status">🟢 Підключено до Firebase</div>
 </div>
 
-<!-- Firebase Modal -->
-<div class="modal" id="firebaseModal">
-  <div class="modal-content">
-    <h2>🔗 Налаштування Firebase</h2>
-    <div class="firebase-config">
-      <input type="text" id="fbApiKey" placeholder="apiKey">
-      <input type="text" id="fbAuthDomain" placeholder="authDomain">
-      <input type="text" id="fbDatabaseURL" placeholder="databaseURL">
-      <input type="text" id="fbProjectId" placeholder="projectId">
-      <button class="tool-btn" onclick="saveFirebaseConfig()" style="width:100%; margin-top:10px">💾 Зберегти</button>
-    </div>
-    <button class="tool-btn" onclick="closeModal('firebaseModal')">Закрити</button>
+<div class="toolbar">
+  <div class="tool-group">
+    <button class="tool-btn active" data-tool="brush" onclick="setTool('brush')">✏️ Пензель</button>
+    <button class="tool-btn" data-tool="fill" onclick="setTool('fill')">🎨 Зафарбувати</button>
+    <button class="tool-btn" data-tool="eraser" onclick="setTool('eraser')">🧽 Ластик</button>
+  </div>
+  
+  <div class="tool-group">
+    <span style="font-size:12px">Колір:</span>
+    <span class="color-swatch active" style="background:#e94560" data-color="#e94560" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#4ecdc4" data-color="#4ecdc4" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#ffe66d" data-color="#ffe66d" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#95e1d3" data-color="#95e1d3" onclick="setColor(this)"></span>
+    <input type="color" id="colorPicker" value="#e94560" onchange="setColorCustom(this.value)">
+  </div>
+  
+  <div class="tool-group">
+    <span style="font-size:12px">Розмір:</span>
+    <input type="range" id="brushSize" min="1" max="50" value="5">
+    <span id="sizeLabel" style="font-size:12px">5</span>
+  </div>
+  
+  <div class="tool-group">
+    <button class="tool-btn" onclick="addSticker()">📝 Стікер</button>
+    <button class="tool-btn" onclick="clearCurrent()">🗑 Очистити</button>
   </div>
 </div>
 
 <script>
-// ==================== CONFIGURATION ====================
+// ================= ВАША КОНФІГУРАЦІЯ FIREBASE =================
+const firebaseConfig = {
+  apiKey: "AIzaSyAIqa_MF4sevTfg7Za8Fly3EK97dVYm_Q8",
+  authDomain: "realtime-6af79.firebaseapp.com",
+  databaseURL: "https://realtime-6af79-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "realtime-6af79",
+  storageBucket: "realtime-6af79.firebasestorage.app",
+  messagingSenderId: "154142013253",
+  appId: "1:154142013253:web:2b3bfde1a8ecea5565f02c"
+};
+
+// Ініціалізація Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ================= ЛОГІКА ДОДАТКУ =================
 const ZONES = [
   { id: 'hypothesis', title: '🧠 1. Гіпотеза', desc: 'Запишіть припущення та план дослідження.' },
-  { id: 'classification', title: '🗺 2. Класифікація', desc: 'Зафарбуйте кліматичні пояси.' },
-  { id: 'comfort', title: '🏖 3. Комфорт', desc: 'Позначте найкомфортніші пояси.' },
-  { id: 'changes', title: '🌡 4. Зміни', desc: 'Причини та наслідки змін клімату.' },
-  { id: 'history', title: '🏛 5. Цивілізації', desc: 'Давні цивілізації та клімат.' }
+  { id: 'classification', title: '🗺 2. Класифікація', desc: 'Зафарбуйте кліматичні пояси різними кольорами.' },
+  { id: 'comfort', title: '🏖 3. Комфорт', desc: 'Позначте 3 найкомфортніші пояси для життя.' },
+  { id: 'changes', title: '🌡 4. Зміни', desc: 'Причини та наслідки глобальних змін клімату.' },
+  { id: 'history', title: '🏛 5. Цивілізації', desc: 'Давні цивілізації та їхній кліматичний пояс.' }
 ];
 
-// ==================== STATE ====================
-let userRole = null; // 'teacher' or 'student'
-let userGroup = null; // 1, 2, or 3
-let userName = '';
+let currentGroup = 1;
 let currentZone = ZONES[0].id;
 let currentTool = 'brush';
 let currentColor = '#e94560';
 let isDrawing = false;
 let lastX = 0, lastY = 0;
 
-// Timer
 let timerInterval = null;
 let timerSeconds = 0;
 let timerRunning = true;
 let totalTimerSeconds = 30 * 60;
 
-// Firebase
-let firebaseConfig = null;
-let db = null;
-let firebaseConnected = false;
-
-// Broadcast mode (teacher only)
-let broadcastMode = false;
-let broadcastGroup = 1;
-let teacherDrawMode = false;
-
-// State storage - separate for each group
-const groupStates = {
-  1: {},
-  2: {},
-  3: {}
-};
-
-// Initialize states for all groups
-[1, 2, 3].forEach(group => {
-  ZONES.forEach(z => {
-    groupStates[group][z.id] = { canvas: null, stickers: [], icons: [] };
-  });
-});
-
-// ==================== DOM ELEMENTS ====================
 const canvas = document.getElementById('drawCanvas');
 const ctx = canvas.getContext('2d');
 const stickersLayer = document.getElementById('stickersLayer');
 
-// ==================== ROLE SELECTION ====================
-function selectRole(role) {
-  userRole = role;
-  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById(role === 'teacher' ? 'teacherBtn' : 'studentBtn').classList.add('selected');
-  
-  if (role === 'student') {
-    document.getElementById('groupSelection').classList.add('show');
-  } else {
-    document.getElementById('groupSelection').classList.remove('show');
-    userGroup = null;
-  }
-  
-  checkStartButton();
-}
+// Локальний кеш стану
+let localState = { canvas: null, stickers: [], icons: [] };
 
-function selectGroup(group) {
-  userGroup = group;
-  document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('selected'));
-  event.target.classList.add('selected');
-  checkStartButton();
-}
-
-function checkStartButton() {
-  const name = document.getElementById('userName').value.trim();
-  const btn = document.getElementById('startBtn');
-  
-  if (userRole === 'teacher' && name) {
-    btn.disabled = false;
-  } else if (userRole === 'student' && userGroup && name) {
-    btn.disabled = false;
-  } else {
-    btn.disabled = true;
-  }
-}
-
-document.getElementById('userName').addEventListener('input', checkStartButton);
-
-function startSession() {
-  userName = document.getElementById('userName').value.trim();
-  
-  // Load Firebase config
-  const saved = localStorage.getItem('firebaseConfig');
-  if (saved) {
-    firebaseConfig = JSON.parse(saved);
-    connectToFirebase();
-  } else {
-    document.getElementById('firebaseModal').classList.add('show');
-  }
-  
-  document.getElementById('roleScreen').classList.add('hidden');
-  document.getElementById('mainApp').style.display = 'flex';
-  
-  // Setup UI based on role
-  if (userRole === 'teacher') {
-    document.getElementById('teacherPanel').classList.add('show');
-    document.getElementById('appTitle').textContent = '👨‍🏫 Панель вчителя';
-    document.getElementById('iconGallery').style.display = 'none';
-    switchBroadcast(1);
-  } else {
-    document.getElementById('appTitle').textContent = `👨‍🎓 Група ${userGroup} — ${userName}`;
-  }
-  
-  initApp();
-}
-
-// ==================== FIREBASE ====================
-function saveFirebaseConfig() {
-  const config = {
-    apiKey: document.getElementById('fbApiKey').value,
-    authDomain: document.getElementById('fbAuthDomain').value,
-    databaseURL: document.getElementById('fbDatabaseURL').value,
-    projectId: document.getElementById('fbProjectId').value
-  };
-  
-  if (config.apiKey && config.databaseURL) {
-    localStorage.setItem('firebaseConfig', JSON.stringify(config));
-    firebaseConfig = config;
-    closeModal('firebaseModal');
-    connectToFirebase();
-  }
-}
-
-function connectToFirebase() {
-  if (!firebaseConfig) return;
-  
-  try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-    firebaseConnected = true;
-    
-    // Listen to all groups if teacher
-    if (userRole === 'teacher') {
-      [1, 2, 3].forEach(group => {
-        listenToGroup(group);
-      });
-    } else {
-      // Listen only to own group
-      listenToGroup(userGroup);
-    }
-    
-    setStatus('🔗 Підключено до Firebase');
-    
-    // Auto-save every 10 seconds
-    setInterval(() => {
-      if (userRole === 'student') {
-        saveToFirebase();
-      }
-    }, 10000);
-    
-  } catch (err) {
-    console.error(err);
-    alert('Помилка підключення: ' + err.message);
-  }
-}
-
-function listenToGroup(group) {
-  ZONES.forEach(zone => {
-    db.ref(`groups/group${group}/zones/${zone.id}`).on('value', snapshot => {
-      const data = snapshot.val();
-      if (data) {
-        groupStates[group][zone.id] = {
-          canvas: data.canvas || null,
-          stickers: data.stickers || [],
-          icons: data.icons || []
-        };
-        
-        // If teacher in broadcast mode viewing this group, update display
-        if (userRole === 'teacher' && broadcastMode && broadcastGroup === group && currentZone === zone.id) {
-          loadGroupState(group, zone.id);
-        }
-        
-        // If student in this group and this zone, update display
-        if (userRole === 'student' && userGroup === group && currentZone === zone.id) {
-          loadGroupState(group, zone.id);
-        }
-      }
-    });
-  });
-}
-
-function saveToFirebase() {
-  if (!db || !firebaseConnected || userRole !== 'student') return;
-  
-  groupStates[userGroup][currentZone].canvas = canvas.toDataURL();
-  
-  db.ref(`groups/group${userGroup}/zones/${currentZone}`).set({
-    canvas: groupStates[userGroup][currentZone].canvas,
-    stickers: groupStates[userGroup][currentZone].stickers,
-    icons: groupStates[userGroup][currentZone].icons,
-    updatedAt: Date.now(),
-    updatedBy: userName
-  });
-}
-
-function loadGroupState(group, zoneId) {
-  const state = groupStates[group][zoneId];
-  
-  // Load canvas
-  if (state.canvas) {
-    const img = new Image();
-    img.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-    };
-    img.src = state.canvas;
-  } else {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-  
-  // Load stickers
-  stickersLayer.innerHTML = '';
-  state.stickers.forEach(s => createStickerElement(s, true));
-  state.icons.forEach(i => createPlacedIcon(i, true));
-}
-
-// ==================== APP INITIALIZATION ====================
-function initApp() {
+function init() {
   resizeCanvas();
   initTabs();
   initDragAndDrop();
   initMapInteractions();
-  switchZone(ZONES[0].id, document.querySelector('.tab'));
+  switchGroup(1);
   startTimer();
+  
+  // Автозбереження кожні 5 секунд
+  setInterval(() => {
+    localState.canvas = canvas.toDataURL();
+    saveToFirebase();
+  }, 5000);
   
   window.addEventListener('resize', resizeCanvas);
 }
 
 function resizeCanvas() {
   const container = document.querySelector('.map-container');
-  const w = container.clientWidth - (userRole === 'teacher' ? 0 : 80);
+  const w = container.clientWidth - 80;
   const h = container.clientHeight;
   
   const tmp = document.createElement('canvas');
-  tmp.width = canvas.width;
-  tmp.height = canvas.height;
+  tmp.width = canvas.width || w;
+  tmp.height = canvas.height || h;
   tmp.getContext('2d').drawImage(canvas, 0, 0);
   
   canvas.width = w;
   canvas.height = h;
-  
-  if (userRole === 'teacher') {
-    canvas.style.left = '0';
-    stickersLayer.style.left = '0';
-    stickersLayer.style.width = '100%';
-  }
-  
-  ctx.drawImage(tmp, 0, 0);
+  if (tmp.width > 0) ctx.drawImage(tmp, 0, 0);
 }
 
 function initTabs() {
@@ -553,14 +258,26 @@ function initTabs() {
   });
 }
 
-// ==================== ZONE MANAGEMENT ====================
-function switchZone(zoneId, btn) {
-  // Save current state
-  if (userRole === 'student') {
-    groupStates[userGroup][currentZone].canvas = canvas.toDataURL();
-  }
+function switchGroup(group) {
+  // Зберегти поточний стан перед перемиканням
+  localState.canvas = canvas.toDataURL();
+  saveToFirebase();
   
-  // Update UI
+  currentGroup = group;
+  document.getElementById('currentGroupNum').textContent = group;
+  
+  document.querySelectorAll('.group-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === group - 1);
+  });
+  
+  loadFromFirebase();
+  setStatus(`🟢 Група ${group} завантажена`);
+}
+
+function switchZone(zoneId, btn) {
+  localState.canvas = canvas.toDataURL();
+  saveToFirebase();
+  
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
   
@@ -568,56 +285,66 @@ function switchZone(zoneId, btn) {
   const zone = ZONES.find(z => z.id === zoneId);
   document.getElementById('zoneInfo').innerHTML = `<h3>${zone.title}</h3>${zone.desc}`;
   
-  // Load state
-  if (userRole === 'teacher' && broadcastMode) {
-    loadGroupState(broadcastGroup, zoneId);
-  } else if (userRole === 'student') {
-    loadGroupState(userGroup, zoneId);
-  }
-  
-  setStatus(`Зона: ${zone.title}`);
+  loadFromFirebase();
 }
 
-// ==================== BROADCAST MODE (TEACHER) ====================
-function switchBroadcast(group) {
-  broadcastGroup = group;
-  document.querySelectorAll('.group-switch-btn').forEach((b, i) => {
-    b.classList.toggle('active', i === group - 1);
+function loadFromFirebase() {
+  const ref = db.ref(`groups/group${currentGroup}/zones/${currentZone}`);
+  ref.once('value').then(snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      localState = {
+        canvas: data.canvas || null,
+        stickers: data.stickers || [],
+        icons: data.icons || []
+      };
+    } else {
+      localState = { canvas: null, stickers: [], icons: [] };
+    }
+    renderState();
   });
   
-  if (broadcastMode) {
-    loadGroupState(group, currentZone);
-    document.getElementById('broadcastGroupNum').textContent = group;
-  }
+  // Слухати зміни в реальному часі
+  ref.on('value', snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      // Оновлюємо тільки якщо зміни прийшли не від нас (спрощена логіка)
+      localState = {
+        canvas: data.canvas || localState.canvas,
+        stickers: data.stickers || [],
+        icons: data.icons || []
+      };
+      renderState();
+    }
+  });
 }
 
-function toggleBroadcast() {
-  broadcastMode = !broadcastMode;
-  const btn = document.getElementById('broadcastBtn');
-  const overlay = document.getElementById('broadcastOverlay');
-  
-  if (broadcastMode) {
-    btn.classList.add('active');
-    btn.textContent = '⏹ Зупинити';
-    overlay.classList.add('show');
-    document.getElementById('broadcastGroupNum').textContent = broadcastGroup;
-    loadGroupState(broadcastGroup, currentZone);
+function renderState() {
+  if (localState.canvas) {
+    const img = new Image();
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = localState.canvas;
   } else {
-    btn.classList.remove('active');
-    btn.textContent = '🔴 Транслювати';
-    overlay.classList.remove('show');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    stickersLayer.innerHTML = '';
   }
+  
+  stickersLayer.innerHTML = '';
+  localState.stickers.forEach(s => createStickerElement(s, false));
+  localState.icons.forEach(i => createPlacedIcon(i, false));
 }
 
-function toggleTeacherDraw() {
-  teacherDrawMode = !teacherDrawMode;
-  canvas.style.pointerEvents = teacherDrawMode ? 'auto' : 'none';
-  setStatus(teacherDrawMode ? '✏️ Режим малювання ввімкнено' : '👁 Режим перегляду');
+function saveToFirebase() {
+  db.ref(`groups/group${currentGroup}/zones/${currentZone}`).set({
+    canvas: localState.canvas,
+    stickers: localState.stickers,
+    icons: localState.icons,
+    updatedAt: Date.now()
+  }).catch(err => console.error("Firebase save error:", err));
 }
 
-// ==================== DRAWING TOOLS ====================
 function setTool(tool) {
   currentTool = tool;
   document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
@@ -658,8 +385,6 @@ canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e); });
 canvas.addEventListener('touchend', endDraw);
 
 function startDraw(e) {
-  if (userRole === 'teacher' && !teacherDrawMode) return;
-  
   isDrawing = true;
   const p = getPos(e);
   lastX = p.x;
@@ -669,6 +394,8 @@ function startDraw(e) {
     ctx.fillStyle = currentColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     isDrawing = false;
+    localState.canvas = canvas.toDataURL();
+    saveToFirebase();
   }
 }
 
@@ -698,11 +425,14 @@ function draw(e) {
 }
 
 function endDraw() {
-  isDrawing = false;
-  ctx.globalCompositeOperation = 'source-over';
+  if (isDrawing) {
+    isDrawing = false;
+    ctx.globalCompositeOperation = 'source-over';
+    localState.canvas = canvas.toDataURL();
+    saveToFirebase();
+  }
 }
 
-// ==================== STICKERS & ICONS ====================
 function addSticker() {
   const colors = ['#ffe66d', '#ff6b6b', '#4ecdc4', '#95e1d3', '#f3a683'];
   const data = {
@@ -711,43 +441,33 @@ function addSticker() {
     text: '',
     color: colors[Math.floor(Math.random() * colors.length)]
   };
-  
-  if (userRole === 'student') {
-    groupStates[userGroup][currentZone].stickers.push(data);
-  }
-  
-  createStickerElement(data);
+  localState.stickers.push(data);
+  createStickerElement(data, true);
+  saveToFirebase();
 }
 
-function createStickerElement(data, readonly = false) {
+function createStickerElement(data, save) {
   const el = document.createElement('div');
   el.className = 'sticker';
   el.style.left = data.x + 'px';
   el.style.top = data.y + 'px';
   el.style.background = data.color;
-  el.innerHTML = `<span class="del">✕</span><textarea placeholder="Пишіть..."${readonly ? ' readonly' : ''}>${data.text}</textarea>`;
+  el.innerHTML = `<span class="del">✕</span><textarea placeholder="Пишіть...">${data.text}</textarea>`;
   
-  if (!readonly) {
-    el.querySelector('textarea').oninput = e => {
-      data.text = e.target.value;
-    };
-    
-    el.querySelector('.del').onclick = () => {
-      if (userRole === 'student') {
-        groupStates[userGroup][currentZone].stickers = 
-          groupStates[userGroup][currentZone].stickers.filter(s => s !== data);
-      }
-      el.remove();
-    };
-  } else {
-    el.querySelector('.del').style.display = 'none';
-  }
+  el.querySelector('textarea').oninput = e => { 
+    data.text = e.target.value; 
+    if(save) saveToFirebase();
+  };
   
-  // Drag
+  el.querySelector('.del').onclick = () => {
+    localState.stickers = localState.stickers.filter(s => s !== data);
+    el.remove();
+    if(save) saveToFirebase();
+  };
+  
   let dragging = false, offX, offY;
   el.onmousedown = e => {
     if (e.target.tagName === 'TEXTAREA' || e.target.className === 'del') return;
-    if (readonly && userRole === 'student') return;
     dragging = true;
     offX = e.clientX - el.offsetLeft;
     offY = e.clientY - el.offsetTop;
@@ -762,27 +482,25 @@ function createStickerElement(data, readonly = false) {
     el.style.top = data.y + 'px';
   });
   
-  document.addEventListener('mouseup', () => dragging = false);
+  document.addEventListener('mouseup', () => {
+    if (dragging && save) saveToFirebase();
+    dragging = false;
+  });
   
   stickersLayer.appendChild(el);
 }
 
 function clearCurrent() {
-  if (!confirm('Очистити поточну зону?')) return;
+  if (!confirm('Очистити поточну зону для цієї групи?')) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  if (userRole === 'student') {
-    groupStates[userGroup][currentZone].stickers = [];
-    groupStates[userGroup][currentZone].icons = [];
-  }
-  
+  localState.stickers = [];
+  localState.icons = [];
+  localState.canvas = null;
   stickersLayer.innerHTML = '';
+  saveToFirebase();
 }
 
-// ==================== DRAG AND DROP ====================
 function initDragAndDrop() {
-  if (userRole === 'teacher') return;
-  
   document.querySelectorAll('.icon-item').forEach(icon => {
     icon.addEventListener('dragstart', e => {
       e.dataTransfer.setData('icon', icon.dataset.icon);
@@ -796,18 +514,19 @@ function initDragAndDrop() {
     const icon = e.dataTransfer.getData('icon');
     if (icon) {
       const rect = dropZone.getBoundingClientRect();
-      placeIcon(icon, e.clientX - rect.left, e.clientY - rect.top);
+      placeIcon(icon, e.clientX - rect.left, e.clientY - rect.top, true);
     }
   });
 }
 
-function placeIcon(iconChar, x, y) {
+function placeIcon(iconChar, x, y, save) {
   const data = { icon: iconChar, x, y };
-  groupStates[userGroup][currentZone].icons.push(data);
-  createPlacedIcon(data);
+  localState.icons.push(data);
+  createPlacedIcon(data, save);
+  if (save) saveToFirebase();
 }
 
-function createPlacedIcon(data, readonly = false) {
+function createPlacedIcon(data, save) {
   const el = document.createElement('div');
   el.className = 'placed-icon';
   el.textContent = data.icon;
@@ -816,7 +535,6 @@ function createPlacedIcon(data, readonly = false) {
   
   let dragging = false, offX, offY;
   el.onmousedown = e => {
-    if (readonly && userRole === 'student') return;
     dragging = true;
     offX = e.clientX - el.offsetLeft;
     offY = e.clientY - el.offsetTop;
@@ -831,26 +549,25 @@ function createPlacedIcon(data, readonly = false) {
     el.style.top = data.y + 'px';
   });
   
-  document.addEventListener('mouseup', () => dragging = false);
+  document.addEventListener('mouseup', () => {
+    if (dragging && save) saveToFirebase();
+    dragging = false;
+  });
   
-  if (!readonly) {
-    el.ondblclick = () => {
-      if (confirm('Видалити іконку?')) {
-        groupStates[userGroup][currentZone].icons = 
-          groupStates[userGroup][currentZone].icons.filter(i => i !== data);
-        el.remove();
-      }
-    };
-  }
+  el.ondblclick = () => {
+    if (confirm('Видалити іконку?')) {
+      localState.icons = localState.icons.filter(i => i !== data);
+      el.remove();
+      if (save) saveToFirebase();
+    }
+  };
   
   stickersLayer.appendChild(el);
 }
 
-// ==================== MAP INTERACTIONS ====================
 function initMapInteractions() {
   document.querySelectorAll('.climate-zone').forEach(zone => {
     zone.addEventListener('click', function() {
-      if (userRole === 'teacher') return;
       const name = this.dataset.name;
       const bbox = this.getBBox();
       const sticker = {
@@ -859,14 +576,14 @@ function initMapInteractions() {
         text: name,
         color: '#4ecdc4'
       };
-      groupStates[userGroup][currentZone].stickers.push(sticker);
-      createStickerElement(sticker);
+      localState.stickers.push(sticker);
+      createStickerElement(sticker, true);
+      saveToFirebase();
     });
   });
   
   document.querySelectorAll('.country').forEach(country => {
     country.addEventListener('click', function() {
-      if (userRole === 'teacher') return;
       const name = this.dataset.country;
       const bbox = this.getBBox();
       const sticker = {
@@ -875,13 +592,13 @@ function initMapInteractions() {
         text: name,
         color: '#ffe66d'
       };
-      groupStates[userGroup][currentZone].stickers.push(sticker);
-      createStickerElement(sticker);
+      localState.stickers.push(sticker);
+      createStickerElement(sticker, true);
+      saveToFirebase();
     });
   });
 }
 
-// ==================== TIMER ====================
 function startTimer() {
   updateTimerDisplay();
   timerInterval = setInterval(() => {
@@ -910,34 +627,33 @@ function toggleTimer() {
   document.getElementById('timerBtn').textContent = timerRunning ? '⏸' : '▶';
 }
 
-// ==================== EXPORT ====================
 function exportPNG() {
   const workspace = document.getElementById('workspace');
+  setStatus('📸 Створення знімка...', true);
   html2canvas(workspace, {
     backgroundColor: '#0a0a1a',
     scale: 2
   }).then(canvas => {
     const link = document.createElement('a');
-    const prefix = userRole === 'teacher' ? `teacher-group${broadcastGroup}` : `group${userGroup}`;
-    link.download = `${prefix}-${currentZone}-${Date.now()}.png`;
+    link.download = `Group${currentGroup}-${currentZone}-${Date.now()}.png`;
     link.href = canvas.toDataURL();
     link.click();
     setStatus('✅ PNG збережено!');
+  }).catch(() => {
+    setStatus('❌ Помилка збереження', true);
   });
-}
-
-// ==================== UTILITIES ====================
-function closeModal(id) {
-  document.getElementById(id).classList.remove('show');
 }
 
 function setStatus(msg, persistent = false) {
   const statusEl = document.getElementById('status');
   statusEl.textContent = msg;
   if (!persistent) {
-    setTimeout(() => statusEl.textContent = 'Готово', 3000);
+    setTimeout(() => statusEl.textContent = '🟢 Синхронізовано', 3000);
   }
 }
+
+// Запуск
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
