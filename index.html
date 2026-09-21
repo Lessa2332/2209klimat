@@ -27,7 +27,7 @@
   --sky-700:#0f3a5f; --sky-600:#15507f; --sky-500:#1f6ea6; --sky-400:#3c9fd4;
   --rain:#4cc9f0; --rain-soft:#8fdcf5;
   --sun:#ffb703; --sun-soft:#ffd166;
-  --warm:#ff6b35; --mint:#2ec4b6; --danger:#ff5470; --success:#2ec4b6;
+  --warm:#ff6b35; --mint:#2ec4b6; --danger:#ff5470;
   --ocean-deep:#04182e; --ocean-mid:#062a4a;
   --land:#1e4d78; --land-hi:#2b6ea6; --land-stroke:#4a8cb8;
   --text:#eaf4fb; --text-dim:#a8c4d8; --text-mute:#7d9bb3;
@@ -162,6 +162,7 @@ input,textarea{font:inherit;color:inherit}
 .icon-item:hover{background:rgba(31,110,166,.8);border-color:var(--rain);transform:translateY(-2px)}
 .icon-item:active{transform:scale(.92)}
 
+/* КАРТА */
 .map-container{position:relative;flex:1 1 auto;min-height:200px;overflow:hidden;
   background:radial-gradient(120% 90% at 50% 45%, #0a3d68 0%, #062a4a 42%, #04182e 78%, #020a14 100%);
   touch-action:manipulation;}
@@ -237,6 +238,7 @@ input,textarea{font:inherit;color:inherit}
   filter:drop-shadow(0 3px 8px rgba(0,0,0,.55));}
 .placed-icon:active{cursor:grabbing;transform:scale(1.12)}
 
+/* КАРТКА ІНФО */
 .zone-info{position:absolute;top:10px;left:10px;z-index:6;
   max-width:min(380px, calc(100% - 20px));padding:11px 42px 11px 14px;
   border-radius:var(--r-md);border:1px solid var(--line-strong);
@@ -266,11 +268,44 @@ input,textarea{font:inherit;color:inherit}
   font-size:14px;color:var(--text-mute);}
 .zone-info__close:hover{background:rgba(76,201,240,.16);color:#fff}
 
-.legend{position:absolute;top:10px;right:10px;z-index:6;
-  max-width:250px;padding:10px 12px;border-radius:var(--r-md);
+/* Кнопка повернення картки ℹ️ */
+.info-reopen{
+  position:absolute;top:10px;left:10px;z-index:6;
+  width:44px;height:44px;border-radius:50%;
+  background:rgba(6,26,43,.94);border:1px solid var(--line-strong);
+  color:var(--sun-soft);font-size:20px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-1);cursor:pointer;
+  transition:all var(--dur) var(--ease);
+}
+.info-reopen:hover{background:rgba(31,110,166,.85);color:#fff;transform:scale(1.08)}
+.info-reopen[hidden]{display:none}
+
+/* ПІДКАЗКА ПЕРШОГО ЗАПУСКУ */
+.first-hint{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:8;padding:14px 22px;border-radius:14px;
+  background:linear-gradient(135deg, rgba(255,183,3,.96), rgba(255,149,0,.96));
+  color:#25180a;font-size:14px;font-weight:700;
+  box-shadow:0 10px 40px rgba(0,0,0,.55);
+  display:flex;align-items:center;gap:8px;
+  animation:hintPulse 1.6s ease-in-out infinite;
+  pointer-events:none;white-space:nowrap;
+}
+.first-hint[hidden]{display:none}
+@keyframes hintPulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1}
+  50%{transform:translate(-50%,-50%) scale(1.06);opacity:.92}
+}
+
+/* ЛЕГЕНДА — тепер НИЖЧЕ кнопок шарів */
+.legend{position:absolute;top:145px;right:10px;z-index:6;
+  max-width:230px;padding:10px 12px;border-radius:var(--r-md);
   background:rgba(6,26,43,.9);border:1px solid var(--line-strong);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  font-size:11px;line-height:1.35;color:var(--text-dim);box-shadow:var(--shadow-1);}
+  font-size:11px;line-height:1.35;color:var(--text-dim);box-shadow:var(--shadow-1);
+  max-height:calc(100% - 160px);overflow:auto;}
 .legend h4{margin:0 0 6px;font-size:11.5px;font-weight:800;
   text-transform:uppercase;letter-spacing:.06em;color:var(--sun-soft);}
 .legend ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
@@ -306,7 +341,8 @@ input,textarea{font:inherit;color:inherit}
 .status[data-state="warn"]{background:rgba(255,183,3,.94);color:#2a1c00}
 .status[data-state="error"]{background:rgba(255,84,112,.94);color:#fff}
 .status[data-state="busy"]{background:rgba(76,201,240,.94);color:#03121f}
-/* Штамп для експорту PNG — видно лише на знімку */
+
+/* Штамп для експорту PNG */
 .export-stamp{
   position:absolute;bottom:12px;left:12px;z-index:999;
   padding:10px 16px;border-radius:12px;
@@ -336,6 +372,7 @@ input,textarea{font:inherit;color:inherit}
   .export-stamp__zone{font-size:11px}
   .export-stamp__time{font-size:10px}
 }
+
 .toast{position:absolute;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);
   z-index:9;padding:10px 18px;border-radius:999px;
   font-size:13px;font-weight:700;color:#03121f;
@@ -345,6 +382,17 @@ input,textarea{font:inherit;color:inherit}
   transition:opacity .25s var(--ease), transform .25s var(--ease);
   max-width:calc(100% - 40px);text-align:center;}
 .toast[data-show="true"]{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ─── ПІД ЧАС ЕКСПОРТУ PNG — ХОВАЄМО UI ─── */
+.map-container.is-exporting .layers,
+.map-container.is-exporting .legend,
+.map-container.is-exporting .status,
+.map-container.is-exporting .toast,
+.map-container.is-exporting .info-reopen,
+.map-container.is-exporting .first-hint,
+.map-container.is-exporting .zone-info{
+  visibility:hidden !important;
+}
 
 .toolbar{display:flex;align-items:center;gap:6px;padding:8px 12px;
   padding-bottom:calc(8px + env(safe-area-inset-bottom));
@@ -399,7 +447,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .toolbar{flex-wrap:wrap;overflow:visible}
   .zone-info{max-width:420px;font-size:13.5px}
   .zone-info h2{font-size:15px}
-  .legend{max-width:280px}
+  .legend{max-width:260px}
 }
 @media (max-width:400px){
   .app-title__text{display:none}
@@ -409,9 +457,10 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .btn{padding:0 12px}
   .group-btn{padding:0 14px;font-size:13px}
   .tab{padding:0 13px;font-size:13px}
-  .legend{max-width:200px;font-size:10.5px}
+  .legend{max-width:180px;font-size:10.5px;top:140px}
   .zone-info{font-size:12px;padding:9px 38px 9px 11px}
   .layer-toggle{padding:7px 10px;font-size:11px}
+  .first-hint{font-size:12px;padding:11px 16px}
 }
 @media (orientation:landscape) and (max-height:560px){
   .group-bar{padding-top:5px;padding-bottom:5px}
@@ -492,6 +541,10 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 
       <div id="stickersLayer"></div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <div class="first-hint" id="firstHint" hidden>
+        <span aria-hidden="true">👆</span>
+        <span>Торкнись поясу, щоб дізнатися більше</span>
+      </div>
 
       <div class="layers" role="group" aria-label="Керування шарами карти">
         <button class="layer-toggle" id="zonesToggle" type="button"
@@ -515,6 +568,9 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
         <h4>Кліматичні пояси</h4>
         <ul id="legendList"></ul>
       </aside>
+
+      <button class="info-reopen" id="infoReopen" type="button" hidden
+              aria-label="Показати інформаційну картку" title="Показати картку">ℹ️</button>
 
       <div class="zone-info" id="zoneInfo">
         <button class="zone-info__close" type="button" id="zoneInfoClose"
@@ -577,8 +633,11 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 
 <script>
 /* ============================================================
-   0. FIREBASE — ініціалізація ВІДКЛАДЕНА до init()
+   0. КОНФІГ + УТИЛІТИ
    ============================================================ */
+const DEBUG = /[?&]debug=1/.test(location.search);
+const log = (...a) => { if (DEBUG) console.log(...a); };
+
 const firebaseConfig = {
   apiKey: "AIzaSyAIqa_MF4sevTfg7Za8Fly3EK97dVYm_Q8",
   authDomain: "realtime-6af79.firebaseapp.com",
@@ -588,28 +647,23 @@ const firebaseConfig = {
   messagingSenderId: "154142013253",
   appId: "1:154142013253:web:2b3bfde1a8ecea5565f02c"
 };
-
-let db = null;
-let fbError = null;
-
+let db = null, fbError = null;
 function initFirebase(){
   try {
     if (typeof firebase === 'undefined') throw new Error('Firebase SDK не завантажено');
-    if (!firebase.apps || !firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(firebaseConfig);
     db = firebase.database();
-    console.log('[Firebase] OK — db готово');
+    log('[Firebase] OK');
     return true;
-  } catch (err) {
+  } catch (err){
     fbError = err;
-    console.error('[Firebase] Помилка ініціалізації:', err);
+    console.warn('[Firebase]', err);
     return false;
   }
 }
 
 /* ============================================================
-   1. ДАНІ — 11 КЛІМАТИЧНИХ ПОЯСІВ (з екваторіальним!)
+   1. ДАНІ — 11 КЛІМАТИЧНИХ ПОЯСІВ
    ============================================================ */
 const ZONE_BASE_OPACITY = 0.13;
 const ZONE_USER_OPACITY = 0.68;
@@ -626,7 +680,7 @@ const CLIMATE_BANDS = [
   { id:'tropical_n',    name:'Тропічний (пн.)',    short:'ТРОП. ПН.',      lat:[ 10,   23.5 ], color:'#ffa94d',
     desc:'Спекотно цілий рік, сухий сезон, пустелі й савани північної півкулі.' },
   { id:'equatorial',    name:'Екваторіальний',     short:'ЕКВАТОР.',       lat:[-10,   10   ], color:'#ff4d2e',
-    desc:'Найспекотніший і найвологіший пояс: +27 °C і до 2500 мм опадів щодня. Тропічні ліси Амазонії, Конго, Індонезії.' },
+    desc:'Найспекотніший і найвологіший пояс: +27 °C і до 2500 мм опадів. Тропічні ліси Амазонії, Конго, Індонезії.' },
   { id:'tropical_s',    name:'Тропічний (пд.)',    short:'ТРОП. ПД.',      lat:[-23.5,-10   ], color:'#ffa94d',
     desc:'Спекотно цілий рік, сухий сезон, савани й пустелі південної півкулі.' },
   { id:'subtropical_s', name:'Субтропічний (пд.)', short:'СУБТРОП. ПД.',   lat:[-35,  -23.5 ], color:'#f6c945',
@@ -640,17 +694,10 @@ const CLIMATE_BANDS = [
 ];
 
 const ZONE_BOUNDARIES = [
-  { lat: 66.5, type:'polar' },
-  { lat: 50,   type:'mid'   },
-  { lat: 35,   type:'mid'   },
-  { lat: 23.5, type:'tropic'},
-  { lat: 10,   type:'tropic'},
-  { lat: 0,    type:'equator'},
-  { lat:-10,   type:'tropic'},
-  { lat:-23.5, type:'tropic'},
-  { lat:-35,   type:'mid'   },
-  { lat:-50,   type:'mid'   },
-  { lat:-66.5, type:'polar' }
+  { lat: 66.5, type:'polar' }, { lat: 50, type:'mid' }, { lat: 35, type:'mid' },
+  { lat: 23.5, type:'tropic' }, { lat: 10, type:'tropic' }, { lat: 0, type:'equator' },
+  { lat:-10, type:'tropic' }, { lat:-23.5, type:'tropic' }, { lat:-35, type:'mid' },
+  { lat:-50, type:'mid' }, { lat:-66.5, type:'polar' }
 ];
 
 const LAT_LABELS = [
@@ -717,11 +764,11 @@ const COUNTRY_CLIMATE = {
 };
 
 const ZONES = [
-  { id:'hypothesis', title:'🧠 1. Гіпотеза', desc:'Запишіть припущення та план дослідження.' },
-  { id:'classification', title:'🗺 2. Класифікація', desc:'Порівняйте кліматичні пояси. Наведіть на пояс — побачите характеристики.' },
-  { id:'comfort', title:'🏖 3. Комфорт', desc:'Позначте 3 найкомфортніші пояси для життя.' },
-  { id:'changes', title:'🌡 4. Зміни', desc:'Причини та наслідки глобальних змін клімату.' },
-  { id:'history', title:'🏛 5. Цивілізації', desc:'Давні цивілізації та їхній кліматичний пояс.' }
+  { id:'hypothesis',     title:'🧠 1. Гіпотеза',     desc:'Запишіть припущення та план дослідження.' },
+  { id:'classification', title:'🗺 2. Класифікація', desc:'Наведи на пояс або торкнись його — побачиш характеристики.' },
+  { id:'comfort',        title:'🏖 3. Комфорт',      desc:'Позначте 3 найкомфортніші пояси для життя.' },
+  { id:'changes',        title:'🌡 4. Зміни',        desc:'Причини та наслідки глобальних змін клімату.' },
+  { id:'history',        title:'🏛 5. Цивілізації',  desc:'Давні цивілізації та їхній кліматичний пояс.' }
 ];
 
 const ICONS = [
@@ -747,7 +794,8 @@ const state = {
   timerSeconds: 0, timerRunning: true,
   mapReady: false, countriesGeo: null,
   showZones: true, showLabels: true, showBorders: true,
-  listenersActive: false, syncInProgress: false
+  listenersActive: false, syncInProgress: false,
+  lastInfo: null
 };
 function emptyData(){ return { canvas:null, stickers:[], icons:[], zoneFills:{} }; }
 
@@ -772,6 +820,8 @@ const zoneInfoTitle = $('#zoneInfoTitle');
 const zoneInfoDesc  = $('#zoneInfoDesc');
 const zoneInfoMeta  = $('#zoneInfoMeta');
 const zoneInfoHint  = $('#zoneInfoHint');
+const infoReopenBtn = $('#infoReopen');
+const firstHint     = $('#firstHint');
 const toastEl       = $('#toast');
 const timerEl       = $('#timer');
 
@@ -813,6 +863,10 @@ function setNetIndicator(online, text){
   isOnline = online;
   netIndicator.dataset.online = online ? 'true' : (text === 'unknown' ? 'unknown' : 'false');
   netLabel.textContent = text;
+}
+
+function syncInfoReopenBtn(){
+  infoReopenBtn.hidden = !zoneInfoEl.hidden;
 }
 
 /* ============================================================
@@ -872,14 +926,11 @@ function buildLegend(){
    ============================================================ */
 function getMapSize(){
   const r = mapContainer.getBoundingClientRect();
-  return { w: Math.max(320, Math.round(r.width)),
-           h: Math.max(200, Math.round(r.height)) };
+  return { w: Math.max(320, Math.round(r.width)), h: Math.max(200, Math.round(r.height)) };
 }
 
 function renderMap(){
-  if (typeof d3 === 'undefined' || typeof topojson === 'undefined'){
-    console.warn('D3 / topojson not loaded'); return;
-  }
+  if (typeof d3 === 'undefined' || typeof topojson === 'undefined'){ return; }
   const { w, h } = getMapSize();
   svgMap.setAttribute('viewBox', `0 0 ${w} ${h}`);
   svgMap.setAttribute('preserveAspectRatio', 'xMidYMid meet');
@@ -896,13 +947,11 @@ function renderMap(){
     const steps = 40, pts = [];
     for (let i = 0; i <= steps; i++){
       const lon = -180 + 360 * i / steps;
-      const p = projection([lon, latN]);
-      if (p) pts.push(p);
+      const p = projection([lon, latN]); if (p) pts.push(p);
     }
     for (let i = steps; i >= 0; i--){
       const lon = -180 + 360 * i / steps;
-      const p = projection([lon, latS]);
-      if (p) pts.push(p);
+      const p = projection([lon, latS]); if (p) pts.push(p);
     }
     if (pts.length < 3) return '';
     return 'M' + pts.map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' L') + ' Z';
@@ -911,8 +960,7 @@ function renderMap(){
     const steps = 80, pts = [];
     for (let i = 0; i <= steps; i++){
       const lon = -180 + 360 * i / steps;
-      const p = projection([lon, lat]);
-      if (p) pts.push(p);
+      const p = projection([lon, lat]); if (p) pts.push(p);
     }
     if (pts.length < 2) return '';
     return 'M' + pts.map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' L');
@@ -920,7 +968,6 @@ function renderMap(){
 
   root.append('path').datum({ type:'Sphere' }).attr('class', 'ocean-sphere').attr('d', geoPath);
   root.append('path').datum({ type:'Sphere' }).attr('class', 'ocean-glow').attr('d', geoPath);
-
   root.append('path').datum(d3.geoGraticule().step([30, 30])())
     .attr('class', 'graticule').attr('d', geoPath);
   root.append('path').datum(d3.geoGraticule().step([60, 30])())
@@ -928,8 +975,7 @@ function renderMap(){
 
   const countriesG = root.append('g').attr('class', 'countries');
   const drawCountries = (geo) => {
-    countriesG.selectAll('path.country')
-      .data(geo.features).enter()
+    countriesG.selectAll('path.country').data(geo.features).enter()
       .append('path')
       .attr('class', d => {
         const key = normalizeName(d.properties?.name || '');
@@ -949,9 +995,8 @@ function renderMap(){
     applyLayerVisibility();
   };
 
-  if (state.countriesGeo){
-    drawCountries(state.countriesGeo);
-  } else {
+  if (state.countriesGeo){ drawCountries(state.countriesGeo); }
+  else {
     d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
       .then(world => {
         const geo = topojson.feature(world, world.objects.countries);
@@ -960,11 +1005,7 @@ function renderMap(){
         if (w2 !== w || h2 !== h){ renderMap(); return; }
         drawCountries(geo);
       })
-      .catch(err => {
-        console.error('Map load error:', err);
-        flashStatus('⚠️ Карту не завантажено', 'error', 6000);
-        state.mapReady = true;
-      });
+      .catch(err => { console.warn('Map load:', err); state.mapReady = true; });
   }
 
   const zonesG = root.append('g').attr('class', 'climate-zones');
@@ -1072,11 +1113,8 @@ function attachMapEvents(){
       const band = CLIMATE_BANDS.find(b => b.id === zoneEl.dataset.zone);
       if (state.tool === 'fill'){
         const id = zoneEl.dataset.zone;
-        if (state.data.zoneFills[id] === state.color){
-          delete state.data.zoneFills[id];
-        } else {
-          state.data.zoneFills[id] = state.color;
-        }
+        if (state.data.zoneFills[id] === state.color) delete state.data.zoneFills[id];
+        else state.data.zoneFills[id] = state.color;
         applyZoneFills();
         zoneEl.classList.remove('zone-filled-anim');
         void zoneEl.offsetWidth;
@@ -1088,14 +1126,14 @@ function attachMapEvents(){
       return;
     }
     const country = e.target.closest?.('.country');
-    if (country){
-      showCountryInfo(country.dataset.country);
-    }
+    if (country) showCountryInfo(country.dataset.country);
   });
 }
 
 function showClimateInfo(band){
+  state.lastInfo = { type:'zone', band };
   zoneInfoEl.hidden = false;
+  syncInfoReopenBtn();
   zoneInfoTitle.textContent = band.name + ' пояс';
   zoneInfoDesc.textContent  = band.desc;
   const span = Math.abs(band.lat[1] - band.lat[0]);
@@ -1109,9 +1147,11 @@ function showClimateInfo(band){
 }
 
 function showCountryInfo(rawName){
+  state.lastInfo = { type:'country', rawName };
+  zoneInfoEl.hidden = false;
+  syncInfoReopenBtn();
   const key = normalizeName(rawName);
   const data = COUNTRY_CLIMATE_BY_KEY.get(key);
-  zoneInfoEl.hidden = false;
   if (data){
     zoneInfoTitle.textContent = `🌍 ${data.uk}`;
     zoneInfoDesc.textContent  = data.note;
@@ -1128,17 +1168,30 @@ function showCountryInfo(rawName){
   updateZoneHint();
 }
 
+function reopenInfoCard(){
+  const info = state.lastInfo;
+  if (info && info.type === 'zone'){ showClimateInfo(info.band); return; }
+  if (info && info.type === 'country'){ showCountryInfo(info.rawName); return; }
+  const zone = ZONES.find(z => z.id === state.zone) || ZONES[0];
+  zoneInfoEl.hidden = false;
+  zoneInfoTitle.textContent = zone.title;
+  zoneInfoDesc.textContent  = zone.desc;
+  zoneInfoMeta.innerHTML = '';
+  updateZoneHint();
+  syncInfoReopenBtn();
+}
+
 function updateZoneHint(){
   const hints = {
-    brush:  '✏️ Малюйте пальцем або мишкою по карті.',
-    eraser: '🧽 Проведіть по лінії, щоб стерти.',
-    fill:   '🎨 Торкніться кліматичного поясу, щоб зафарбувати його власним кольором.'
+    brush:  '✏️ Малюй пальцем або мишкою. Короткий тап — дізнатися про пояс.',
+    eraser: '🧽 Проведи по лінії, щоб стерти.',
+    fill:   '🎨 Торкнись поясу, щоб зафарбувати його власним кольором.'
   };
   zoneInfoHint.textContent = hints[state.tool] || '';
 }
 
 /* ============================================================
-   8. ПОЛОТНО — ПАЛЕЦЬ + МИШКА
+   8. ПОЛОТНО — ПАЛЕЦЬ + МИШКА + ТАП-РОЗПІЗНАВАННЯ
    ============================================================ */
 function resizeCanvasBacking(){
   const rect = canvas.getBoundingClientRect();
@@ -1224,7 +1277,6 @@ function endStroke(){
   state.data.canvas = url;
   state.lastLocalCanvas = url;
   state.dirtyDrawing = true;
-  console.log('[Stroke] Завершено, довжина dataURL:', url ? url.length : 0);
   scheduleSave('drawing');
   if (state.pendingCanvas !== undefined){
     const pending = state.pendingCanvas;
@@ -1233,26 +1285,42 @@ function endStroke(){
   }
 }
 
+function handleQuickTap(x, y){
+  const r = canvas.getBoundingClientRect();
+  const clientX = r.left + x, clientY = r.top + y;
+  const els = document.elementsFromPoint(clientX, clientY);
+  for (const el of els){
+    if (el.classList?.contains('climate-zone')){
+      const band = CLIMATE_BANDS.find(b => b.id === el.dataset.zone);
+      if (band) showClimateInfo(band);
+      return;
+    }
+    if (el.classList?.contains('country')){
+      showCountryInfo(el.dataset.country);
+      return;
+    }
+  }
+}
+
 function attachCanvasEvents(){
   function getPoint(e){
     const r = canvas.getBoundingClientRect();
     let cx, cy;
-    if (e.touches && e.touches.length > 0){
-      cx = e.touches[0].clientX; cy = e.touches[0].clientY;
-    } else if (e.changedTouches && e.changedTouches.length > 0){
-      cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY;
-    } else {
-      cx = e.clientX; cy = e.clientY;
-    }
+    if (e.touches && e.touches.length > 0){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+    else if (e.changedTouches && e.changedTouches.length > 0){ cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY; }
+    else { cx = e.clientX; cy = e.clientY; }
     return { x: cx - r.left, y: cy - r.top };
   }
 
   let touching = false;
+  let tapInfo = null;
+
   canvas.addEventListener('touchstart', e => {
     if (e.touches.length !== 1) return;
     e.preventDefault();
     touching = true;
     const p = getPoint(e);
+    tapInfo = { x: p.x, y: p.y, t: Date.now(), moved: false };
     beginStrokeAt(p.x, p.y);
   }, { passive: false });
 
@@ -1260,30 +1328,45 @@ function attachCanvasEvents(){
     if (!touching || !state.isDrawing) return;
     e.preventDefault();
     const p = getPoint(e);
+    if (tapInfo && (Math.abs(p.x - tapInfo.x) > 8 || Math.abs(p.y - tapInfo.y) > 8)) tapInfo.moved = true;
     moveStrokeTo(p.x, p.y);
   }, { passive: false });
 
-  const endTouch = e => {
+  const endTouch = () => {
     if (!touching) return;
     touching = false;
     endStroke();
+    if (tapInfo && !tapInfo.moved && Date.now() - tapInfo.t < 320){
+      handleQuickTap(tapInfo.x, tapInfo.y);
+    }
+    tapInfo = null;
   };
   canvas.addEventListener('touchend', endTouch, { passive: false });
   canvas.addEventListener('touchcancel', endTouch, { passive: false });
 
+  let mouseTap = null;
   canvas.addEventListener('mousedown', e => {
     if (e.button !== 0) return;
     e.preventDefault();
     const p = getPoint(e);
+    mouseTap = { x: p.x, y: p.y, t: Date.now(), moved: false };
     beginStrokeAt(p.x, p.y);
   });
   canvas.addEventListener('mousemove', e => {
     if (!state.isDrawing) return;
     const p = getPoint(e);
+    if (mouseTap && (Math.abs(p.x - mouseTap.x) > 5 || Math.abs(p.y - mouseTap.y) > 5)) mouseTap.moved = true;
     moveStrokeTo(p.x, p.y);
   });
-  canvas.addEventListener('mouseup', () => { if (state.isDrawing) endStroke(); });
-  canvas.addEventListener('mouseleave', () => { if (state.isDrawing) endStroke(); });
+  canvas.addEventListener('mouseup', () => {
+    if (!state.isDrawing) return;
+    endStroke();
+    if (mouseTap && !mouseTap.moved && Date.now() - mouseTap.t < 320){
+      handleQuickTap(mouseTap.x, mouseTap.y);
+    }
+    mouseTap = null;
+  });
+  canvas.addEventListener('mouseleave', () => { if (state.isDrawing) endStroke(); mouseTap = null; });
 }
 
 /* ============================================================
@@ -1331,10 +1414,7 @@ function createStickerEl(s){
   ta.setAttribute('aria-label', 'Текст стікера');
   ta.rows = 2;
 
-  const autosize = () => {
-    ta.style.height = 'auto';
-    ta.style.height = Math.min(ta.scrollHeight, 200) + 'px';
-  };
+  const autosize = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 200) + 'px'; };
   ta.addEventListener('input', () => {
     const t = findSticker(s.id);
     if (t) t.text = ta.value;
@@ -1349,8 +1429,7 @@ function createStickerEl(s){
     state.data.stickers = state.data.stickers.filter(x => x.id !== s.id);
     stickerEls.get(s.id)?.remove();
     stickerEls.delete(s.id);
-    state.dirtyBoard = true;
-    scheduleSave('board');
+    state.dirtyBoard = true; scheduleSave('board');
   });
 
   let drag = null;
@@ -1371,8 +1450,7 @@ function createStickerEl(s){
     if (!t) return;
     t.x = Math.max(-20, Math.min(rect.width  - 40, e.clientX - rect.left - drag.dx));
     t.y = Math.max(-10, Math.min(rect.height - 30, e.clientY - rect.top  - drag.dy));
-    el.style.left = t.x + 'px';
-    el.style.top  = t.y + 'px';
+    el.style.left = t.x + 'px'; el.style.top = t.y + 'px';
   });
   const stopDrag = e => {
     if (!drag || (e && e.pointerId !== drag.pointerId)) return;
@@ -1398,16 +1476,13 @@ function renderStickers(list){
       stickerEls.set(s.id, el);
       stickersLayer.appendChild(el);
     } else {
-      el.style.left = s.x + 'px';
-      el.style.top  = s.y + 'px';
+      el.style.left = s.x + 'px'; el.style.top = s.y + 'px';
       el.style.background = s.color;
       const ta = el.querySelector('textarea');
       if (ta && document.activeElement !== ta && ta.value !== (s.text || '')) ta.value = s.text || '';
     }
   });
-  stickerEls.forEach((el, id) => {
-    if (!seen.has(id)){ el.remove(); stickerEls.delete(id); }
-  });
+  stickerEls.forEach((el, id) => { if (!seen.has(id)){ el.remove(); stickerEls.delete(id); } });
 }
 
 function addSticker(){
@@ -1422,8 +1497,7 @@ function addSticker(){
   };
   state.data.stickers.push(s);
   renderStickers(state.data.stickers);
-  state.dirtyBoard = true;
-  scheduleSave('board');
+  state.dirtyBoard = true; scheduleSave('board');
   stickerEls.get(s.id)?.querySelector('textarea')?.focus();
 }
 
@@ -1435,8 +1509,7 @@ function createIconEl(icon){
   el.className = 'placed-icon';
   el.dataset.id = icon.id;
   el.textContent = icon.icon;
-  el.style.left = icon.x + 'px';
-  el.style.top  = icon.y + 'px';
+  el.style.left = icon.x + 'px'; el.style.top = icon.y + 'px';
   el.tabIndex = 0;
   el.setAttribute('role', 'img');
 
@@ -1456,8 +1529,7 @@ function createIconEl(icon){
     if (!t) return;
     t.x = Math.max(-10, Math.min(rect.width  - 20, e.clientX - rect.left - drag.dx));
     t.y = Math.max(-10, Math.min(rect.height - 20, e.clientY - rect.top  - drag.dy));
-    el.style.left = t.x + 'px';
-    el.style.top  = t.y + 'px';
+    el.style.left = t.x + 'px'; el.style.top = t.y + 'px';
   });
   const stopDrag = e => {
     if (!drag || (e && e.pointerId !== drag.pointerId)) return;
@@ -1470,8 +1542,7 @@ function createIconEl(icon){
 
   el.addEventListener('dblclick', () => {
     state.data.icons = state.data.icons.filter(i => i.id !== icon.id);
-    el.remove();
-    iconEls.delete(icon.id);
+    el.remove(); iconEls.delete(icon.id);
     state.dirtyBoard = true; scheduleSave('board');
   });
   return el;
@@ -1487,13 +1558,10 @@ function renderIcons(list){
       iconEls.set(icon.id, el);
       stickersLayer.appendChild(el);
     } else {
-      el.style.left = icon.x + 'px';
-      el.style.top  = icon.y + 'px';
+      el.style.left = icon.x + 'px'; el.style.top = icon.y + 'px';
     }
   });
-  iconEls.forEach((el, id) => {
-    if (!seen.has(id)){ el.remove(); iconEls.delete(id); }
-  });
+  iconEls.forEach((el, id) => { if (!seen.has(id)){ el.remove(); iconEls.delete(id); } });
 }
 
 function addIcon(emoji){
@@ -1506,8 +1574,7 @@ function addIcon(emoji){
   };
   state.data.icons.push(icon);
   renderIcons(state.data.icons);
-  state.dirtyBoard = true;
-  scheduleSave('board');
+  state.dirtyBoard = true; scheduleSave('board');
   showToast(`${emoji} додано на карту`);
 }
 
@@ -1521,7 +1588,7 @@ function renderBoard(){
 }
 
 /* ============================================================
-   13. FIREBASE — СИНХРОНІЗАЦІЯ
+   13. FIREBASE
    ============================================================ */
 const refsFor = (g, z) => {
   const base = `groups/group${g}/zones/${z}`;
@@ -1529,40 +1596,27 @@ const refsFor = (g, z) => {
 };
 
 function detachListeners(){
-  if (state.refDrawing && state.handlerDrawing){
-    state.refDrawing.off('value', state.handlerDrawing);
-  }
-  if (state.refBoard && state.handlerBoard){
-    state.refBoard.off('value', state.handlerBoard);
-  }
+  if (state.refDrawing && state.handlerDrawing) state.refDrawing.off('value', state.handlerDrawing);
+  if (state.refBoard && state.handlerBoard) state.refBoard.off('value', state.handlerBoard);
   state.refDrawing = state.refBoard = null;
   state.handlerDrawing = state.handlerBoard = null;
   state.listenersActive = false;
 }
 
 function attachListeners(){
-  if (!db){
-    console.warn('[Sync] Немає db — слухачі не підключено');
-    setNetIndicator(false, 'Firebase немає');
-    return;
-  }
+  if (!db){ setNetIndicator(false, 'Firebase немає'); return; }
   const r = refsFor(state.group, state.zone);
   state.refDrawing = r.drawing;
   state.refBoard   = r.board;
 
   state.handlerDrawing = r.drawing.on('value', snap => {
     const url = snap.val() || null;
-    console.log('[Sync] drawing отримано, довжина:', url ? url.length : 0,
-                '== наш?', url === state.lastLocalCanvas);
     if (url === state.lastLocalCanvas) return;
     if (state.isDrawing){ state.pendingCanvas = url; return; }
     state.data.canvas = url;
     renderCanvas(url);
     flashStatus('📥 Отримано малюнок', 'busy', 1400);
-  }, err => {
-    console.error('[Sync] drawing listener error:', err);
-    setNetIndicator(false, 'Помилка читання');
-  });
+  }, err => { console.warn('[Sync]', err); setNetIndicator(false, 'Помилка'); });
 
   state.handlerBoard = r.board.on('value', snap => {
     const data = snap.val();
@@ -1572,12 +1626,9 @@ function attachListeners(){
     state.data.icons     = Array.isArray(data.icons)    ? data.icons    : [];
     state.data.zoneFills = data.zoneFills || {};
     renderBoard();
-  }, err => {
-    console.error('[Sync] board listener error:', err);
-  });
+  }, err => console.warn('[Sync]', err));
 
   state.listenersActive = true;
-  console.log('[Sync] Слухачі підключено для', `group${state.group}/${state.zone}`);
 }
 
 function scheduleSave(kind){
@@ -1587,52 +1638,33 @@ function scheduleSave(kind){
 }
 
 function flushSave(kind, opts = {}){
-  if (!db){
-    console.warn('[Save] Немає db, збереження неможливе');
-    return;
-  }
+  if (!db) return;
   const kinds = kind ? [kind] : ['drawing', 'board'];
 
   if (kinds.includes('drawing') && (state.dirtyDrawing || opts.force)){
-    if (!state.refDrawing){
-      setTimeout(() => flushSave('drawing', opts), 300);
-      return;
-    }
+    if (!state.refDrawing){ setTimeout(() => flushSave('drawing', opts), 300); return; }
     const toSave = state.data.canvas || null;
     state.lastLocalCanvas = toSave;
-    console.log('[Save] Відправляємо drawing, довжина:', toSave ? toSave.length : 0);
     state.refDrawing.set(toSave)
-      .then(() => {
-        state.dirtyDrawing = false;
-        console.log('[Save] drawing OK');
-        if (!statusTimer) setStatus('🟢 Синхронізовано', 'ok');
-      })
+      .then(() => { state.dirtyDrawing = false; if (!statusTimer) setStatus('🟢 Синхронізовано', 'ok'); })
       .catch(err => {
-        console.error('[Save] drawing FAIL:', err);
+        console.warn('[Save]', err);
         flashStatus('⚠️ Не вдалося зберегти', 'error', 3500);
         setTimeout(() => { state.dirtyDrawing = true; flushSave('drawing'); }, 1000);
       });
   }
 
   if (kinds.includes('board') && (state.dirtyBoard || opts.force)){
-    if (!state.refBoard){
-      setTimeout(() => flushSave('board', opts), 300);
-      return;
-    }
-    const payload = {
+    if (!state.refBoard){ setTimeout(() => flushSave('board', opts), 300); return; }
+    state.refBoard.set({
       stickers: state.data.stickers,
       icons: state.data.icons,
       zoneFills: state.data.zoneFills,
       updatedAt: Date.now(),
       by: CLIENT_ID
-    };
-    state.refBoard.set(payload)
-      .then(() => {
-        state.dirtyBoard = false;
-        console.log('[Save] board OK');
-      })
+    }).then(() => { state.dirtyBoard = false; })
       .catch(err => {
-        console.error('[Save] board FAIL:', err);
+        console.warn('[Save]', err);
         flashStatus('⚠️ Не вдалося зберегти', 'error', 3500);
         setTimeout(() => { state.dirtyBoard = true; flushSave('board'); }, 1000);
       });
@@ -1640,16 +1672,12 @@ function flushSave(kind, opts = {}){
 }
 
 function forceSyncNow(){
-  if (!db){
-    showToast('❌ Firebase недоступний');
-    return;
-  }
+  if (!db){ showToast('❌ Firebase недоступний'); return; }
   if (state.syncInProgress) return;
   state.syncInProgress = true;
   flashStatus('🔄 Синхронізація…', 'busy', 3000);
 
-  state.dirtyDrawing = true;
-  state.dirtyBoard = true;
+  state.dirtyDrawing = true; state.dirtyBoard = true;
   flushSave(null, { force: true });
 
   setTimeout(() => {
@@ -1657,11 +1685,9 @@ function forceSyncNow(){
     r.drawing.once('value').then(snap => {
       const url = snap.val() || null;
       if (url && url !== state.lastLocalCanvas){
-        state.data.canvas = url;
-        state.lastLocalCanvas = url;
-        renderCanvas(url);
+        state.data.canvas = url; state.lastLocalCanvas = url; renderCanvas(url);
       }
-    }).catch(err => console.error('[Sync] drawing once:', err));
+    }).catch(()=>{});
 
     r.board.once('value').then(snap => {
       const data = snap.val();
@@ -1671,7 +1697,7 @@ function forceSyncNow(){
         state.data.zoneFills = data.zoneFills || {};
         renderBoard();
       }
-    }).catch(err => console.error('[Sync] board once:', err));
+    }).catch(()=>{});
 
     state.syncInProgress = false;
     showToast('✅ Синхронізовано');
@@ -1683,7 +1709,6 @@ function forceSyncNow(){
    14. ПЕРЕМИКАННЯ
    ============================================================ */
 function openBoard(group, zone){
-  console.log('[Board] Відкриваємо', `group${group}/${zone}`);
   flushSave();
   detachListeners();
   state.group = group;
@@ -1714,11 +1739,13 @@ function switchZone(zoneId){
   if (zoneId === state.zone && state.listenersActive) return;
   openBoard(state.group, zoneId);
   const zone = ZONES.find(z => z.id === zoneId) || ZONES[0];
+  state.lastInfo = { type:'tab', zoneId };
+  zoneInfoEl.hidden = false;
   zoneInfoTitle.textContent = zone.title;
   zoneInfoDesc.textContent  = zone.desc;
   zoneInfoMeta.innerHTML    = '';
-  zoneInfoEl.hidden = false;
   updateZoneHint();
+  syncInfoReopenBtn();
   $$('.tab', tabsEl).forEach(t => {
     const active = t.dataset.zone === zoneId;
     t.setAttribute('aria-selected', active ? 'true' : 'false');
@@ -1732,8 +1759,7 @@ function switchZone(zoneId){
 let timerInterval = null;
 function updateTimerDisplay(){
   const remaining = Math.max(0, TOTAL_TIMER_SECONDS - state.timerSeconds);
-  const m = Math.floor(remaining / 60);
-  const s = remaining % 60;
+  const m = Math.floor(remaining / 60), s = remaining % 60;
   timerEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   timerEl.dataset.low = remaining <= 300 ? 'true' : 'false';
 }
@@ -1758,29 +1784,20 @@ function toggleTimer(){
 }
 
 /* ============================================================
-   16. ЕКСПОРТ
+   16. ЕКСПОРТ — чистий PNG (без UI)
    ============================================================ */
 async function exportPNG(){
-  if (typeof html2canvas !== 'function'){
-    flashStatus('❌ Модуль експорту не завантажено', 'error');
-    return;
-  }
+  if (typeof html2canvas !== 'function'){ flashStatus('❌ Модуль експорту не завантажено', 'error'); return; }
   flashStatus('📸 Створюємо знімок…', 'busy', 8000);
 
-  // ─── Готуємо дані для штампу ───
   const groupName = `Група ${state.group}`;
   const zoneObj = ZONES.find(z => z.id === state.zone);
   const zoneTitle = zoneObj ? zoneObj.title : 'Кліматична лабораторія';
 
   const now = new Date();
-  const dateStr = now.toLocaleDateString('uk-UA', {
-    day:'2-digit', month:'2-digit', year:'numeric'
-  });
-  const timeStr = now.toLocaleTimeString('uk-UA', {
-    hour:'2-digit', minute:'2-digit'
-  });
+  const dateStr = now.toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' });
+  const timeStr = now.toLocaleTimeString('uk-UA', { hour:'2-digit', minute:'2-digit' });
 
-  // ─── Додаємо тимчасовий штамп у карту ───
   const stamp = document.createElement('div');
   stamp.className = 'export-stamp';
   stamp.innerHTML = `
@@ -1789,40 +1806,40 @@ async function exportPNG(){
     <div class="export-stamp__time">${dateStr} • ${timeStr}</div>
   `;
   mapContainer.appendChild(stamp);
+  mapContainer.classList.add('is-exporting');
 
   try {
-    // Даємо браузеру 1 кадр, щоб DOM оновився
     await new Promise(r => requestAnimationFrame(r));
 
     const shot = await html2canvas(mapContainer, {
       backgroundColor: '#04182e',
       scale: Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)),
-      useCORS: true, logging: false, removeContainer: true,
-      // Штамп має бути включений в знімок
-      ignoreElements: el => el.classList && el.classList.contains('toast')
+      useCORS: true, logging: false, removeContainer: true
     });
 
     stamp.remove();
+    mapContainer.classList.remove('is-exporting');
 
-    // ─── Українська назва файлу з групою ───
+    // Очищаємо емодзі з назви вкладки
     const safeZone = zoneTitle
-      .replace(/[^\w\u0400-\u04FF0-9]+/g, '-')   // все, крім літер/цифр → дефіс
-      .replace(/^-+|-+$/g, '')                    // обрізати дефіси з країв
-      .replace(/-+/g, '-');                       // подвійні дефіси → один
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F000}-\u{1F0FF}]/gu, '')
+      .replace(/[^\w\u0400-\u04FF]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .replace(/-+/g, '-')
+      .trim() || 'zone';
     const safeDate = dateStr.replace(/\./g, '-');
     const fname = `Клімат-Група${state.group}-${safeZone}-${safeDate}.png`;
 
     const link = document.createElement('a');
     link.download = fname;
     link.href = shot.toDataURL('image/png');
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    document.body.appendChild(link); link.click(); link.remove();
 
     flashStatus('✅ PNG збережено', 'ok', 3000);
   } catch (err){
     stamp.remove();
-    console.error('export error:', err);
+    mapContainer.classList.remove('is-exporting');
+    console.warn('[Export]', err);
     flashStatus('❌ Не вдалося зберегти', 'error', 4000);
   }
 }
@@ -1835,16 +1852,12 @@ function clearCurrent(){
   if (!window.confirm(`Очистити «${zoneName}» для групи ${state.group}?`)) return;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  state.data.canvas = null;
-  state.data.stickers = [];
-  state.data.icons = [];
-  state.data.zoneFills = {};
+  state.data = emptyData();
   state.lastLocalCanvas = null;
   stickerEls.forEach(el => el.remove()); stickerEls.clear();
   iconEls.forEach(el => el.remove());    iconEls.clear();
   applyZoneFills();
-  state.dirtyDrawing = true;
-  state.dirtyBoard = true;
+  state.dirtyDrawing = true; state.dirtyBoard = true;
   flushSave(null, { force: true });
   flashStatus('🗑 Дошку очищено', 'warn', 2400);
 }
@@ -1853,7 +1866,7 @@ function clearCurrent(){
    18. МЕРЕЖА
    ============================================================ */
 function bindConnection(){
-  window.addEventListener('online',  () => {
+  window.addEventListener('online', () => {
     setNetIndicator(true, 'Онлайн');
     flashStatus('🟢 Знову онлайн', 'ok');
     flushSave(null, { force: true });
@@ -1869,22 +1882,15 @@ function bindConnection(){
   if (db){
     db.ref('.info/connected').on('value', snap => {
       const conn = !!snap.val();
-      console.log('[Firebase] .info/connected =', conn);
       if (conn) setNetIndicator(true, 'Онлайн');
       else setNetIndicator(false, 'З’єднання…');
       if (!statusTimer){
         setStatus(conn ? '🟢 Синхронізовано' : '🟠 Офлайн — зміни збережуться',
                   conn ? 'ok' : 'warn');
       }
-    }, err => {
-      console.error('[Firebase] .info/connected error:', err);
-      setNetIndicator(false, 'Помилка');
-    });
+    }, err => { console.warn('[Firebase]', err); setNetIndicator(false, 'Помилка'); });
   } else {
     setNetIndicator(false, 'Firebase немає');
-    if (fbError) {
-      flashStatus('⚠️ Firebase: ' + (fbError.message || 'помилка'), 'error', 8000);
-    }
   }
 }
 
@@ -1916,7 +1922,11 @@ function bindUI(){
   $('#timerBtn').addEventListener('click', toggleTimer);
   $('#exportBtn').addEventListener('click', exportPNG);
   $('#syncBtn').addEventListener('click', forceSyncNow);
-  $('#zoneInfoClose').addEventListener('click', () => { zoneInfoEl.hidden = true; });
+  $('#zoneInfoClose').addEventListener('click', () => {
+    zoneInfoEl.hidden = true;
+    syncInfoReopenBtn();
+  });
+  infoReopenBtn.addEventListener('click', reopenInfoCard);
 
   const zonesToggle = $('#zonesToggle');
   zonesToggle.addEventListener('click', () => {
@@ -1957,9 +1967,7 @@ function bindUI(){
   });
 
   window.addEventListener('beforeunload', () => {
-    if (db && state.refDrawing){
-      try { state.refDrawing.set(state.data.canvas || null); } catch(_){}
-    }
+    if (db && state.refDrawing){ try { state.refDrawing.set(state.data.canvas || null); } catch(_){} }
     if (db && state.refBoard){
       try {
         state.refBoard.set({
@@ -1975,8 +1983,7 @@ function bindUI(){
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden'){
-      state.dirtyDrawing = true;
-      state.dirtyBoard = true;
+      state.dirtyDrawing = true; state.dirtyBoard = true;
       flushSave(null, { force: true });
     } else {
       forceSyncNow();
@@ -1993,9 +2000,7 @@ function bindResize(){
       renderMap();
     });
   };
-  if ('ResizeObserver' in window){
-    new ResizeObserver(schedule).observe(mapContainer);
-  }
+  if ('ResizeObserver' in window){ new ResizeObserver(schedule).observe(mapContainer); }
   window.addEventListener('resize', schedule);
   window.addEventListener('orientationchange', () => setTimeout(schedule, 250));
 }
@@ -2003,12 +2008,21 @@ function bindResize(){
 /* ============================================================
    20. ІНІЦІАЛІЗАЦІЯ
    ============================================================ */
+function showFirstHintIfNeeded(){
+  try {
+    if (localStorage.getItem('climateLab_hintShown') === '1') return;
+    localStorage.setItem('climateLab_hintShown', '1');
+  } catch(_){}
+  firstHint.hidden = false;
+  setTimeout(() => { firstHint.hidden = true; }, 4500);
+  const hide = () => { firstHint.hidden = true; };
+  firstHint.addEventListener('click', hide);
+  mapContainer.addEventListener('pointerdown', hide, { once: true });
+}
+
 function init(){
-  // ⬇️ ГОЛОВНА ПРАВКА: ініціалізуємо Firebase ТУТ, а не вгорі файлу.
-  // На цей момент усі defer-скрипти вже завантажені.
   initFirebase();
 
-  console.log('[App] Старт. Firebase:', db ? 'OK' : 'FAIL');
   buildIconGallery();
   buildTabs();
   buildLegend();
@@ -2021,8 +2035,24 @@ function init(){
   setTool('brush');
   setColor('#ffb703');
 
+  // Відкриваємо першу дошку
   openBoard(1, ZONES[0].id);
-  switchZone(ZONES[0].id);
+
+  // Встановлюємо першу картку вручну (openBoard не оновлює картку)
+  const z0 = ZONES[0];
+  zoneInfoEl.hidden = false;
+  zoneInfoTitle.textContent = z0.title;
+  zoneInfoDesc.textContent  = z0.desc;
+  zoneInfoMeta.innerHTML = '';
+  updateZoneHint();
+  syncInfoReopenBtn();
+
+  // Позначити першу вкладку як активну (openBoard не чіпає DOM-вкладки)
+  $$('.tab', tabsEl).forEach((t, i) => {
+    const active = i === 0;
+    t.setAttribute('aria-selected', active ? 'true' : 'false');
+    t.tabIndex = active ? 0 : -1;
+  });
 
   requestAnimationFrame(() => {
     renderMap();
@@ -2031,20 +2061,11 @@ function init(){
   });
 
   startTimer();
-  updateZoneHint();
-
-  if (!db && fbError){
-    setTimeout(() => {
-      showToast('⚠️ Синхронізація недоступна. Перевірте інтернет.', 5000);
-    }, 800);
-  }
+  showFirstHintIfNeeded();
 }
 
-if (document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
 </script>
 </body>
 </html>
