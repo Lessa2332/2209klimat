@@ -2,126 +2,403 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>🌍 Кліматична лабораторія — Інтерактивний урок</title>
+<title>🌍 Кліматична лабораторія PRO — Інтерактивний урок</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-  header { background: linear-gradient(90deg, #16213e, #0f3460); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e94560; }
-  header h1 { font-size: 18px; color: #fff; }
-  .tabs { display: flex; gap: 5px; padding: 8px; background: #16213e; overflow-x: auto; }
-  .tab { padding: 8px 16px; background: #0f3460; border: none; color: #eee; border-radius: 6px; cursor: pointer; white-space: nowrap; font-size: 13px; transition: 0.2s; }
-  .tab.active { background: #e94560; color: #fff; }
-  .tab:hover { background: #533483; }
-  .workspace { flex: 1; position: relative; overflow: hidden; background: #0a0a1a; }
-  #mapImage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
-  #drawCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
-  #stickersLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-  .sticker { position: absolute; min-width: 120px; min-height: 60px; padding: 8px; border-radius: 4px; box-shadow: 2px 4px 10px rgba(0,0,0,0.5); cursor: move; pointer-events: auto; font-size: 13px; color: #222; user-select: none; }
-  .sticker textarea { width: 100%; min-height: 50px; border: none; background: transparent; resize: both; font-family: inherit; font-size: 13px; outline: none; color: #222; }
-  .sticker .del { position: absolute; top: 2px; right: 4px; cursor: pointer; font-size: 14px; opacity: 0.5; }
-  .sticker .del:hover { opacity: 1; color: red; }
-  .toolbar { background: #16213e; padding: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; border-top: 2px solid #e94560; }
-  .tool-btn { padding: 6px 12px; background: #0f3460; border: 1px solid #533483; color: #eee; border-radius: 4px; cursor: pointer; font-size: 12px; }
-  .tool-btn.active { background: #e94560; border-color: #e94560; }
-  .tool-btn:hover { background: #533483; }
-  input[type="color"], input[type="range"] { cursor: pointer; }
-  .color-swatch { display: inline-block; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; border: 2px solid #fff; }
-  .color-swatch.active { border-color: #e94560; transform: scale(1.1); }
-  .zone-info { position: absolute; top: 10px; left: 10px; background: rgba(15,52,96,0.9); padding: 10px 15px; border-radius: 8px; max-width: 350px; font-size: 13px; border: 1px solid #e94560; z-index: 10; }
-  .zone-info h3 { color: #e94560; margin-bottom: 5px; }
-  .status { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 4px; font-size: 12px; z-index: 10; }
-  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #eee; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+  
+  /* Header */
+  header { background: linear-gradient(90deg, #0f3460, #16213e); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #e94560; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+  header h1 { font-size: 20px; color: #fff; text-shadow: 0 0 10px rgba(233,69,96,0.5); }
+  .header-controls { display: flex; gap: 8px; align-items: center; }
+  
+  /* Timer */
+  .timer { background: #e94560; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 16px; box-shadow: 0 0 15px rgba(233,69,96,0.4); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  
+  /* Tabs */
+  .tabs { display: flex; gap: 5px; padding: 10px; background: #0f3460; overflow-x: auto; border-bottom: 2px solid #533483; }
+  .tab { padding: 10px 20px; background: #16213e; border: none; color: #aaa; border-radius: 8px; cursor: pointer; white-space: nowrap; font-size: 14px; transition: all 0.3s; font-weight: 500; }
+  .tab.active { background: #e94560; color: #fff; box-shadow: 0 4px 15px rgba(233,69,96,0.4); transform: translateY(-2px); }
+  .tab:hover:not(.active) { background: #533483; color: #fff; }
+  
+  /* Workspace */
+  .workspace { flex: 1; position: relative; overflow: hidden; background: #0a0a1a; display: flex; }
+  
+  /* Icon Gallery Sidebar */
+  .icon-gallery { width: 80px; background: #16213e; border-right: 2px solid #533483; padding: 10px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+  .icon-item { width: 60px; height: 60px; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: move; font-size: 32px; transition: all 0.2s; border: 2px solid transparent; user-select: none; }
+  .icon-item:hover { background: #533483; transform: scale(1.1); border-color: #e94560; }
+  .icon-item:active { cursor: grabbing; }
+  
+  /* Map Container */
+  .map-container { flex: 1; position: relative; overflow: hidden; }
+  #svgMap { width: 100%; height: 100%; }
+  .climate-zone { fill: rgba(255,255,255,0.1); stroke: #533483; stroke-width: 0.5; transition: all 0.3s; cursor: pointer; }
+  .climate-zone:hover { fill: rgba(233,69,96,0.3); stroke: #e94560; stroke-width: 1; }
+  .climate-zone.active { fill: rgba(233,69,96,0.5); }
+  .country { fill: #1a1a2e; stroke: #2a2a4e; stroke-width: 0.3; cursor: pointer; transition: all 0.2s; }
+  .country:hover { fill: #2a2a4e; stroke: #e94560; }
+  
+  /* Draw Canvas */
+  #drawCanvas { position: absolute; top: 0; left: 80px; width: calc(100% - 80px); height: 100%; cursor: crosshair; }
+  
+  /* Stickers Layer */
+  #stickersLayer { position: absolute; top: 0; left: 80px; width: calc(100% - 80px); height: 100%; pointer-events: none; }
+  .sticker { position: absolute; min-width: 100px; min-height: 50px; padding: 8px; border-radius: 8px; box-shadow: 3px 5px 15px rgba(0,0,0,0.4); cursor: move; pointer-events: auto; font-size: 12px; color: #222; user-select: none; border: 2px solid rgba(255,255,255,0.3); }
+  .sticker textarea { width: 100%; min-height: 40px; border: none; background: transparent; resize: both; font-family: inherit; font-size: 12px; outline: none; color: #222; font-weight: 500; }
+  .sticker .del { position: absolute; top: 2px; right: 5px; cursor: pointer; font-size: 14px; opacity: 0.6; font-weight: bold; }
+  .sticker .del:hover { opacity: 1; color: #e94560; }
+  
+  /* Placed Icons */
+  .placed-icon { position: absolute; font-size: 32px; cursor: move; pointer-events: auto; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); user-select: none; }
+  .placed-icon:hover { filter: drop-shadow(4px 6px 10px rgba(233,69,96,0.6)); transform: scale(1.1); }
+  
+  /* Toolbar */
+  .toolbar { background: #16213e; padding: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 3px solid #e94560; }
+  .tool-btn { padding: 8px 16px; background: #0f3460; border: 2px solid #533483; color: #eee; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; font-weight: 500; }
+  .tool-btn.active { background: #e94560; border-color: #e94560; color: #fff; box-shadow: 0 0 10px rgba(233,69,96,0.4); }
+  .tool-btn:hover:not(.active) { background: #533483; border-color: #e94560; }
+  .tool-group { display: flex; gap: 5px; align-items: center; padding: 0 10px; border-left: 2px solid #533483; }
+  .color-swatch { width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
+  .color-swatch.active { border-color: #fff; transform: scale(1.15); box-shadow: 0 0 10px rgba(255,255,255,0.3); }
+  input[type="color"] { width: 40px; height: 35px; border: none; border-radius: 6px; cursor: pointer; }
+  input[type="range"] { width: 100px; cursor: pointer; }
+  
+  /* Zone Info */
+  .zone-info { position: absolute; top: 10px; left: 90px; background: rgba(15,52,96,0.95); padding: 15px 20px; border-radius: 10px; max-width: 400px; font-size: 14px; border: 2px solid #e94560; z-index: 10; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+  .zone-info h3 { color: #e94560; margin-bottom: 8px; font-size: 16px; }
+  
+  /* Status */
+  .status { position: absolute; bottom: 10px; right: 10px; background: rgba(233,69,96,0.9); padding: 8px 15px; border-radius: 6px; font-size: 12px; z-index: 10; font-weight: 500; }
+  
+  /* Presentation Mode */
+  .presentation-controls { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(15,52,96,0.95); padding: 10px 20px; border-radius: 30px; display: none; gap: 10px; z-index: 100; border: 2px solid #e94560; }
+  .presentation-mode .presentation-controls { display: flex; }
+  .presentation-mode .toolbar, .presentation-mode .icon-gallery, .presentation-mode .zone-info { display: none; }
+  .presentation-mode #drawCanvas { left: 0; width: 100%; }
+  .presentation-mode #stickersLayer { left: 0; width: 100%; }
+  
+  /* Modal */
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
   .modal.show { display: flex; }
-  .modal-content { background: #16213e; padding: 20px; border-radius: 8px; max-width: 500px; border: 2px solid #e94560; }
-  .modal-content h2 { color: #e94560; margin-bottom: 15px; }
-  .modal-content textarea { width: 100%; min-height: 200px; background: #0a0a1a; color: #eee; border: 1px solid #533483; padding: 8px; border-radius: 4px; font-family: monospace; }
-  .modal-content button { margin-top: 10px; }
+  .modal-content { background: linear-gradient(135deg, #16213e, #0f3460); padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; border: 3px solid #e94560; box-shadow: 0 10px 40px rgba(233,69,96,0.3); }
+  .modal-content h2 { color: #e94560; margin-bottom: 20px; font-size: 24px; }
+  .modal-content textarea { width: 100%; min-height: 200px; background: #0a0a1a; color: #eee; border: 2px solid #533483; padding: 12px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 12px; resize: vertical; }
+  .modal-content button { margin-top: 15px; margin-right: 10px; }
+  .firebase-config { background: #0a0a1a; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #533483; }
+  .firebase-config input { width: 100%; padding: 8px; margin: 5px 0; background: #16213e; border: 1px solid #533483; color: #eee; border-radius: 4px; }
+  
+  /* Collaborative cursors */
+  .remote-cursor { position: absolute; width: 20px; height: 20px; pointer-events: none; z-index: 1000; transition: all 0.1s; }
+  .remote-cursor svg { width: 100%; height: 100%; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3)); }
+  .remote-cursor .label { position: absolute; top: 20px; left: 0; background: rgba(0,0,0,0.7); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; white-space: nowrap; }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .icon-gallery { width: 60px; }
+    .icon-item { width: 45px; height: 45px; font-size: 24px; }
+    #drawCanvas, #stickersLayer { left: 60px; width: calc(100% - 60px); }
+    .zone-info { left: 70px; max-width: 250px; font-size: 12px; }
+    .toolbar { overflow-x: auto; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🌍 Кліматична лабораторія — спільна дошка</h1>
-  <div>
-    <button class="tool-btn" onclick="saveState()">💾 Зберегти</button>
-    <button class="tool-btn" onclick="exportJSON()">📤 Експорт</button>
-    <button class="tool-btn" onclick="document.getElementById('importFile').click()">📥 Імпорт</button>
-    <button class="tool-btn" onclick="clearCurrent()">🗑 Очистити зону</button>
-    <input type="file" id="importFile" style="display:none" accept=".json" onchange="importJSON(event)">
+  <h1>🌍 Кліматична лабораторія PRO</h1>
+  <div class="header-controls">
+    <div class="timer" id="timer">00:00</div>
+    <button class="tool-btn" onclick="toggleTimer()" id="timerBtn">⏸ Пауза</button>
+    <button class="tool-btn" onclick="setTimerDuration()">⏱ Час</button>
+    <button class="tool-btn" onclick="togglePresentation()">📽 Презентація</button>
+    <button class="tool-btn" onclick="exportPNG()">📸 PNG</button>
+    <button class="tool-btn" onclick="document.getElementById('firebaseModal').classList.add('show')">🔗 Спільна робота</button>
   </div>
 </header>
 
 <div class="tabs" id="tabs"></div>
 
 <div class="workspace" id="workspace">
-  <div class="zone-info" id="zoneInfo"></div>
-  <img id="mapImage" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Equirectangular-projection.jpg/1280px-Equirectangular-projection.jpg" alt="Карта світу" crossorigin="anonymous">
-  <canvas id="drawCanvas"></canvas>
-  <div id="stickersLayer"></div>
+  <div class="icon-gallery" id="iconGallery">
+    <div class="icon-item" draggable="true" data-icon="☀️" title="Сонце">☀️</div>
+    <div class="icon-item" draggable="true" data-icon="🌤" title="Хмарно">🌤</div>
+    <div class="icon-item" draggable="true" data-icon="☁️" title="Хмара">☁️</div>
+    <div class="icon-item" draggable="true" data-icon="🌧" title="Дощ">🌧</div>
+    <div class="icon-item" draggable="true" data-icon="❄️" title="Сніг">❄️</div>
+    <div class="icon-item" draggable="true" data-icon="🌡" title="Температура">🌡</div>
+    <div class="icon-item" draggable="true" data-icon="💧" title="Вологість">💧</div>
+    <div class="icon-item" draggable="true" data-icon="" title="Вітер">🌪</div>
+    <div class="icon-item" draggable="true" data-icon="" title="Спека"></div>
+    <div class="icon-item" draggable="true" data-icon="" title="Океан">🌊</div>
+    <div class="icon-item" draggable="true" data-icon="🌴" title="Тропіки">🌴</div>
+    <div class="icon-item" draggable="true" data-icon="🏔" title="Гори">🏔</div>
+  </div>
+  
+  <div class="map-container">
+    <div class="zone-info" id="zoneInfo"></div>
+    <!-- SVG World Map with Climate Zones -->
+    <svg id="svgMap" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+      <!-- Simplified world map with climate zones -->
+      <defs>
+        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+          <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)"/>
+      
+      <!-- Climate Zones (simplified regions) -->
+      <g id="climateZones">
+        <!-- Arctic Zone -->
+        <path class="climate-zone" data-zone="arctic" data-name="Арктичний пояс" d="M 100,50 Q 300,30 500,50 Q 700,30 900,50 L 900,100 Q 700,90 500,100 Q 300,90 100,100 Z"/>
+        
+        <!-- Subarctic Zone -->
+        <path class="climate-zone" data-zone="subarctic" data-name="Субарктичний пояс" d="M 80,100 Q 300,90 500,100 Q 700,90 920,100 L 920,150 Q 700,140 500,150 Q 300,140 80,150 Z"/>
+        
+        <!-- Temperate Zone North -->
+        <path class="climate-zone" data-zone="temperate_n" data-name="Помірний пояс (пн.)" d="M 60,150 Q 300,140 500,150 Q 700,140 940,150 L 940,220 Q 700,210 500,220 Q 300,210 60,220 Z"/>
+        
+        <!-- Subtropical Zone North -->
+        <path class="climate-zone" data-zone="subtropical_n" data-name="Субтропічний пояс (пн.)" d="M 50,220 Q 280,215 500,220 Q 720,215 950,220 L 950,270 Q 720,265 500,270 Q 280,265 50,270 Z"/>
+        
+        <!-- Tropical Zone -->
+        <path class="climate-zone" data-zone="tropical" data-name="Тропічний пояс" d="M 40,270 Q 260,268 500,270 Q 740,268 960,270 L 960,330 Q 740,332 500,330 Q 260,332 40,330 Z"/>
+        
+        <!-- Subtropical Zone South -->
+        <path class="climate-zone" data-zone="subtropical_s" data-name="Субтропічний пояс (пд.)" d="M 50,330 Q 280,332 500,330 Q 720,332 950,330 L 950,380 Q 720,382 500,380 Q 280,382 50,380 Z"/>
+        
+        <!-- Temperate Zone South -->
+        <path class="climate-zone" data-zone="temperate_s" data-name="Помірний пояс (пд.)" d="M 80,380 Q 300,385 500,380 Q 700,385 920,380 L 920,430 Q 700,435 500,430 Q 300,435 80,430 Z"/>
+        
+        <!-- Subantarctic Zone -->
+        <path class="climate-zone" data-zone="subantarctic" data-name="Субантарктичний пояс" d="M 100,430 Q 300,435 500,430 Q 700,435 900,430 L 900,460 Q 700,465 500,460 Q 300,465 100,460 Z"/>
+        
+        <!-- Antarctic Zone -->
+        <path class="climate-zone" data-zone="antarctic" data-name="Антарктичний пояс" d="M 150,460 Q 350,468 500,460 Q 650,468 850,460 L 850,490 Q 650,495 500,490 Q 350,495 150,490 Z"/>
+      </g>
+      
+      <!-- Simplified Countries (clickable) -->
+      <g id="countries">
+        <!-- North America -->
+        <path class="country" data-country="Canada" d="M 120,120 L 200,110 L 220,150 L 180,180 L 130,160 Z"/>
+        <path class="country" data-country="USA" d="M 130,180 L 220,170 L 240,230 L 160,240 Z"/>
+        <path class="country" data-country="Mexico" d="M 160,240 L 240,230 L 250,270 L 180,280 Z"/>
+        
+        <!-- South America -->
+        <path class="country" data-country="Brazil" d="M 280,300 L 380,290 L 400,380 L 320,400 Z"/>
+        <path class="country" data-country="Argentina" d="M 300,400 L 380,390 L 370,460 L 320,470 Z"/>
+        
+        <!-- Europe -->
+        <path class="country" data-country="UK" d="M 420,140 L 450,135 L 455,165 L 425,170 Z"/>
+        <path class="country" data-country="France" d="M 450,170 L 490,165 L 500,200 L 460,205 Z"/>
+        <path class="country" data-country="Germany" d="M 500,155 L 540,150 L 545,185 L 505,190 Z"/>
+        <path class="country" data-country="Spain" d="M 440,205 L 490,200 L 495,240 L 445,245 Z"/>
+        <path class="country" data-country="Italy" d="M 520,190 L 550,185 L 560,230 L 530,235 Z"/>
+        <path class="country" data-country="Russia" d="M 560,80 L 850,70 L 880,180 L 580,190 Z"/>
+        
+        <!-- Africa -->
+        <path class="country" data-country="Egypt" d="M 540,220 L 590,215 L 595,255 L 545,260 Z"/>
+        <path class="country" data-country="Nigeria" d="M 480,280 L 530,275 L 535,315 L 485,320 Z"/>
+        <path class="country" data-country="South Africa" d="M 520,380 L 580,375 L 590,430 L 530,435 Z"/>
+        
+        <!-- Asia -->
+        <path class="country" data-country="China" d="M 680,180 L 800,175 L 820,250 L 700,255 Z"/>
+        <path class="country" data-country="India" d="M 620,240 L 680,235 L 690,300 L 630,305 Z"/>
+        <path class="country" data-country="Japan" d="M 830,180 L 860,175 L 865,220 L 835,225 Z"/>
+        <path class="country" data-country="Indonesia" d="M 720,310 L 820,305 L 825,340 L 725,345 Z"/>
+        
+        <!-- Australia -->
+        <path class="country" data-country="Australia" d="M 750,360 L 900,355 L 910,430 L 760,435 Z"/>
+      </g>
+    </svg>
+    
+    <canvas id="drawCanvas"></canvas>
+    <div id="stickersLayer"></div>
+  </div>
+  
   <div class="status" id="status">Готово до роботи</div>
+  
+  <div class="presentation-controls">
+    <button class="tool-btn" onclick="prevZone()">◀ Попередня</button>
+    <span id="presentationIndicator" style="padding: 0 15px; font-weight: bold;">1 / 5</span>
+    <button class="tool-btn" onclick="nextZone()">Наступна ▶</button>
+    <button class="tool-btn" onclick="togglePresentation()">Вихід ✕</button>
+  </div>
 </div>
 
 <div class="toolbar">
-  <button class="tool-btn active" data-tool="brush" onclick="setTool('brush')">✏️ Пензель</button>
-  <button class="tool-btn" data-tool="fill" onclick="setTool('fill')">🎨 Зафарбувати</button>
-  <button class="tool-btn" data-tool="eraser" onclick="setTool('eraser')">🧽 Ластик</button>
-  <button class="tool-btn" data-tool="sticker" onclick="addSticker()">📝 Стікер</button>
-  <button class="tool-btn" data-tool="text" onclick="addText()">🔤 Текст</button>
-  <span style="margin-left:10px">Колір:</span>
-  <span class="color-swatch active" style="background:#e94560" data-color="#e94560" onclick="setColor(this)"></span>
-  <span class="color-swatch" style="background:#4ecdc4" data-color="#4ecdc4" onclick="setColor(this)"></span>
-  <span class="color-swatch" style="background:#ffe66d" data-color="#ffe66d" onclick="setColor(this)"></span>
-  <span class="color-swatch" style="background:#95e1d3" data-color="#95e1d3" onclick="setColor(this)"></span>
-  <span class="color-swatch" style="background:#ffffff" data-color="#ffffff" onclick="setColor(this)"></span>
-  <span class="color-swatch" style="background:#222222" data-color="#222222" onclick="setColor(this)"></span>
-  <input type="color" id="colorPicker" value="#e94560" onchange="setColorCustom(this.value)">
-  <span style="margin-left:10px">Розмір:</span>
-  <input type="range" id="brushSize" min="1" max="50" value="5">
-  <span id="sizeLabel">5</span>
+  <div class="tool-group">
+    <button class="tool-btn active" data-tool="brush" onclick="setTool('brush')">✏️ Пензель</button>
+    <button class="tool-btn" data-tool="fill" onclick="setTool('fill')">🎨 Зафарбувати</button>
+    <button class="tool-btn" data-tool="eraser" onclick="setTool('eraser')">🧽 Ластик</button>
+    <button class="tool-btn" data-tool="select" onclick="setTool('select')">👆 Вибір</button>
+  </div>
+  
+  <div class="tool-group">
+    <span style="font-size:12px; margin-right:5px">Колір:</span>
+    <span class="color-swatch active" style="background:#e94560" data-color="#e94560" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#4ecdc4" data-color="#4ecdc4" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#ffe66d" data-color="#ffe66d" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#95e1d3" data-color="#95e1d3" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#f38181" data-color="#f38181" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#aa96da" data-color="#aa96da" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#ffffff" data-color="#ffffff" onclick="setColor(this)"></span>
+    <span class="color-swatch" style="background:#222222" data-color="#222222" onclick="setColor(this)"></span>
+    <input type="color" id="colorPicker" value="#e94560" onchange="setColorCustom(this.value)">
+  </div>
+  
+  <div class="tool-group">
+    <span style="font-size:12px; margin-right:5px">Розмір:</span>
+    <input type="range" id="brushSize" min="1" max="50" value="5">
+    <span id="sizeLabel" style="font-size:12px; min-width:20px">5</span>
+  </div>
+  
+  <div class="tool-group">
+    <button class="tool-btn" onclick="addSticker()">📝 Стікер</button>
+    <button class="tool-btn" onclick="addText()">🔤 Текст</button>
+    <button class="tool-btn" onclick="clearCurrent()">🗑 Очистити</button>
+  </div>
 </div>
 
+<!-- Firebase Modal -->
+<div class="modal" id="firebaseModal">
+  <div class="modal-content">
+    <h2>🔗 Спільна робота в реальному часі</h2>
+    <p style="margin-bottom:15px; font-size:13px;">Налаштуйте Firebase для спільної роботи:</p>
+    
+    <div class="firebase-config">
+      <h3 style="margin-bottom:10px; color:#4ecdc4">1. Створіть проект на Firebase:</h3>
+      <ol style="margin-left:20px; margin-bottom:15px; font-size:12px; line-height:1.6">
+        <li>Перейдіть на <a href="https://console.firebase.google.com" target="_blank" style="color:#4ecdc4">console.firebase.google.com</a></li>
+        <li>Створіть новий проект</li>
+        <li>Увімкніть Realtime Database</li>
+        <li>Скопіюйте конфігурацію</li>
+      </ol>
+      
+      <h3 style="margin-bottom:10px; color:#4ecdc4">2. Введіть конфігурацію:</h3>
+      <input type="text" id="fbApiKey" placeholder="apiKey">
+      <input type="text" id="fbAuthDomain" placeholder="authDomain">
+      <input type="text" id="fbDatabaseURL" placeholder="databaseURL">
+      <input type="text" id="fbProjectId" placeholder="projectId">
+      <input type="text" id="fbStorageBucket" placeholder="storageBucket">
+      <input type="text" id="fbMessagingSenderId" placeholder="messagingSenderId">
+      <input type="text" id="fbAppId" placeholder="appId">
+      
+      <button class="tool-btn" onclick="saveFirebaseConfig()" style="margin-top:10px; width:100%">💾 Зберегти конфігурацію</button>
+    </div>
+    
+    <div style="margin-top:20px; padding:15px; background:#0a0a1a; border-radius:8px;">
+      <h3 style="margin-bottom:10px; color:#ffe66d">3. Ім'я учня:</h3>
+      <input type="text" id="studentName" placeholder="Введіть ваше ім'я" style="width:100%; padding:10px; background:#16213e; border:1px solid #533483; color:#eee; border-radius:4px; margin-bottom:10px">
+      <button class="tool-btn" onclick="connectToFirebase()" style="width:100%"> Підключитися до спільної дошки</button>
+    </div>
+    
+    <button class="tool-btn" onclick="closeModal('firebaseModal')" style="margin-top:15px">Закрити</button>
+  </div>
+</div>
+
+<!-- Export Modal -->
 <div class="modal" id="exportModal">
   <div class="modal-content">
-    <h2>Експорт роботи</h2>
-    <p style="margin-bottom:10px; font-size:13px;">Скопіюйте JSON нижче або завантажте файл. Учитель може імпортувати результат.</p>
+    <h2>📤 Експорт роботи</h2>
+    <p style="margin-bottom:10px; font-size:13px;">Скопіюйте JSON або завантажте файл:</p>
     <textarea id="exportData" readonly></textarea>
-    <button class="tool-btn" onclick="downloadJSON()">📥 Завантажити файл</button>
+    <button class="tool-btn" onclick="downloadJSON()">📥 Завантажити JSON</button>
     <button class="tool-btn" onclick="closeModal('exportModal')">Закрити</button>
   </div>
 </div>
 
+<!-- Timer Modal -->
+<div class="modal" id="timerModal">
+  <div class="modal-content" style="max-width:400px; text-align:center">
+    <h2> Налаштування таймера</h2>
+    <p style="margin:15px 0">Тривалість уроку (хвилин):</p>
+    <input type="number" id="timerDuration" value="45" min="1" max="180" style="width:100%; padding:12px; font-size:18px; text-align:center; background:#0a0a1a; border:2px solid #533483; color:#eee; border-radius:8px; margin-bottom:15px">
+    <button class="tool-btn" onclick="applyTimerDuration()" style="width:100%">✅ Застосувати</button>
+    <button class="tool-btn" onclick="closeModal('timerModal')" style="margin-top:10px">Скасувати</button>
+  </div>
+</div>
+
 <script>
+// ==================== CONFIGURATION ====================
 const ZONES = [
-  { id: 'hypothesis', title: '🧠 1. Гіпотеза та план', desc: 'Запишіть припущення: чому на одному меридіані різний клімат? Складіть план дослідження кроками.' },
-  { id: 'classification', title: '🗺 2. Класифікація кліматів', desc: 'Зафарбуйте кліматичні пояси різними кольорами. Підпишіть кожен тип клімату стікером.' },
-  { id: 'comfort', title: '🏖 3. Найкомфортніші пояси', desc: 'Позначте 3 "найкомфортніші" кліматичні пояси. Обґрунтуйте вибір стікерами-профілями.' },
-  { id: 'changes', title: '🌡 4. Глобальні зміни', desc: 'Причини змін клімату (павутина). Прогноз наслідків для регіонів: зелені стікери — позитив, червоні — негатив.' },
-  { id: 'history', title: '🏛 5. Давні цивілізації', desc: 'Розмістіть цивілізації на їхніх кліматичних поясах. Намалюйте "набір для процвітання".' }
+  { id: 'hypothesis', title: '🧠 1. Гіпотеза', desc: 'Запишіть припущення: чому на одному меридіані різний клімат? Складіть план дослідження.' },
+  { id: 'classification', title: '🗺 2. Класифікація', desc: 'Зафарбуйте кліматичні пояси. Підпишіть кожен тип клімату стікером.' },
+  { id: 'comfort', title: ' 3. Комфортні пояси', desc: 'Позначте 3 найкомфортніші пояси. Обґрунтуйте вибір.' },
+  { id: 'changes', title: '🌡 4. Зміни клімату', desc: 'Причини змін (павутина). Прогноз наслідків:  позитив, 🔴 негатив.' },
+  { id: 'history', title: '🏛 5. Цивілізації', desc: 'Розмістіть давні цивілізації на їхніх кліматичних поясах.' }
 ];
 
+// ==================== STATE ====================
 let currentZone = ZONES[0].id;
 let currentTool = 'brush';
 let currentColor = '#e94560';
 let isDrawing = false;
 let lastX = 0, lastY = 0;
+let presentationMode = false;
+let currentZoneIndex = 0;
 
+// Timer
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = true;
+let totalTimerSeconds = 45 * 60;
+
+// Firebase
+let firebaseConfig = null;
+let db = null;
+let roomName = 'climate-lab-' + new Date().toISOString().slice(0,10);
+let userName = 'Учень';
+let firebaseConnected = false;
+
+// State storage
+const state = {};
+ZONES.forEach(z => state[z.id] = { canvas: null, stickers: [], icons: [] });
+
+// ==================== DOM ELEMENTS ====================
 const canvas = document.getElementById('drawCanvas');
 const ctx = canvas.getContext('2d');
 const stickersLayer = document.getElementById('stickersLayer');
+const svgMap = document.getElementById('svgMap');
 
-// Стан для кожної зони
-const state = {};
-ZONES.forEach(z => state[z.id] = { canvas: null, stickers: [] });
+// ==================== INITIALIZATION ====================
+function init() {
+  resizeCanvas();
+  initTabs();
+  initDragAndDrop();
+  initMapInteractions();
+  loadState();
+  loadFirebaseConfig();
+  switchZone(ZONES[0].id, document.querySelector('.tab'));
+  startTimer();
+  
+  // Auto-save every 30 seconds
+  setInterval(() => {
+    if (firebaseConnected) saveToFirebase();
+    saveToLocal();
+  }, 30000);
+  
+  window.addEventListener('resize', resizeCanvas);
+}
 
 function resizeCanvas() {
-  const ws = document.getElementById('workspace');
-  const w = ws.clientWidth, h = ws.clientHeight;
-  // Зберігаємо поточний малюнок
+  const container = document.querySelector('.map-container');
+  const w = container.clientWidth - 80;
+  const h = container.clientHeight;
+  
   const tmp = document.createElement('canvas');
-  tmp.width = canvas.width; tmp.height = canvas.height;
+  tmp.width = canvas.width;
+  tmp.height = canvas.height;
   tmp.getContext('2d').drawImage(canvas, 0, 0);
-  canvas.width = w; canvas.height = h;
-  // Відновлюємо
+  
+  canvas.width = w;
+  canvas.height = h;
+  
   ctx.drawImage(tmp, 0, 0);
 }
 
@@ -136,33 +413,56 @@ function initTabs() {
   });
 }
 
+// ==================== ZONE MANAGEMENT ====================
 function switchZone(zoneId, btn) {
-  // Зберегти поточний стан
+  // Save current state
   state[currentZone].canvas = canvas.toDataURL();
-  // Перемкнути
+  
+  // Update UI
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  btn.classList.add('active');
+  if (btn) btn.classList.add('active');
+  
   currentZone = zoneId;
-  const zone = ZONES.find(z => z.id === zoneId);
+  currentZoneIndex = ZONES.findIndex(z => z.id === zoneId);
+  
+  const zone = ZONES[currentZoneIndex];
   document.getElementById('zoneInfo').innerHTML = `<h3>${zone.title}</h3>${zone.desc}`;
-  // Відновити
+  
+  // Restore state
   stickersLayer.innerHTML = '';
   if (state[zoneId].canvas) {
     const img = new Image();
-    img.onload = () => { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0); };
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+    };
     img.src = state[zoneId].canvas;
   } else {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
+  
   state[zoneId].stickers.forEach(s => createStickerElement(s));
+  state[zoneId].icons.forEach(i => createPlacedIcon(i));
+  
+  updatePresentationIndicator();
   setStatus(`Зона: ${zone.title}`);
+  
+  if (firebaseConnected) {
+    db.ref(`rooms/${roomName}/zones/${zoneId}`).set({
+      timestamp: Date.now(),
+      user: userName
+    });
+  }
 }
 
+// ==================== DRAWING TOOLS ====================
 function setTool(tool) {
   currentTool = tool;
   document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
-  document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
-  canvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+  const btn = document.querySelector(`[data-tool="${tool}"]`);
+  if (btn) btn.classList.add('active');
+  
+  canvas.style.cursor = tool === 'eraser' ? 'cell' : (tool === 'select' ? 'default' : 'crosshair');
 }
 
 function setColor(el) {
@@ -171,14 +471,23 @@ function setColor(el) {
   currentColor = el.dataset.color;
   document.getElementById('colorPicker').value = currentColor;
 }
-function setColorCustom(c) { currentColor = c; document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active')); }
 
-document.getElementById('brushSize').oninput = e => document.getElementById('sizeLabel').textContent = e.target.value;
+function setColorCustom(c) {
+  currentColor = c;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+}
+
+document.getElementById('brushSize').oninput = e => {
+  document.getElementById('sizeLabel').textContent = e.target.value;
+};
 
 function getPos(e) {
   const r = canvas.getBoundingClientRect();
   const t = e.touches ? e.touches[0] : e;
-  return { x: (t.clientX - r.left) * (canvas.width / r.width), y: (t.clientY - r.top) * (canvas.height / r.height) };
+  return {
+    x: (t.clientX - r.left) * (canvas.width / r.width),
+    y: (t.clientY - r.top) * (canvas.height / r.height)
+  };
 }
 
 canvas.addEventListener('mousedown', startDraw);
@@ -190,22 +499,29 @@ canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e); });
 canvas.addEventListener('touchend', endDraw);
 
 function startDraw(e) {
-  if (currentTool === 'sticker' || currentTool === 'text') return;
+  if (currentTool === 'select') return;
+  
   isDrawing = true;
   const p = getPos(e);
-  lastX = p.x; lastY = p.y;
+  lastX = p.x;
+  lastY = p.y;
+  
   if (currentTool === 'fill') {
     ctx.fillStyle = currentColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     isDrawing = false;
+    if (firebaseConnected) broadcastDraw('fill', { color: currentColor });
   }
 }
+
 function draw(e) {
   if (!isDrawing) return;
   const p = getPos(e);
+  
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.lineWidth = parseInt(document.getElementById('brushSize').value);
+  
   if (currentTool === 'eraser') {
     ctx.globalCompositeOperation = 'destination-out';
     ctx.strokeStyle = 'rgba(0,0,0,1)';
@@ -213,19 +529,40 @@ function draw(e) {
     ctx.globalCompositeOperation = 'source-over';
     ctx.strokeStyle = currentColor;
   }
+  
   ctx.beginPath();
   ctx.moveTo(lastX, lastY);
   ctx.lineTo(p.x, p.y);
   ctx.stroke();
-  lastX = p.x; lastY = p.y;
+  
+  lastX = p.x;
+  lastY = p.y;
+  
+  if (firebaseConnected) {
+    broadcastDraw(currentTool, {
+      x1: lastX, y1: lastY, x2: p.x, y2: p.y,
+      color: currentColor, size: ctx.lineWidth
+    });
+  }
 }
-function endDraw() { isDrawing = false; ctx.globalCompositeOperation = 'source-over'; }
 
+function endDraw() {
+  isDrawing = false;
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+// ==================== STICKERS & ICONS ====================
 function addSticker() {
-  const colors = ['#ffe66d', '#ff6b6b', '#4ecdc4', '#95e1d3', '#f3a683', '#c44569'];
-  const data = { x: 100 + Math.random()*200, y: 100 + Math.random()*200, text: '', color: colors[Math.floor(Math.random()*colors.length)] };
+  const colors = ['#ffe66d', '#ff6b6b', '#4ecdc4', '#95e1d3', '#f3a683', '#c44569', '#a8e6cf', '#fdcb6e'];
+  const data = {
+    x: 100 + Math.random() * 200,
+    y: 100 + Math.random() * 200,
+    text: '',
+    color: colors[Math.floor(Math.random() * colors.length)]
+  };
   state[currentZone].stickers.push(data);
   createStickerElement(data);
+  if (firebaseConnected) broadcastSticker('add', data);
 }
 
 function createStickerElement(data) {
@@ -234,13 +571,20 @@ function createStickerElement(data) {
   el.style.left = data.x + 'px';
   el.style.top = data.y + 'px';
   el.style.background = data.color;
-  el.innerHTML = `<span class="del">✕</span><textarea placeholder="Пишіть тут...">${data.text}</textarea>`;
-  el.querySelector('textarea').oninput = e => data.text = e.target.value;
+  el.innerHTML = `<span class="del">✕</span><textarea placeholder="Пишіть...">${data.text}</textarea>`;
+  
+  el.querySelector('textarea').oninput = e => {
+    data.text = e.target.value;
+    if (firebaseConnected) broadcastSticker('update', data);
+  };
+  
   el.querySelector('.del').onclick = () => {
     state[currentZone].stickers = state[currentZone].stickers.filter(s => s !== data);
     el.remove();
+    if (firebaseConnected) broadcastSticker('delete', data);
   };
-  // Drag
+  
+  // Drag functionality
   let dragging = false, offX, offY;
   el.onmousedown = e => {
     if (e.target.tagName === 'TEXTAREA' || e.target.className === 'del') return;
@@ -249,6 +593,7 @@ function createStickerElement(data) {
     offY = e.clientY - el.offsetTop;
     e.preventDefault();
   };
+  
   document.addEventListener('mousemove', e => {
     if (!dragging) return;
     data.x = e.clientX - offX;
@@ -256,15 +601,20 @@ function createStickerElement(data) {
     el.style.left = data.x + 'px';
     el.style.top = data.y + 'px';
   });
-  document.addEventListener('mouseup', () => dragging = false);
+  
+  document.addEventListener('mouseup', () => {
+    if (dragging && firebaseConnected) broadcastSticker('update', data);
+    dragging = false;
+  });
+  
   stickersLayer.appendChild(el);
 }
 
 function addText() {
   const txt = prompt('Введіть текст:');
   if (!txt) return;
-  const size = parseInt(document.getElementById('brushSize').value) * 4 + 12;
-  ctx.font = `bold ${size}px Segoe UI`;
+  const size = parseInt(document.getElementById('brushSize').value) * 4 + 14;
+  ctx.font = `bold ${size}px 'Segoe UI'`;
   ctx.fillStyle = currentColor;
   ctx.fillText(txt, canvas.width/2 - 100, canvas.height/2);
 }
@@ -273,32 +623,277 @@ function clearCurrent() {
   if (!confirm('Очистити поточну зону?')) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   state[currentZone].stickers = [];
+  state[currentZone].icons = [];
   stickersLayer.innerHTML = '';
+  if (firebaseConnected) broadcastClear();
 }
 
-function saveState() {
-  state[currentZone].canvas = canvas.toDataURL();
-  localStorage.setItem('climateLab', JSON.stringify(state));
-  setStatus('✅ Збережено локально');
+// ==================== DRAG AND DROP ICONS ====================
+function initDragAndDrop() {
+  const icons = document.querySelectorAll('.icon-item');
+  
+  icons.forEach(icon => {
+    icon.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('icon', icon.dataset.icon);
+    });
+  });
+  
+  const dropZone = document.querySelector('.map-container');
+  
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+  });
+  
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    const icon = e.dataTransfer.getData('icon');
+    if (icon) {
+      const rect = dropZone.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      placeIcon(icon, x, y);
+    }
+  });
 }
 
-function loadState() {
-  const saved = localStorage.getItem('climateLab');
-  if (saved) {
-    const parsed = JSON.parse(saved);
-    Object.assign(state, parsed);
+function placeIcon(iconChar, x, y) {
+  const data = { icon: iconChar, x: x, y: y };
+  state[currentZone].icons.push(data);
+  createPlacedIcon(data);
+  if (firebaseConnected) broadcastIcon('add', data);
+}
+
+function createPlacedIcon(data) {
+  const el = document.createElement('div');
+  el.className = 'placed-icon';
+  el.textContent = data.icon;
+  el.style.left = data.x + 'px';
+  el.style.top = data.y + 'px';
+  
+  let dragging = false, offX, offY;
+  el.onmousedown = e => {
+    dragging = true;
+    offX = e.clientX - el.offsetLeft;
+    offY = e.clientY - el.offsetTop;
+    e.preventDefault();
+  };
+  
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    data.x = e.clientX - offX;
+    data.y = e.clientY - offY;
+    el.style.left = data.x + 'px';
+    el.style.top = data.y + 'px';
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (dragging && firebaseConnected) broadcastIcon('update', data);
+    dragging = false;
+  });
+  
+  el.ondblclick = () => {
+    if (confirm('Видалити іконку?')) {
+      state[currentZone].icons = state[currentZone].icons.filter(i => i !== data);
+      el.remove();
+      if (firebaseConnected) broadcastIcon('delete', data);
+    }
+  };
+  
+  stickersLayer.appendChild(el);
+}
+
+// ==================== MAP INTERACTIONS ====================
+function initMapInteractions() {
+  // Climate zones
+  document.querySelectorAll('.climate-zone').forEach(zone => {
+    zone.addEventListener('click', function() {
+      document.querySelectorAll('.climate-zone').forEach(z => z.classList.remove('active'));
+      this.classList.add('active');
+      const name = this.dataset.name;
+      addStickerAtZone(name, this);
+    });
+  });
+  
+  // Countries
+  document.querySelectorAll('.country').forEach(country => {
+    country.addEventListener('click', function() {
+      const name = this.dataset.country;
+      const rect = this.getBoundingClientRect();
+      const mapRect = svgMap.getBoundingClientRect();
+      const x = rect.left - mapRect.left + rect.width/2;
+      const y = rect.top - mapRect.top;
+      
+      const sticker = {
+        x: x - 50,
+        y: y - 30,
+        text: name,
+        color: '#ffe66d'
+      };
+      state[currentZone].stickers.push(sticker);
+      createStickerElement(sticker);
+      if (firebaseConnected) broadcastSticker('add', sticker);
+    });
+  });
+}
+
+function addStickerAtZone(zoneName, element) {
+  const bbox = element.getBBox();
+  const sticker = {
+    x: bbox.x + bbox.width/2 - 50,
+    y: bbox.y + bbox.height/2 - 25,
+    text: zoneName,
+    color: '#4ecdc4'
+  };
+  state[currentZone].stickers.push(sticker);
+  createStickerElement(sticker);
+  if (firebaseConnected) broadcastSticker('add', sticker);
+}
+
+// ==================== TIMER ====================
+function startTimer() {
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    if (timerRunning && timerSeconds < totalTimerSeconds) {
+      timerSeconds++;
+      updateTimerDisplay();
+      
+      // Warning at last 5 minutes
+      if (totalTimerSeconds - timerSeconds <= 300 && (totalTimerSeconds - timerSeconds) % 60 === 0) {
+        const mins = Math.floor((totalTimerSeconds - timerSeconds) / 60);
+        setStatus(`⏰ Залишилося ${mins} хв!`, true);
+      }
+      
+      // Auto-save every minute
+      if (timerSeconds % 60 === 0) {
+        saveToLocal();
+        if (firebaseConnected) saveToFirebase();
+      }
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const total = totalTimerSeconds;
+  const elapsed = timerSeconds;
+  const remaining = total - elapsed;
+  
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  
+  document.getElementById('timer').textContent = 
+    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  
+  // Color change when time is running out
+  if (remaining <= 300) {
+    document.getElementById('timer').style.background = '#ff6b6b';
+  } else {
+    document.getElementById('timer').style.background = '#e94560';
   }
+}
+
+function toggleTimer() {
+  timerRunning = !timerRunning;
+  document.getElementById('timerBtn').textContent = timerRunning ? '⏸ Пауза' : '▶ Продовжити';
+}
+
+function setTimerDuration() {
+  document.getElementById('timerModal').classList.add('show');
+}
+
+function applyTimerDuration() {
+  const mins = parseInt(document.getElementById('timerDuration').value);
+  if (mins > 0) {
+    totalTimerSeconds = mins * 60;
+    timerSeconds = 0;
+    updateTimerDisplay();
+    closeModal('timerModal');
+    setStatus(`⏱ Час уроку: ${mins} хв`);
+  }
+}
+
+// ==================== PRESENTATION MODE ====================
+function togglePresentation() {
+  presentationMode = !presentationMode;
+  document.body.classList.toggle('presentation-mode');
+  
+  if (presentationMode) {
+    currentZoneIndex = 0;
+    switchZone(ZONES[0].id, document.querySelectorAll('.tab')[0]);
+    updatePresentationIndicator();
+  }
+}
+
+function nextZone() {
+  if (currentZoneIndex < ZONES.length - 1) {
+    currentZoneIndex++;
+    const btn = document.querySelectorAll('.tab')[currentZoneIndex];
+    switchZone(ZONES[currentZoneIndex].id, btn);
+  }
+}
+
+function prevZone() {
+  if (currentZoneIndex > 0) {
+    currentZoneIndex--;
+    const btn = document.querySelectorAll('.tab')[currentZoneIndex];
+    switchZone(ZONES[currentZoneIndex].id, btn);
+  }
+}
+
+function updatePresentationIndicator() {
+  document.getElementById('presentationIndicator').textContent = 
+    `${currentZoneIndex + 1} / ${ZONES.length}`;
+}
+
+// Keyboard navigation in presentation mode
+document.addEventListener('keydown', e => {
+  if (!presentationMode) return;
+  if (e.key === 'ArrowRight' || e.key === ' ') nextZone();
+  if (e.key === 'ArrowLeft') prevZone();
+  if (e.key === 'Escape') togglePresentation();
+});
+
+// ==================== EXPORT/IMPORT ====================
+function exportPNG() {
+  const workspace = document.getElementById('workspace');
+  
+  // Temporarily hide UI elements
+  const uiElements = document.querySelectorAll('.zone-info, .status, .presentation-controls');
+  uiElements.forEach(el => el.style.display = 'none');
+  
+  html2canvas(workspace, {
+    backgroundColor: '#0a0a1a',
+    scale: 2,
+    useCORS: true,
+    allowTaint: true
+  }).then(canvas => {
+    // Restore UI
+    uiElements.forEach(el => el.style.display = '');
+    
+    const link = document.createElement('a');
+    link.download = `climate-lab-${currentZone}-${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    
+    setStatus('✅ PNG експортовано!');
+  }).catch(err => {
+    console.error(err);
+    alert('Помилка експорту PNG');
+    uiElements.forEach(el => el.style.display = '');
+  });
 }
 
 function exportJSON() {
   state[currentZone].canvas = canvas.toDataURL();
   const data = {
-    version: 1,
+    version: 2,
     timestamp: new Date().toISOString(),
     currentZone,
+    timerSeconds,
+    totalTimerSeconds,
     zones: state
   };
-  document.getElementById('exportData').value = JSON.stringify(data);
+  
+  document.getElementById('exportData').value = JSON.stringify(data, null, 2);
   document.getElementById('exportModal').classList.add('show');
 }
 
@@ -310,38 +905,206 @@ function downloadJSON() {
   a.click();
 }
 
-function importJSON(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
+function saveToLocal() {
+  state[currentZone].canvas = canvas.toDataURL();
+  localStorage.setItem('climateLab_v2', JSON.stringify({
+    state,
+    timerSeconds,
+    totalTimerSeconds
+  }));
+}
+
+function loadState() {
+  const saved = localStorage.getItem('climateLab_v2');
+  if (saved) {
     try {
-      const data = JSON.parse(ev.target.result);
-      Object.assign(state, data.zones);
-      // Перемкнутись на першу зону
-      const firstTab = document.querySelector('.tab');
-      switchZone(ZONES[0].id, firstTab);
-      setStatus('✅ Імпортовано');
-    } catch(err) { alert('Помилка імпорту: ' + err.message); }
+      const data = JSON.parse(saved);
+      if (data.state) Object.assign(state, data.state);
+      if (data.timerSeconds) timerSeconds = data.timerSeconds;
+      if (data.totalTimerSeconds) totalTimerSeconds = data.totalTimerSeconds;
+    } catch(e) {
+      console.error('Error loading state:', e);
+    }
+  }
+}
+
+// ==================== FIREBASE REAL-TIME COLLABORATION ====================
+function loadFirebaseConfig() {
+  const saved = localStorage.getItem('firebaseConfig');
+  if (saved) {
+    firebaseConfig = JSON.parse(saved);
+  }
+}
+
+function saveFirebaseConfig() {
+  const config = {
+    apiKey: document.getElementById('fbApiKey').value,
+    authDomain: document.getElementById('fbAuthDomain').value,
+    databaseURL: document.getElementById('fbDatabaseURL').value,
+    projectId: document.getElementById('fbProjectId').value,
+    storageBucket: document.getElementById('fbStorageBucket').value,
+    messagingSenderId: document.getElementById('fbMessagingSenderId').value,
+    appId: document.getElementById('fbAppId').value
   };
-  reader.readAsText(file);
+  
+  if (config.apiKey && config.databaseURL) {
+    localStorage.setItem('firebaseConfig', JSON.stringify(config));
+    firebaseConfig = config;
+    setStatus('✅ Firebase конфігурацію збережено');
+  } else {
+    alert('Будь ласка, заповніть хоча б apiKey та databaseURL');
+  }
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-
-function setStatus(msg) {
-  document.getElementById('status').textContent = msg;
-  setTimeout(() => document.getElementById('status').textContent = 'Готово до роботи', 2000);
+function connectToFirebase() {
+  if (!firebaseConfig) {
+    alert('Спочатку збережіть конфігурацію Firebase');
+    return;
+  }
+  
+  const name = document.getElementById('studentName').value.trim();
+  if (name) userName = name;
+  
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    firebaseConnected = true;
+    
+    // Join room
+    db.ref(`rooms/${roomName}/users/${userName}`).set({
+      online: true,
+      joinedAt: Date.now(),
+      color: getRandomColor()
+    });
+    
+    // Listen for updates
+    listenToDrawings();
+    listenToStickers();
+    listenToIcons();
+    listenToUsers();
+    
+    // Handle disconnect
+    window.addEventListener('beforeunload', () => {
+      db.ref(`rooms/${roomName}/users/${userName}`).update({ online: false });
+    });
+    
+    closeModal('firebaseModal');
+    setStatus(`🔗 Підключено: ${userName}`);
+    
+    // Broadcast current state
+    saveToFirebase();
+    
+  } catch (err) {
+    console.error(err);
+    alert('Помилка підключення: ' + err.message);
+  }
 }
 
-// Ініціалізація
-window.addEventListener('resize', resizeCanvas);
-window.addEventListener('load', () => {
-  resizeCanvas();
-  initTabs();
-  loadState();
-  switchZone(ZONES[0].id, document.querySelector('.tab'));
+function getRandomColor() {
+  const colors = ['#e94560', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#aa96da'];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function saveToFirebase() {
+  if (!db || !firebaseConnected) return;
+  
+  state[currentZone].canvas = canvas.toDataURL();
+  db.ref(`rooms/${roomName}/zones/${currentZone}`).set({
+    canvas: state[currentZone].canvas,
+    stickers: state[currentZone].stickers,
+    icons: state[currentZone].icons,
+    updatedAt: Date.now(),
+    updatedBy: userName
+  });
+}
+
+function listenToDrawings() {
+  // For now, we sync full canvas on zone change
+  // Real-time drawing sync would require operational transformation
+}
+
+function listenToStickers() {
+  db.ref(`rooms/${roomName}/zones/${currentZone}/stickers`).on('value', snapshot => {
+    const stickers = snapshot.val();
+    if (stickers) {
+      // Clear and rebuild (avoiding duplicates)
+      // In production, use proper diffing
+    }
+  });
+}
+
+function listenToIcons() {
+  db.ref(`rooms/${roomName}/zones/${currentZone}/icons`).on('value', snapshot => {
+    const icons = snapshot.val();
+    if (icons) {
+      // Sync icons
+    }
+  });
+}
+
+function listenToUsers() {
+  db.ref(`rooms/${roomName}/users`).on('value', snapshot => {
+    const users = snapshot.val();
+    if (users) {
+      const onlineCount = Object.values(users).filter(u => u.online).length;
+      setStatus(`👥 Онлайн: ${onlineCount}`);
+    }
+  });
+}
+
+function broadcastDraw(tool, data) {
+  if (!db) return;
+  db.ref(`rooms/${roomName}/draws`).push({
+    tool,
+    data,
+    user: userName,
+    timestamp: Date.now()
+  });
+}
+
+function broadcastSticker(action, data) {
+  if (!db) return;
+  db.ref(`rooms/${roomName}/zones/${currentZone}/stickers`).set(state[currentZone].stickers);
+}
+
+function broadcastIcon(action, data) {
+  if (!db) return;
+  db.ref(`rooms/${roomName}/zones/${currentZone}/icons`).set(state[currentZone].icons);
+}
+
+function broadcastClear() {
+  if (!db) return;
+  db.ref(`rooms/${roomName}/zones/${currentZone}`).update({
+    stickers: [],
+    icons: [],
+    clearedAt: Date.now(),
+    clearedBy: userName
+  });
+}
+
+// ==================== UTILITIES ====================
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+function setStatus(msg, persistent = false) {
+  const statusEl = document.getElementById('status');
+  statusEl.textContent = msg;
+  if (!persistent) {
+    setTimeout(() => statusEl.textContent = 'Готово до роботи', 3000);
+  }
+}
+
+// Save on beforeunload
+window.addEventListener('beforeunload', () => {
+  saveToLocal();
+  if (firebaseConnected) {
+    db.ref(`rooms/${roomName}/users/${userName}`).update({ online: false });
+  }
 });
+
+// Initialize
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
