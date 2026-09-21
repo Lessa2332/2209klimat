@@ -2,177 +2,808 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>🌍 Кліматична лабораторія - Спільна дошка</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Підключення бібліотеки для скріншотів -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- Підключення Firebase (Compat версія для простоти в одному файлі) -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#03121f">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Кліматична лабораторія — спільна інтерактивна дошка з реальною географічною картою та зафарбованими кліматичними поясами.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Клімат-лаб">
+<meta name="format-detection" content="telephone=no">
+<title>🌍 Кліматична лабораторія — Кліматичні пояси</title>
+
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="https://realtime-6af79-default-rtdb.europe-west1.firebasedatabase.app">
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #eee; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-  
-  header { background: linear-gradient(90deg, #0f3460, #16213e); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #e94560; }
-  header h1 { font-size: 18px; color: #fff; }
-  .header-controls { display: flex; gap: 8px; align-items: center; }
-  
-  .timer { background: #e94560; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 16px; }
-  
-  .group-panel { background: #16213e; padding: 10px 20px; display: flex; gap: 10px; align-items: center; border-bottom: 2px solid #4ecdc4; }
-  .group-panel .label { font-weight: bold; color: #4ecdc4; margin-right: 10px; }
-  .group-btn { padding: 8px 20px; background: #0f3460; border: 2px solid #533483; color: #eee; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-weight: bold; }
-  .group-btn:hover { background: #533483; }
-  .group-btn.active { background: #4ecdc4; border-color: #4ecdc4; color: #1a1a2e; }
-  
-  .tabs { display: flex; gap: 5px; padding: 10px; background: #0f3460; overflow-x: auto; }
-  .tab { padding: 10px 20px; background: #16213e; border: none; color: #aaa; border-radius: 8px; cursor: pointer; white-space: nowrap; font-size: 14px; transition: all 0.3s; font-weight: 500; }
-  .tab.active { background: #e94560; color: #fff; }
-  .tab:hover:not(.active) { background: #533483; color: #fff; }
-  
-  .workspace { flex: 1; position: relative; overflow: hidden; background: #0a0a1a; display: flex; }
-  
-  .icon-gallery { width: 80px; background: #16213e; border-right: 2px solid #533483; padding: 10px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
-  .icon-item { width: 60px; height: 60px; background: #0f3460; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: move; font-size: 32px; transition: all 0.2s; border: 2px solid transparent; user-select: none; }
-  .icon-item:hover { background: #533483; transform: scale(1.1); border-color: #e94560; }
-  
-  .map-container { flex: 1; position: relative; overflow: hidden; }
-  #svgMap { width: 100%; height: 100%; }
-  .climate-zone { fill: rgba(255,255,255,0.1); stroke: #533483; stroke-width: 0.5; cursor: pointer; transition: all 0.3s; }
-  .climate-zone:hover { fill: rgba(233,69,96,0.3); }
-  .country { fill: #1a1a2e; stroke: #2a2a4e; stroke-width: 0.3; cursor: pointer; transition: all 0.2s; }
-  .country:hover { fill: #2a2a4e; stroke: #e94560; }
-  
-  #drawCanvas { position: absolute; top: 0; left: 80px; width: calc(100% - 80px); height: 100%; cursor: crosshair; }
-  #stickersLayer { position: absolute; top: 0; left: 80px; width: calc(100% - 80px); height: 100%; pointer-events: none; }
-  .sticker { position: absolute; min-width: 100px; min-height: 50px; padding: 8px; border-radius: 8px; box-shadow: 3px 5px 15px rgba(0,0,0,0.4); cursor: move; pointer-events: auto; font-size: 12px; color: #222; user-select: none; }
-  .sticker textarea { width: 100%; min-height: 40px; border: none; background: transparent; resize: both; font-family: inherit; font-size: 12px; outline: none; color: #222; }
-  .sticker .del { position: absolute; top: 2px; right: 5px; cursor: pointer; font-size: 14px; opacity: 0.6; }
-  .sticker .del:hover { opacity: 1; color: #e94560; }
-  .placed-icon { position: absolute; font-size: 32px; cursor: move; pointer-events: auto; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); user-select: none; }
-  
-  .toolbar { background: #16213e; padding: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-top: 3px solid #e94560; }
-  .tool-btn { padding: 8px 16px; background: #0f3460; border: 2px solid #533483; color: #eee; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
-  .tool-btn.active { background: #e94560; border-color: #e94560; }
-  .tool-btn:hover:not(.active) { background: #533483; }
-  .tool-group { display: flex; gap: 5px; align-items: center; padding: 0 10px; border-left: 2px solid #533483; }
-  .color-swatch { width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
-  .color-swatch.active { border-color: #fff; transform: scale(1.15); }
-  input[type="color"] { width: 40px; height: 35px; border: none; border-radius: 6px; cursor: pointer; }
-  input[type="range"] { width: 100px; cursor: pointer; }
-  
-  .zone-info { position: absolute; top: 10px; left: 90px; background: rgba(15,52,96,0.95); padding: 15px 20px; border-radius: 10px; max-width: 400px; font-size: 14px; border: 2px solid #e94560; z-index: 10; }
-  .zone-info h3 { color: #e94560; margin-bottom: 8px; }
-  
-  .status { position: absolute; bottom: 10px; right: 10px; background: rgba(78, 205, 196, 0.9); color: #1a1a2e; padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: bold; z-index: 10; }
+/* ============================================================
+   ДИЗАЙН-СИСТЕМА «ПОГОДА»
+   ============================================================ */
+:root{
+  --sky-950:#03121f;
+  --sky-900:#061a2b;
+  --sky-850:#082136;
+  --sky-800:#0a2540;
+  --sky-700:#0f3a5f;
+  --sky-600:#15507f;
+  --sky-500:#1f6ea6;
+  --sky-400:#3c9fd4;
+  --rain:#4cc9f0;
+  --rain-soft:#8fdcf5;
+  --sun:#ffb703;
+  --sun-soft:#ffd166;
+  --warm:#ff6b35;
+  --mint:#2ec4b6;
+  --snow:#eaf4fb;
+  --cloud:#cfe3f2;
+  --danger:#ff5470;
+  --ocean-deep:#04182e;
+  --ocean-mid:#062a4a;
+  --ocean-shallow:#0a3d68;
+  --land:#12324f;
+  --land-hi:#1d4a70;
+  --land-stroke:#3a6b96;
+  --text:#eaf4fb;
+  --text-dim:#a8c4d8;
+  --text-mute:#7d9bb3;
+  --surface:rgba(10,37,64,.82);
+  --surface-2:rgba(15,58,95,.9);
+  --line:rgba(111,198,234,.20);
+  --line-strong:rgba(111,198,234,.38);
+  --r-lg:16px;
+  --r-md:12px;
+  --r-sm:9px;
+  --tap:44px;
+  --shadow-1:0 2px 10px rgba(0,0,0,.35);
+  --shadow-2:0 10px 34px rgba(0,0,0,.5);
+  --dur:.18s;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",
+         "Noto Sans",Arial,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+body{
+  font-family:var(--font);
+  font-size:16px;
+  line-height:1.45;
+  color:var(--text);
+  background-color:var(--sky-950);
+  background-image:
+    radial-gradient(1200px 620px at 12% -12%, rgba(76,201,240,.16), transparent 62%),
+    radial-gradient(900px 520px at 92% -6%, rgba(255,183,3,.10), transparent 60%),
+    linear-gradient(180deg,#03121f 0%,#061a2b 46%,#0a2540 100%);
+  background-attachment:fixed;
+  overflow:hidden;
+  overscroll-behavior:none;
+  min-height:100vh;
+  min-height:100dvh;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  -webkit-tap-highlight-color:transparent;
+}
+
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit}
+
+:focus{outline:none}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:6px}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+@media (prefers-contrast:more){
+  :root{ --line:rgba(160,220,255,.55); --text-dim:#d6e9f6; }
+}
+
+.sr-only{
+  position:absolute!important;width:1px;height:1px;
+  padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+
+/* ============================================================
+   КАРКАС
+   ============================================================ */
+.app{
+  display:grid;
+  grid-template-rows:auto auto auto minmax(0,1fr) auto;
+  height:100vh;
+  height:100dvh;
+  width:100%;
+}
+
+.app-header{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:10px 12px;
+  padding-top:calc(10px + env(safe-area-inset-top));
+  padding-left:max(12px, env(safe-area-inset-left));
+  padding-right:max(12px, env(safe-area-inset-right));
+  background:linear-gradient(180deg, rgba(15,58,95,.95), rgba(8,33,54,.88));
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  z-index:20;
+}
+.app-title{
+  display:flex;align-items:center;gap:8px;
+  font-size:clamp(14px,3.4vw,18px);font-weight:700;letter-spacing:-.01em;
+  margin:0;min-width:0;
+}
+.app-title__text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-title__icon{font-size:1.15em;line-height:1}
+.badge{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;
+  background:rgba(76,201,240,.14);border:1px solid var(--line-strong);
+  color:var(--rain-soft);white-space:nowrap;
+}
+.header-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.timer{
+  font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;
+  font-weight:700;font-size:15px;letter-spacing:.02em;padding:7px 14px;
+  border-radius:999px;
+  background:linear-gradient(135deg,var(--sun),#ff9500);color:#25180a;
+  box-shadow:0 2px 12px rgba(255,183,3,.28);min-width:74px;text-align:center;
+}
+.timer[data-low="true"]{
+  background:linear-gradient(135deg,var(--danger),#c9184a);color:#fff;
+  animation:pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse{50%{opacity:.68}}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:var(--tap);min-width:var(--tap);padding:0 14px;
+  border-radius:var(--r-md);font-size:14px;font-weight:600;
+  border:1px solid var(--line-strong);background:rgba(15,58,95,.7);color:var(--text);
+  transition:background var(--dur) var(--ease), transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  white-space:nowrap;
+}
+.btn:hover{background:rgba(31,110,166,.75);border-color:var(--rain)}
+.btn:active{transform:scale(.96)}
+.btn--primary{
+  background:linear-gradient(135deg,var(--sun),#ff9500);
+  border-color:transparent;color:#25180a;font-weight:700;
+}
+.btn--primary:hover{filter:brightness(1.06);border-color:transparent}
+.btn--ghost{background:transparent;border-color:transparent}
+.btn--ghost:hover{background:rgba(76,201,240,.12);border-color:transparent}
+
+.group-bar{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  padding-left:max(12px, env(safe-area-inset-left));
+  padding-right:max(12px, env(safe-area-inset-right));
+  background:rgba(6,26,43,.72);border-bottom:1px solid var(--line);
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;z-index:15;
+}
+.group-bar::-webkit-scrollbar{display:none}
+.group-bar__label{
+  flex:0 0 auto;font-size:12px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--text-mute);margin-right:2px;
+}
+.group-btn{
+  flex:0 0 auto;min-height:40px;padding:0 18px;border-radius:var(--r-md);
+  font-size:14px;font-weight:700;border:1px solid var(--line-strong);
+  background:rgba(15,58,95,.6);color:var(--text-dim);
+  transition:all var(--dur) var(--ease);
+}
+.group-btn:hover{background:rgba(31,110,166,.7);color:#fff}
+.group-btn[aria-pressed="true"]{
+  background:linear-gradient(135deg,var(--rain),#1f9ec9);
+  border-color:transparent;color:#03121f;
+  box-shadow:0 3px 14px rgba(76,201,240,.32);
+}
+
+.tabs{
+  display:flex;gap:6px;padding:9px 12px;
+  padding-left:max(12px, env(safe-area-inset-left));
+  padding-right:max(12px, env(safe-area-inset-right));
+  background:rgba(10,37,64,.62);border-bottom:1px solid var(--line);
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;z-index:14;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:0 0 auto;scroll-snap-align:start;min-height:40px;padding:0 16px;
+  border-radius:999px;font-size:13.5px;font-weight:600;color:var(--text-dim);
+  background:rgba(15,58,95,.55);border:1px solid transparent;
+  transition:all var(--dur) var(--ease);white-space:nowrap;
+}
+.tab:hover{color:#fff;background:rgba(31,110,166,.7)}
+.tab[aria-selected="true"]{
+  background:linear-gradient(135deg,var(--rain),#1f9ec9);
+  color:#03121f;font-weight:700;
+  box-shadow:0 3px 14px rgba(76,201,240,.3);
+}
+
+/* ============================================================
+   РОБОЧА ОБЛАСТЬ
+   ============================================================ */
+.workspace{
+  display:flex;flex-direction:column;min-height:0;min-width:0;position:relative;
+}
+
+.icon-gallery{
+  display:flex;gap:8px;padding:8px 12px;
+  padding-left:max(12px, env(safe-area-inset-left));
+  padding-right:max(12px, env(safe-area-inset-right));
+  background:rgba(6,26,43,.85);border-bottom:1px solid var(--line);
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;flex:0 0 auto;z-index:10;
+}
+.icon-gallery::-webkit-scrollbar{display:none}
+.icon-item{
+  flex:0 0 auto;width:var(--tap);height:var(--tap);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;line-height:1;border-radius:var(--r-md);
+  background:rgba(15,58,95,.72);border:1px solid transparent;
+  transition:transform var(--dur) var(--ease), background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  user-select:none;-webkit-user-select:none;
+}
+.icon-item:hover{background:rgba(31,110,166,.8);border-color:var(--rain);transform:translateY(-2px)}
+.icon-item:active{transform:scale(.92)}
+
+/* ---------- КАРТА ---------- */
+.map-container{
+  position:relative;flex:1 1 auto;min-height:200px;overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 50% 45%, #0a3d68 0%, #062a4a 42%, #04182e 78%, #020a14 100%);
+  touch-action:manipulation;
+}
+#svgMap{
+  position:absolute;inset:0;width:100%;height:100%;display:block;
+}
+
+.ocean-sphere{fill:url(#oceanGrad)}
+.ocean-glow{fill:url(#oceanGlow);pointer-events:none}
+
+.graticule{
+  fill:none;stroke:rgba(120,190,230,.10);
+  stroke-width:.5;vector-effect:non-scaling-stroke;pointer-events:none;
+}
+.graticule--major{stroke:rgba(120,190,230,.22);stroke-width:.7}
+
+/* ============================================================
+   КЛІМАТИЧНІ ПОЯСИ — ГОЛОВНА ВІЗУАЛІЗАЦІЯ
+   ============================================================ */
+.climate-zone{
+  stroke:rgba(255,255,255,.18);
+  stroke-width:.55;
+  stroke-dasharray:none;
+  vector-effect:non-scaling-stroke;
+  cursor:pointer;
+  /* плавна зміна при наведенні */
+  transition:fill-opacity .25s cubic-bezier(.4,0,.2,1),
+             stroke .25s cubic-bezier(.4,0,.2,1),
+             filter .25s cubic-bezier(.4,0,.2,1);
+}
+.climate-zone:hover{
+  stroke:rgba(255,255,255,.85);
+  stroke-width:1;
+  filter:url(#zoneGlow);
+}
+.climate-zone[data-user-colored="true"]{
+  stroke-dasharray:6 3;
+  stroke-width:1;
+}
+
+/* Підписи поясів — завжди видимі */
+.climate-zone__label{
+  font-size:9.5px;
+  font-weight:800;
+  letter-spacing:.03em;
+  paint-order:stroke;
+  stroke:#0a1520;
+  stroke-width:3px;
+  stroke-linejoin:round;
+  pointer-events:none;
+  text-anchor:middle;
+  font-family:var(--font);
+  text-transform:uppercase;
+  opacity:.95;
+  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.climate-zone__label--small{
+  font-size:7.5px;
+  letter-spacing:.01em;
+}
+.climate-zone__label[data-visible="true"]{opacity:1}
+
+/* Країни */
+.country{
+  fill:var(--land);
+  stroke:var(--land-stroke);
+  stroke-width:.45;
+  vector-effect:non-scaling-stroke;
+  transition:fill var(--dur) var(--ease), stroke var(--dur) var(--ease);
+  cursor:pointer;
+}
+.country:hover{
+  fill:var(--land-hi);
+  stroke:var(--sun);
+  stroke-width:1;
+}
+.country--has-data .country-dot{opacity:.9}
+
+.country-dot{
+  fill:var(--sun);stroke:#03121f;stroke-width:.8;
+  pointer-events:none;opacity:0;
+  transition:opacity var(--dur) var(--ease);
+}
+
+/* Важливі паралелі */
+.lat-line{
+  fill:none;stroke:rgba(255,255,255,.45);
+  stroke-width:.8;stroke-dasharray:5 4;
+  vector-effect:non-scaling-stroke;pointer-events:none;
+}
+.lat-line--equator{
+  stroke:rgba(255,255,255,.85);stroke-width:1.3;stroke-dasharray:none;
+}
+.lat-label{
+  fill:#ffffff;font-size:9px;font-weight:800;
+  paint-order:stroke;stroke:#0a1520;stroke-width:3px;stroke-linejoin:round;
+  pointer-events:none;font-family:var(--font);letter-spacing:.02em;
+}
+.lat-label--equator{fill:#ffffff}
+
+/* Полотно малювання */
+#drawCanvas{
+  position:absolute;inset:0;width:100%;height:100%;z-index:2;
+  touch-action:none;cursor:crosshair;display:block;
+}
+#drawCanvas[data-tool="eraser"]{cursor:cell}
+#drawCanvas[data-tool="fill"]{pointer-events:none;cursor:pointer}
+
+#stickersLayer{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+}
+
+/* Стікери */
+.sticker{
+  position:absolute;width:170px;min-height:64px;padding:20px 10px 10px;
+  border-radius:var(--r-md);box-shadow:var(--shadow-2);
+  pointer-events:auto;color:#1b2733;touch-action:none;
+  user-select:none;-webkit-user-select:none;
+  transition:box-shadow var(--dur) var(--ease);
+}
+.sticker:hover{box-shadow:0 14px 40px rgba(0,0,0,.55)}
+.sticker textarea{
+  width:100%;min-height:44px;max-height:200px;border:0;background:transparent;
+  resize:none;outline:none;font-size:13px;line-height:1.4;color:#1b2733;
+  font-family:var(--font);overflow:hidden;display:block;
+}
+.sticker textarea::placeholder{color:rgba(27,39,51,.42)}
+.sticker__del{
+  position:absolute;top:2px;right:2px;width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;border-radius:8px;
+  font-size:13px;font-weight:700;color:rgba(27,39,51,.55);
+  transition:all var(--dur) var(--ease);
+}
+.sticker__del:hover{background:rgba(255,84,112,.9);color:#fff}
+
+.placed-icon{
+  position:absolute;font-size:34px;line-height:1;padding:4px;
+  cursor:grab;pointer-events:auto;touch-action:none;
+  user-select:none;-webkit-user-select:none;
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.55));
+  transition:transform var(--dur) var(--ease);
+}
+.placed-icon:active{cursor:grabbing;transform:scale(1.12)}
+
+/* Інфо-картка */
+.zone-info{
+  position:absolute;top:10px;left:10px;z-index:6;
+  max-width:min(360px, calc(100% - 20px));
+  padding:11px 42px 11px 14px;border-radius:var(--r-md);
+  border:1px solid var(--line-strong);border-left:4px solid var(--sun);
+  background:rgba(6,26,43,.94);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:var(--shadow-1);font-size:13px;
+  animation:fadeIn .25s var(--ease);
+  max-height:calc(100% - 20px);overflow:auto;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.zone-info[hidden]{display:none}
+.zone-info h2{
+  margin:0 0 3px;font-size:14px;font-weight:700;
+  color:var(--sun-soft);letter-spacing:-.01em;
+}
+.zone-info p{margin:0;color:var(--text-dim);line-height:1.4}
+.zone-info__meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.zone-info__chip{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:700;
+  background:rgba(76,201,240,.14);border:1px solid var(--line);
+  color:var(--rain-soft);
+}
+.zone-info__chip--warm{background:rgba(255,183,3,.16);border-color:rgba(255,183,3,.3);color:var(--sun-soft)}
+.zone-info__chip--cool{background:rgba(143,220,245,.14);border-color:rgba(143,220,245,.3);color:var(--rain-soft)}
+.zone-info__hint{
+  display:block;margin-top:6px;font-size:11.5px;
+  color:var(--rain-soft);font-weight:600;
+}
+.zone-info__close{
+  position:absolute;top:6px;right:6px;width:30px;height:30px;
+  display:flex;align-items:center;justify-content:center;border-radius:8px;
+  font-size:14px;color:var(--text-mute);transition:all var(--dur) var(--ease);
+}
+.zone-info__close:hover{background:rgba(76,201,240,.16);color:#fff}
+
+/* Легенда */
+.legend{
+  position:absolute;top:10px;right:10px;z-index:6;
+  max-width:230px;padding:10px 12px;border-radius:var(--r-md);
+  background:rgba(6,26,43,.9);border:1px solid var(--line-strong);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  font-size:11px;line-height:1.35;color:var(--text-dim);
+  box-shadow:var(--shadow-1);
+}
+.legend h4{
+  margin:0 0 6px;font-size:11.5px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--sun-soft);
+}
+.legend ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.legend li{display:flex;align-items:center;gap:7px;cursor:pointer;padding:2px 0;border-radius:5px}
+.legend li:hover{background:rgba(76,201,240,.08)}
+.legend__swatch{
+  flex:0 0 auto;width:16px;height:11px;border-radius:3px;
+  border:1px solid rgba(255,255,255,.28);
+}
+.legend__toggle{
+  position:absolute;top:6px;right:6px;width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:6px;font-size:12px;color:var(--text-mute);
+  transition:all var(--dur) var(--ease);
+}
+.legend__toggle:hover{background:rgba(76,201,240,.16);color:#fff}
+.legend[data-collapsed="true"] ul{display:none}
+.legend[data-collapsed="true"]{max-width:120px}
+
+/* Перемикач поясів */
+.layers{
+  position:absolute;top:10px;right:10px;z-index:7;
+  display:flex;flex-direction:column;gap:6px;
+}
+.layer-toggle{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 11px;border-radius:999px;
+  font-size:11.5px;font-weight:700;
+  background:rgba(6,26,43,.9);border:1px solid var(--line-strong);
+  color:var(--text-dim);
+  transition:all var(--dur) var(--ease);
+  box-shadow:var(--shadow-1);
+}
+.layer-toggle:hover{color:#fff;background:rgba(31,110,166,.85)}
+.layer-toggle[aria-pressed="true"]{
+  background:linear-gradient(135deg,var(--rain),#1f9ec9);
+  color:#03121f;border-color:transparent;
+}
+
+/* Статус */
+.status{
+  position:absolute;bottom:10px;right:10px;z-index:6;
+  max-width:calc(100% - 20px);padding:8px 14px;border-radius:999px;
+  font-size:12px;font-weight:700;
+  background:rgba(46,196,182,.92);color:#04231f;
+  box-shadow:var(--shadow-1);
+  transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.status[data-state="warn"]{background:rgba(255,183,3,.94);color:#2a1c00}
+.status[data-state="error"]{background:rgba(255,84,112,.94);color:#fff}
+.status[data-state="busy"]{background:rgba(76,201,240,.94);color:#03121f}
+
+/* ============================================================
+   ТУЛБАР
+   ============================================================ */
+.toolbar{
+  display:flex;align-items:center;gap:6px;padding:8px 12px;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom));
+  padding-left:max(12px, env(safe-area-inset-left));
+  padding-right:max(12px, env(safe-area-inset-right));
+  background:linear-gradient(180deg, rgba(8,33,54,.92), rgba(6,26,43,.98));
+  border-top:1px solid var(--line);
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;z-index:20;
+}
+.toolbar::-webkit-scrollbar{display:none}
+
+.tool-group{
+  display:flex;align-items:center;gap:6px;flex:0 0 auto;
+  padding-right:8px;margin-right:2px;border-right:1px solid var(--line);
+}
+.tool-group:last-child{border-right:0;padding-right:0;margin-right:0}
+
+.tool-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  min-height:var(--tap);padding:0 14px;border-radius:var(--r-md);
+  font-size:13.5px;font-weight:600;color:var(--text-dim);
+  background:rgba(15,58,95,.62);border:1px solid transparent;
+  transition:all var(--dur) var(--ease);white-space:nowrap;
+}
+.tool-btn:hover{background:rgba(31,110,166,.75);color:#fff}
+.tool-btn:active{transform:scale(.96)}
+.tool-btn[aria-pressed="true"]{
+  background:linear-gradient(135deg,var(--rain),#1f9ec9);
+  color:#03121f;font-weight:700;
+  box-shadow:0 3px 14px rgba(76,201,240,.3);
+}
+
+.color-swatch{
+  width:34px;height:34px;border-radius:50%;
+  border:3px solid transparent;
+  box-shadow:0 0 0 1px rgba(255,255,255,.16) inset;
+  transition:transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
+  flex:0 0 auto;
+}
+.color-swatch:hover{transform:scale(1.1)}
+.color-swatch[aria-pressed="true"]{
+  border-color:#fff;transform:scale(1.16);
+  box-shadow:0 0 0 3px rgba(255,255,255,.18);
+}
+
+input[type="color"]{
+  width:var(--tap);height:34px;padding:0;
+  border:2px solid var(--line-strong);border-radius:var(--r-sm);
+  background:transparent;cursor:pointer;
+}
+input[type="color"]::-webkit-color-swatch-wrapper{padding:2px}
+input[type="color"]::-webkit-color-swatch{border:0;border-radius:5px}
+
+input[type="range"]{
+  -webkit-appearance:none;appearance:none;
+  width:88px;height:var(--tap);background:transparent;
+  cursor:pointer;flex:0 0 auto;
+}
+input[type="range"]::-webkit-slider-runnable-track{
+  height:6px;border-radius:999px;
+  background:linear-gradient(90deg,var(--rain),var(--sun));
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:20px;height:20px;margin-top:-7px;
+  border-radius:50%;background:#fff;border:2px solid var(--sky-800);
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+input[type="range"]::-moz-range-track{
+  height:6px;border-radius:999px;
+  background:linear-gradient(90deg,var(--rain),var(--sun));
+}
+input[type="range"]::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;
+  background:#fff;border:2px solid var(--sky-800);
+}
+.size-label{
+  font-size:12px;font-variant-numeric:tabular-nums;
+  color:var(--text-mute);min-width:20px;text-align:center;font-weight:700;
+}
+
+/* ============================================================
+   АДАПТАЦІЯ
+   ============================================================ */
+@media (min-width:900px){
+  .workspace{flex-direction:row}
+  .icon-gallery{
+    flex-direction:column;width:76px;padding:10px 0;
+    border-bottom:0;border-right:1px solid var(--line);
+    overflow-x:hidden;overflow-y:auto;align-items:center;
+  }
+  .icon-item{width:52px;height:52px;font-size:26px}
+  .toolbar{flex-wrap:wrap;overflow:visible}
+  .zone-info{max-width:400px;font-size:13.5px}
+  .zone-info h2{font-size:15px}
+  .legend{max-width:270px}
+}
+
+@media (max-width:400px){
+  .app-title__text{display:none}
+  .badge{font-size:10px;padding:2px 7px}
+  .timer{font-size:14px;min-width:66px;padding:6px 11px}
+  .btn-label{display:none}
+  .btn{padding:0 12px}
+  .group-btn{padding:0 14px;font-size:13px}
+  .tab{padding:0 13px;font-size:13px}
+  .legend{max-width:180px;font-size:10.5px}
+  .zone-info{font-size:12px;padding:9px 38px 9px 11px}
+}
+
+@media (orientation:landscape) and (max-height:560px){
+  .group-bar{padding-top:5px;padding-bottom:5px}
+  .group-btn{min-height:34px}
+  .tabs{padding-top:5px;padding-bottom:5px}
+  .tab{min-height:34px}
+  .icon-gallery{padding-top:5px;padding-bottom:5px}
+  .icon-item{width:40px;height:40px;font-size:21px}
+  .toolbar{padding-top:5px;padding-bottom:calc(5px + env(safe-area-inset-bottom))}
+  .tool-btn{min-height:38px}
+  .zone-info{font-size:12px;padding:8px 34px 8px 11px}
+  .legend{display:none}
+  .layers{display:none}
+}
+
+@media (min-width:1400px){
+  .app-header{padding-left:24px;padding-right:24px}
+  .toolbar{padding-left:24px;padding-right:24px}
+  .tabs{padding-left:24px;padding-right:24px}
+}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>🌍 Кліматична лабораторія (Група <span id="currentGroupNum">1</span>)</h1>
-  <div class="header-controls">
-    <div class="timer" id="timer">30:00</div>
-    <button class="tool-btn" onclick="toggleTimer()" id="timerBtn">⏸</button>
-    <button class="tool-btn" onclick="exportPNG()">📸 Зберегти PNG</button>
-  </div>
-</header>
+<div class="app">
 
-<div class="group-panel">
-  <span class="label">👥 Перемкнути групу:</span>
-  <button class="group-btn active" onclick="switchGroup(1)">Група 1</button>
-  <button class="group-btn" onclick="switchGroup(2)">Група 2</button>
-  <button class="group-btn" onclick="switchGroup(3)">Група 3</button>
+  <!-- ================= ШАПКА ================= -->
+  <header class="app-header">
+    <h1 class="app-title">
+      <span class="app-title__icon" aria-hidden="true">🌍</span>
+      <span class="app-title__text">Кліматична лабораторія</span>
+      <span class="badge">Група <span id="currentGroupNum">1</span></span>
+    </h1>
+
+    <div class="header-controls">
+      <div class="timer" id="timer" role="timer" aria-label="Залишилось часу">30:00</div>
+      <button class="btn btn--ghost" id="timerBtn" type="button"
+              aria-label="Пауза таймера" aria-pressed="false">
+        <span aria-hidden="true" id="timerBtnIcon">⏸</span>
+      </button>
+      <button class="btn btn--primary" id="exportBtn" type="button" aria-label="Зберегти зображення дошки">
+        <span aria-hidden="true">📸</span><span class="btn-label">PNG</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= ГРУПИ ================= -->
+  <div class="group-bar" role="group" aria-label="Вибір групи">
+    <span class="group-bar__label" aria-hidden="true">👥 Група</span>
+    <button class="group-btn" type="button" data-group="1" aria-pressed="true">Група 1</button>
+    <button class="group-btn" type="button" data-group="2" aria-pressed="false">Група 2</button>
+    <button class="group-btn" type="button" data-group="3" aria-pressed="false">Група 3</button>
+  </div>
+
+  <!-- ================= ВКЛАДКИ ================= -->
+  <div class="tabs" id="tabs" role="tablist" aria-label="Етапи дослідження"></div>
+
+  <!-- ================= РОБОЧА ОБЛАСТЬ ================= -->
+  <main class="workspace">
+
+    <div class="icon-gallery" id="iconGallery" role="group" aria-label="Погодні іконки"></div>
+
+    <div class="map-container" id="mapContainer" role="tabpanel" aria-label="Інтерактивна карта світу">
+
+      <svg id="svgMap" xmlns="http://www.w3.org/2000/svg"
+           aria-label="Реальна географічна карта світу з зафарбованими кліматичними поясами"
+           role="img">
+        <defs>
+          <radialGradient id="oceanGrad" cx="50%" cy="45%" r="75%">
+            <stop offset="0%"   stop-color="#0d3f6b"/>
+            <stop offset="45%"  stop-color="#082a4a"/>
+            <stop offset="100%" stop-color="#04162a"/>
+          </radialGradient>
+          <radialGradient id="oceanGlow" cx="50%" cy="45%" r="60%">
+            <stop offset="0%"   stop-color="#2a72b0" stop-opacity=".35"/>
+            <stop offset="70%"  stop-color="#0a3d68" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#020a14" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="zoneGlow" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur stdDeviation="0.9" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <g id="mapRoot"></g>
+      </svg>
+
+      <canvas id="drawCanvas" data-tool="brush"
+              aria-label="Полотно для малювання на карті">
+        Ваш браузер не підтримує полотно для малювання.
+      </canvas>
+
+      <div id="stickersLayer"></div>
+
+      <!-- Перемикачі шарів -->
+      <div class="layers" role="group" aria-label="Керування шарами карти">
+        <button class="layer-toggle" id="zonesToggle" type="button"
+                aria-pressed="true" aria-label="Показати / сховати кліматичні пояси">
+          <span aria-hidden="true">🎨</span> Пояси
+        </button>
+        <button class="layer-toggle" id="labelsToggle" type="button"
+                aria-pressed="true" aria-label="Показати / сховати підписи поясів">
+          <span aria-hidden="true">🔤</span> Підписи
+        </button>
+      </div>
+
+      <!-- Легенда -->
+      <aside class="legend" id="legend" aria-label="Легенда кліматичних поясів">
+        <button class="legend__toggle" id="legendToggle" type="button"
+                aria-label="Згорнути легенду" aria-expanded="true">−</button>
+        <h4>Кліматичні пояси</h4>
+        <ul id="legendList"></ul>
+      </aside>
+
+      <!-- Інфо-картка -->
+      <div class="zone-info" id="zoneInfo">
+        <button class="zone-info__close" type="button" id="zoneInfoClose"
+                aria-label="Закрити підказку">✕</button>
+        <h2 id="zoneInfoTitle">🧠 1. Гіпотеза</h2>
+        <p id="zoneInfoDesc">Запишіть припущення та план дослідження.</p>
+        <div class="zone-info__meta" id="zoneInfoMeta"></div>
+        <span class="zone-info__hint" id="zoneInfoHint"></span>
+      </div>
+
+      <div class="status" id="status" role="status" aria-live="polite">🟢 Синхронізовано</div>
+    </div>
+  </main>
+
+  <!-- ================= ТУЛБАР ================= -->
+  <footer class="toolbar" aria-label="Інструменти малювання">
+
+    <div class="tool-group" role="group" aria-label="Інструмент">
+      <button class="tool-btn" type="button" data-tool="brush"  aria-pressed="true">
+        <span aria-hidden="true">✏️</span><span class="btn-label">Пензель</span>
+      </button>
+      <button class="tool-btn" type="button" data-tool="fill"   aria-pressed="false">
+        <span aria-hidden="true">🎨</span><span class="btn-label">Позначити пояс</span>
+      </button>
+      <button class="tool-btn" type="button" data-tool="eraser" aria-pressed="false">
+        <span aria-hidden="true">🧽</span><span class="btn-label">Ластик</span>
+      </button>
+    </div>
+
+    <div class="tool-group" role="group" aria-label="Колір">
+      <button class="color-swatch" type="button" data-color="#ffb703" style="background:#ffb703" aria-label="Сонячний жовтий" aria-pressed="true"></button>
+      <button class="color-swatch" type="button" data-color="#4cc9f0" style="background:#4cc9f0" aria-label="Небесно-блакитний" aria-pressed="false"></button>
+      <button class="color-swatch" type="button" data-color="#2ec4b6" style="background:#2ec4b6" aria-label="Бірюзовий" aria-pressed="false"></button>
+      <button class="color-swatch" type="button" data-color="#ff6b35" style="background:#ff6b35" aria-label="Теплий помаранчевий" aria-pressed="false"></button>
+      <button class="color-swatch" type="button" data-color="#eaf4fb" style="background:#eaf4fb" aria-label="Сніжно-білий" aria-pressed="false"></button>
+      <input type="color" id="colorPicker" value="#ffb703" aria-label="Довільний колір">
+    </div>
+
+    <div class="tool-group">
+      <label class="sr-only" for="brushSize">Розмір пензля</label>
+      <input type="range" id="brushSize" min="1" max="60" value="5" step="1"
+             aria-valuemin="1" aria-valuemax="60" aria-valuenow="5">
+      <span class="size-label" id="sizeLabel" aria-hidden="true">5</span>
+    </div>
+
+    <div class="tool-group">
+      <button class="tool-btn" type="button" id="addStickerBtn">
+        <span aria-hidden="true">📝</span><span class="btn-label">Стікер</span>
+      </button>
+      <button class="tool-btn" type="button" id="clearBtn">
+        <span aria-hidden="true">🗑</span><span class="btn-label">Очистити</span>
+      </button>
+    </div>
+  </footer>
 </div>
 
-<div class="tabs" id="tabs"></div>
-
-<div class="workspace" id="workspace">
-  <div class="icon-gallery" id="iconGallery">
-    <div class="icon-item" draggable="true" data-icon="☀️">☀️</div>
-    <div class="icon-item" draggable="true" data-icon="🌤">🌤</div>
-    <div class="icon-item" draggable="true" data-icon="☁️">☁️</div>
-    <div class="icon-item" draggable="true" data-icon="🌧">🌧</div>
-    <div class="icon-item" draggable="true" data-icon="❄️">❄️</div>
-    <div class="icon-item" draggable="true" data-icon="🌡">🌡</div>
-    <div class="icon-item" draggable="true" data-icon="💧">💧</div>
-    <div class="icon-item" draggable="true" data-icon="🌪">🌪</div>
-    <div class="icon-item" draggable="true" data-icon="🔥">🔥</div>
-    <div class="icon-item" draggable="true" data-icon="🌊">🌊</div>
-    <div class="icon-item" draggable="true" data-icon="🌴">🌴</div>
-    <div class="icon-item" draggable="true" data-icon="🏔">🏔</div>
-  </div>
-  
-  <div class="map-container">
-    <div class="zone-info" id="zoneInfo"></div>
-    <svg id="svgMap" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-          <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="0.5"/>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)"/>
-      
-      <g id="climateZones">
-        <path class="climate-zone" data-zone="arctic" data-name="Арктичний" d="M 100,50 Q 300,30 500,50 Q 700,30 900,50 L 900,100 Q 700,90 500,100 Q 300,90 100,100 Z"/>
-        <path class="climate-zone" data-zone="subarctic" data-name="Субарктичний" d="M 80,100 Q 300,90 500,100 Q 700,90 920,100 L 920,150 Q 700,140 500,150 Q 300,140 80,150 Z"/>
-        <path class="climate-zone" data-zone="temperate_n" data-name="Помірний (пн.)" d="M 60,150 Q 300,140 500,150 Q 700,140 940,150 L 940,220 Q 700,210 500,220 Q 300,210 60,220 Z"/>
-        <path class="climate-zone" data-zone="subtropical_n" data-name="Субтропічний (пн.)" d="M 50,220 Q 280,215 500,220 Q 720,215 950,220 L 950,270 Q 720,265 500,270 Q 280,265 50,270 Z"/>
-        <path class="climate-zone" data-zone="tropical" data-name="Тропічний" d="M 40,270 Q 260,268 500,270 Q 740,268 960,270 L 960,330 Q 740,332 500,330 Q 260,332 40,330 Z"/>
-        <path class="climate-zone" data-zone="subtropical_s" data-name="Субтропічний (пд.)" d="M 50,330 Q 280,332 500,330 Q 720,332 950,330 L 950,380 Q 720,382 500,380 Q 280,382 50,380 Z"/>
-        <path class="climate-zone" data-zone="temperate_s" data-name="Помірний (пд.)" d="M 80,380 Q 300,385 500,380 Q 700,385 920,380 L 920,430 Q 700,435 500,430 Q 300,435 80,430 Z"/>
-        <path class="climate-zone" data-zone="antarctic" data-name="Антарктичний" d="M 150,460 Q 350,468 500,460 Q 650,468 850,460 L 850,490 Q 650,495 500,490 Q 350,495 150,490 Z"/>
-      </g>
-      
-      <g id="countries">
-        <path class="country" data-country="Канада" d="M 120,120 L 200,110 L 220,150 L 180,180 L 130,160 Z"/>
-        <path class="country" data-country="США" d="M 130,180 L 220,170 L 240,230 L 160,240 Z"/>
-        <path class="country" data-country="Бразилія" d="M 280,300 L 380,290 L 400,380 L 320,400 Z"/>
-        <path class="country" data-country="Франція" d="M 450,170 L 490,165 L 500,200 L 460,205 Z"/>
-        <path class="country" data-country="Єгипет" d="M 540,220 L 590,215 L 595,255 L 545,260 Z"/>
-        <path class="country" data-country="Китай" d="M 680,180 L 800,175 L 820,250 L 700,255 Z"/>
-        <path class="country" data-country="Австралія" d="M 750,360 L 900,355 L 910,430 L 760,435 Z"/>
-      </g>
-    </svg>
-    
-    <canvas id="drawCanvas"></canvas>
-    <div id="stickersLayer"></div>
-  </div>
-  
-  <div class="status" id="status">🟢 Підключено до Firebase</div>
-</div>
-
-<div class="toolbar">
-  <div class="tool-group">
-    <button class="tool-btn active" data-tool="brush" onclick="setTool('brush')">✏️ Пензель</button>
-    <button class="tool-btn" data-tool="fill" onclick="setTool('fill')">🎨 Зафарбувати</button>
-    <button class="tool-btn" data-tool="eraser" onclick="setTool('eraser')">🧽 Ластик</button>
-  </div>
-  
-  <div class="tool-group">
-    <span style="font-size:12px">Колір:</span>
-    <span class="color-swatch active" style="background:#e94560" data-color="#e94560" onclick="setColor(this)"></span>
-    <span class="color-swatch" style="background:#4ecdc4" data-color="#4ecdc4" onclick="setColor(this)"></span>
-    <span class="color-swatch" style="background:#ffe66d" data-color="#ffe66d" onclick="setColor(this)"></span>
-    <span class="color-swatch" style="background:#95e1d3" data-color="#95e1d3" onclick="setColor(this)"></span>
-    <input type="color" id="colorPicker" value="#e94560" onchange="setColorCustom(this.value)">
-  </div>
-  
-  <div class="tool-group">
-    <span style="font-size:12px">Розмір:</span>
-    <input type="range" id="brushSize" min="1" max="50" value="5">
-    <span id="sizeLabel" style="font-size:12px">5</span>
-  </div>
-  
-  <div class="tool-group">
-    <button class="tool-btn" onclick="addSticker()">📝 Стікер</button>
-    <button class="tool-btn" onclick="clearCurrent()">🗑 Очистити</button>
-  </div>
-</div>
+<noscript>
+  <p style="padding:24px;color:#eaf4fb;font-family:sans-serif">
+    Для роботи «Кліматичної лабораторії» потрібно увімкнути JavaScript.
+  </p>
+</noscript>
 
 <script>
-// ================= ВАША КОНФІГУРАЦІЯ FIREBASE =================
+/* ============================================================
+   0. FIREBASE
+   ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyAIqa_MF4sevTfg7Za8Fly3EK97dVYm_Q8",
   authDomain: "realtime-6af79.firebaseapp.com",
@@ -183,477 +814,1316 @@ const firebaseConfig = {
   appId: "1:154142013253:web:2b3bfde1a8ecea5565f02c"
 };
 
-// Ініціалізація Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+let db = null;
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+} catch (err) { console.error("Firebase init error:", err); }
 
-// ================= ЛОГІКА ДОДАТКУ =================
-const ZONES = [
-  { id: 'hypothesis', title: '🧠 1. Гіпотеза', desc: 'Запишіть припущення та план дослідження.' },
-  { id: 'classification', title: '🗺 2. Класифікація', desc: 'Зафарбуйте кліматичні пояси різними кольорами.' },
-  { id: 'comfort', title: '🏖 3. Комфорт', desc: 'Позначте 3 найкомфортніші пояси для життя.' },
-  { id: 'changes', title: '🌡 4. Зміни', desc: 'Причини та наслідки глобальних змін клімату.' },
-  { id: 'history', title: '🏛 5. Цивілізації', desc: 'Давні цивілізації та їхній кліматичний пояс.' }
+/* ============================================================
+   1. КЛІМАТИЧНІ ПОЯСИ — з РЕАЛЬНИМИ КОЛЬОРАМИ, які видно
+      поверх карти за замовчуванням
+   ============================================================ */
+const ZONE_BASE_OPACITY   = 0.34;   // базова прозорість кольору поясу
+const ZONE_USER_OPACITY   = 0.55;   // прозорість, якщо користувач зафарбував пояс
+
+const CLIMATE_BANDS = [
+  { id:'arctic',        name:'Арктичний',          short:'АРКТ.',
+    lat:[ 66.5,  90 ], color:'#bfe6ff',
+    desc:'Полярна ніч і день, вічна мерзлота, t° ≈ −30…0 °C.' },
+  { id:'subarctic',     name:'Субарктичний',       short:'СУБАРКТ.',
+    lat:[ 50,   66.5], color:'#79c8e8',
+    desc:'Коротке прохолодне літо, сувора зима, тайга.' },
+  { id:'temperate_n',   name:'Помірний (пн.)',     short:'ПОМІРНИЙ ПН.',
+    lat:[ 35,   50   ], color:'#7fd07f',
+    desc:'Чотири пори року, помірні опади, ліси й степи.' },
+  { id:'subtropical_n', name:'Субтропічний (пн.)', short:'СУБТРОП. ПН.',
+    lat:[ 23.5, 35   ], color:'#f6c945',
+    desc:'Спекотне літо, м’яка зима, сухі й вологі області.' },
+  { id:'tropical',      name:'Тропічний',          short:'ТРОПІЧНИЙ',
+    lat:[-23.5, 23.5 ], color:'#ff8c42',
+    desc:'Спекотно цілий рік, тропічні ліси, савани, пустелі.' },
+  { id:'subtropical_s', name:'Субтропічний (пд.)', short:'СУБТРОП. ПД.',
+    lat:[-35,  -23.5 ], color:'#f6c945',
+    desc:'Спекотне літо, м’яка зима, середземноморський клімат.' },
+  { id:'temperate_s',   name:'Помірний (пд.)',     short:'ПОМІРНИЙ ПД.',
+    lat:[-50,  -35   ], color:'#7fd07f',
+    desc:'Прохолодне літо, помірні опади, океанічний вплив.' },
+  { id:'subantarctic',  name:'Субантарктичний',    short:'СУБАНТАРКТ.',
+    lat:[-66.5,-50   ], color:'#79c8e8',
+    desc:'Холодне літо, сильні вітри, тундра.' },
+  { id:'antarctic',     name:'Антарктичний',       short:'АНТАРКТ.',
+    lat:[-90,  -66.5 ], color:'#bfe6ff',
+    desc:'Крижаний щит, t° до −60 °C, полярні станції.' }
 ];
 
-let currentGroup = 1;
-let currentZone = ZONES[0].id;
-let currentTool = 'brush';
-let currentColor = '#e94560';
-let isDrawing = false;
-let lastX = 0, lastY = 0;
+const LAT_LINES = [
+  { lat: 66.5, label:'Полярне коло (66.5°N)' },
+  { lat: 23.5, label:'Тропік Рака (23.5°N)' },
+  { lat: 0,    label:'ЕКВАТОР (0°)', equator:true },
+  { lat:-23.5, label:'Тропік Козерога (23.5°S)' },
+  { lat:-66.5, label:'Полярне коло (66.5°S)' }
+];
 
-let timerInterval = null;
-let timerSeconds = 0;
-let timerRunning = true;
-let totalTimerSeconds = 30 * 60;
-
-const canvas = document.getElementById('drawCanvas');
-const ctx = canvas.getContext('2d');
-const stickersLayer = document.getElementById('stickersLayer');
-
-// Локальний кеш стану
-let localState = { canvas: null, stickers: [], icons: [] };
-
-function init() {
-  resizeCanvas();
-  initTabs();
-  initDragAndDrop();
-  initMapInteractions();
-  switchGroup(1);
-  startTimer();
-  
-  // Автозбереження кожні 5 секунд
-  setInterval(() => {
-    localState.canvas = canvas.toDataURL();
-    saveToFirebase();
-  }, 5000);
-  
-  window.addEventListener('resize', resizeCanvas);
-}
-
-function resizeCanvas() {
-  const container = document.querySelector('.map-container');
-  const w = container.clientWidth - 80;
-  const h = container.clientHeight;
-  
-  const tmp = document.createElement('canvas');
-  tmp.width = canvas.width || w;
-  tmp.height = canvas.height || h;
-  tmp.getContext('2d').drawImage(canvas, 0, 0);
-  
-  canvas.width = w;
-  canvas.height = h;
-  if (tmp.width > 0) ctx.drawImage(tmp, 0, 0);
-}
-
-function initTabs() {
-  const tabsEl = document.getElementById('tabs');
-  ZONES.forEach((z, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'tab' + (i === 0 ? ' active' : '');
-    btn.textContent = z.title;
-    btn.onclick = () => switchZone(z.id, btn);
-    tabsEl.appendChild(btn);
-  });
-}
-
-function switchGroup(group) {
-  // Зберегти поточний стан перед перемиканням
-  localState.canvas = canvas.toDataURL();
-  saveToFirebase();
-  
-  currentGroup = group;
-  document.getElementById('currentGroupNum').textContent = group;
-  
-  document.querySelectorAll('.group-btn').forEach((b, i) => {
-    b.classList.toggle('active', i === group - 1);
-  });
-  
-  loadFromFirebase();
-  setStatus(`🟢 Група ${group} завантажена`);
-}
-
-function switchZone(zoneId, btn) {
-  localState.canvas = canvas.toDataURL();
-  saveToFirebase();
-  
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  
-  currentZone = zoneId;
-  const zone = ZONES.find(z => z.id === zoneId);
-  document.getElementById('zoneInfo').innerHTML = `<h3>${zone.title}</h3>${zone.desc}`;
-  
-  loadFromFirebase();
-}
-
-function loadFromFirebase() {
-  const ref = db.ref(`groups/group${currentGroup}/zones/${currentZone}`);
-  ref.once('value').then(snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      localState = {
-        canvas: data.canvas || null,
-        stickers: data.stickers || [],
-        icons: data.icons || []
-      };
-    } else {
-      localState = { canvas: null, stickers: [], icons: [] };
-    }
-    renderState();
-  });
-  
-  // Слухати зміни в реальному часі
-  ref.on('value', snapshot => {
-    const data = snapshot.val();
-    if (data) {
-      // Оновлюємо тільки якщо зміни прийшли не від нас (спрощена логіка)
-      localState = {
-        canvas: data.canvas || localState.canvas,
-        stickers: data.stickers || [],
-        icons: data.icons || []
-      };
-      renderState();
-    }
-  });
-}
-
-function renderState() {
-  if (localState.canvas) {
-    const img = new Image();
-    img.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-    };
-    img.src = localState.canvas;
-  } else {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-  
-  stickersLayer.innerHTML = '';
-  localState.stickers.forEach(s => createStickerElement(s, false));
-  localState.icons.forEach(i => createPlacedIcon(i, false));
-}
-
-function saveToFirebase() {
-  db.ref(`groups/group${currentGroup}/zones/${currentZone}`).set({
-    canvas: localState.canvas,
-    stickers: localState.stickers,
-    icons: localState.icons,
-    updatedAt: Date.now()
-  }).catch(err => console.error("Firebase save error:", err));
-}
-
-function setTool(tool) {
-  currentTool = tool;
-  document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
-  document.querySelector(`[data-tool="${tool}"]`).classList.add('active');
-  canvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
-}
-
-function setColor(el) {
-  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-  el.classList.add('active');
-  currentColor = el.dataset.color;
-  document.getElementById('colorPicker').value = currentColor;
-}
-
-function setColorCustom(c) {
-  currentColor = c;
-  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-}
-
-document.getElementById('brushSize').oninput = e => {
-  document.getElementById('sizeLabel').textContent = e.target.value;
+const COUNTRY_CLIMATE = {
+  'Ukraine':       { uk:'Україна',            zone:'Помірний континентальний', t:'+8 °C',  rain:'600 мм/рік',  note:'Чотири пори року, чорноземи.' },
+  'Poland':        { uk:'Польща',              zone:'Помірний',                t:'+8 °C',  rain:'600 мм/рік',  note:'Перехідний між морським і континентальним.' },
+  'Germany':       { uk:'Німеччина',           zone:'Помірний',                t:'+9 °C',  rain:'700 мм/рік',  note:'Морський вплив Атлантики.' },
+  'France':        { uk:'Франція',             zone:'Помірний / субтропічний', t:'+11 °C', rain:'750 мм/рік',  note:'Океанічний на заході, середземноморський на півдні.' },
+  'Spain':         { uk:'Іспанія',             zone:'Середземноморський',      t:'+15 °C', rain:'500 мм/рік',  note:'Спекотне сухе літо.' },
+  'Italy':         { uk:'Італія',              zone:'Середземноморський',      t:'+15 °C', rain:'700 мм/рік',  note:'Типовий субтропічний.' },
+  'United Kingdom':{ uk:'Велика Британія',     zone:'Помірний морський',       t:'+10 °C', rain:'1000 мм/рік', note:'М’яка зима, прохолодне літо.' },
+  'Norway':        { uk:'Норвегія',            zone:'Субарктичний / помірний', t:'+3 °C',  rain:'800 мм/рік',  note:'Фіорди, тепла течія Гольфстрім.' },
+  'Sweden':        { uk:'Швеція',              zone:'Помірний / субарктичний', t:'+3 °C',  rain:'600 мм/рік',  note:'Довга зима на півночі.' },
+  'Finland':       { uk:'Фінляндія',           zone:'Субарктичний',            t:'+2 °C',  rain:'600 мм/рік',  note:'Тисячі озер, полярні ночі.' },
+  'Russia':        { uk:'Росія',               zone:'Від арктичного до субтроп.', t:'−5 °C', rain:'450 мм/рік', note:'Найбільша країна за площею.' },
+  'Turkey':        { uk:'Туреччина',           zone:'Середземноморський / контин.', t:'+12 °C', rain:'600 мм/рік', note:'Між Європою та Азією.' },
+  'Egypt':         { uk:'Єгипет',              zone:'Тропічний пустельний',    t:'+25 °C', rain:'25 мм/рік',   note:'Долина Нілу — оаза життя.' },
+  'Morocco':       { uk:'Марокко',             zone:'Середземноморський / пустельний', t:'+18 °C', rain:'300 мм/рік', note:'Атлас, Сахара.' },
+  'Nigeria':       { uk:'Нігерія',             zone:'Тропічний',               t:'+27 °C', rain:'1200 мм/рік', note:'Савана й тропічні ліси.' },
+  'Kenya':         { uk:'Кенія',               zone:'Тропічний (височинний)',  t:'+22 °C', rain:'700 мм/рік',  note:'Савана, Великий рифт.' },
+  'South Africa':  { uk:'ПАР',                 zone:'Субтропічний / помірний', t:'+17 °C', rain:'500 мм/рік',  note:'Мис Доброї Надії.' },
+  'Ethiopia':      { uk:'Ефіопія',             zone:'Тропічний (височинний)',  t:'+22 °C', rain:'800 мм/рік',  note:'Нагір’я, витоки Нілу.' },
+  'Saudi Arabia':  { uk:'Саудівська Аравія',   zone:'Тропічний пустельний',    t:'+28 °C', rain:'60 мм/рік',   note:'Найбільша пустеля — Руб-ель-Халі.' },
+  'Iran':          { uk:'Іран',                zone:'Субтропічний / пустельний', t:'+17 °C', rain:'250 мм/рік', note:'Плато, гори Ельбурс.' },
+  'India':         { uk:'Індія',               zone:'Тропічний / субтропічний', t:'+25 °C', rain:'1100 мм/рік', note:'Мусони, Гімалаї.' },
+  'China':         { uk:'Китай',               zone:'Від помірного до тропічного', t:'+13 °C', rain:'600 мм/рік', note:'Найбільша різноманітність клімату.' },
+  'Japan':         { uk:'Японія',              zone:'Помірний / субтропічний', t:'+15 °C', rain:'1700 мм/рік', note:'Острівний, мусонний.' },
+  'South Korea':   { uk:'Південна Корея',      zone:'Помірний',                t:'+12 °C', rain:'1300 мм/рік', note:'Мусони, гори.' },
+  'Thailand':      { uk:'Таїланд',             zone:'Тропічний мусонний',      t:'+28 °C', rain:'1600 мм/рік', note:'Тропічні ліси, мусони.' },
+  'Vietnam':       { uk:'В’єтнам',             zone:'Тропічний мусонний',      t:'+25 °C', rain:'1800 мм/рік', note:'Довга берегова лінія.' },
+  'Indonesia':     { uk:'Індонезія',           zone:'Екваторіальний',          t:'+27 °C', rain:'2500 мм/рік', note:'Найбільший архіпелаг світу.' },
+  'Australia':     { uk:'Австралія',           zone:'Від тропічного до помірного', t:'+22 °C', rain:'450 мм/рік', note:'Пустелі в центрі, тропіки на півночі.' },
+  'New Zealand':   { uk:'Нова Зеландія',       zone:'Помірний морський',       t:'+12 °C', rain:'1200 мм/рік', note:'Океанічний, м’який.' },
+  'Mexico':        { uk:'Мексика',             zone:'Тропічний / субтропічний', t:'+22 °C', rain:'700 мм/рік',  note:'Від пустель до тропіків.' },
+  'Brazil':        { uk:'Бразилія',            zone:'Тропічний / екваторіальний', t:'+25 °C', rain:'1700 мм/рік', note:'Амазонія — «легені планети».' },
+  'Argentina':     { uk:'Аргентина',           zone:'Помірний / субтропічний', t:'+15 °C', rain:'600 мм/рік',  note:'Пампаси, Анди.' },
+  'Chile':         { uk:'Чилі',                zone:'Від пустельного до субантарктичного', t:'+10 °C', rain:'500 мм/рік', note:'Найдовша країна світу.' },
+  'Peru':          { uk:'Перу',                zone:'Тропічний (височинний)',  t:'+20 °C', rain:'400 мм/рік',  note:'Анди, узбережжя Тихого океану.' },
+  'Colombia':      { uk:'Колумбія',            zone:'Екваторіальний',          t:'+26 °C', rain:'2500 мм/рік', note:'Дві океанські берегові лінії.' },
+  'Venezuela':     { uk:'Венесуела',           zone:'Тропічний',               t:'+27 °C', rain:'1500 мм/рік', note:'Водоспад Анхель.' },
+  'Cuba':          { uk:'Куба',                zone:'Тропічний',               t:'+26 °C', rain:'1300 мм/рік', note:'Карибський острів.' },
+  'Canada':        { uk:'Канада',              zone:'Субарктичний / помірний', t:'−4 °C',  rain:'500 мм/рік',  note:'Друга за площею країна.' },
+  'United States of America': { uk:'США',      zone:'Від помірного до тропічного', t:'+10 °C', rain:'700 мм/рік', note:'Різноманіття від Аляски до Флориди.' },
+  'United States': { uk:'США',                 zone:'Від помірного до тропічного', t:'+10 °C', rain:'700 мм/рік', note:'Різноманіття від Аляски до Флориди.' },
+  'Greenland':     { uk:'Гренландія',          zone:'Арктичний',               t:'−20 °C', rain:'200 мм/рік',  note:'Крижаний щит, 80% льоду.' },
+  'Iceland':       { uk:'Ісландія',            zone:'Субарктичний морський',   t:'+4 °C',  rain:'700 мм/рік',  note:'Вулкани, гейзери, льодовики.' },
+  'Kazakhstan':    { uk:'Казахстан',           zone:'Помірний континентальний', t:'+6 °C', rain:'250 мм/рік',  note:'Степи, напівпустелі.' },
+  'Mongolia':      { uk:'Монголія',            zone:'Різко континентальний',   t:'+1 °C',  rain:'250 мм/рік',  note:'Найхолодніша столиця світу.' },
+  'Uzbekistan':    { uk:'Узбекистан',          zone:'Помірний пустельний',     t:'+14 °C', rain:'200 мм/рік',  note:'Аральське море.' },
+  'Afghanistan':   { uk:'Афганістан',          zone:'Субтропічний / контин.',  t:'+13 °C', rain:'300 мм/рік',  note:'Гіндукуш.' },
+  'Pakistan':      { uk:'Пакистан',            zone:'Тропічний / субтропічний', t:'+22 °C', rain:'300 мм/рік', note:'Каракорум, Інд.' },
+  'Bangladesh':    { uk:'Бангладеш',           zone:'Тропічний мусонний',      t:'+26 °C', rain:'2500 мм/рік', note:'Дельта Гангу.' },
+  'Myanmar':       { uk:'М’янма',              zone:'Тропічний мусонний',      t:'+26 °C', rain:'2200 мм/рік', note:'Південно-Східна Азія.' },
+  'Antarctica':    { uk:'Антарктида',          zone:'Антарктичний',            t:'−50 °C', rain:'< 50 мм/рік', note:'Найхолодніший континент.' }
 };
 
-function getPos(e) {
-  const r = canvas.getBoundingClientRect();
-  const t = e.touches ? e.touches[0] : e;
+/* ============================================================
+   2. КОНСТАНТИ / СТАН
+   ============================================================ */
+const ZONES = [
+  { id:'hypothesis',     title:'🧠 1. Гіпотеза',     desc:'Запишіть припущення та план дослідження.' },
+  { id:'classification', title:'🗺 2. Класифікація', desc:'Кліматичні пояси вже зафарбовані. Наведіть на пояс — побачите його характеристики.' },
+  { id:'comfort',        title:'🏖 3. Комфорт',      desc:'Позначте 3 найкомфортніші пояси для життя.' },
+  { id:'changes',        title:'🌡 4. Зміни',        desc:'Причини та наслідки глобальних змін клімату.' },
+  { id:'history',        title:'🏛 5. Цивілізації',  desc:'Давні цивілізації та їхній кліматичний пояс.' }
+];
+
+const ICONS = [
+  { e:'☀️', l:'сонце' },{ e:'🌤️', l:'мінлива хмарність' },{ e:'☁️', l:'хмарно' },
+  { e:'🌧️', l:'дощ' },{ e:'⛈️', l:'гроза' },{ e:'❄️', l:'сніг' },
+  { e:'🌡️', l:'температура' },{ e:'💧', l:'вологість' },{ e:'🌪️', l:'ураган' },
+  { e:'🔥', l:'спека' },{ e:'🌊', l:'повінь' },{ e:'🌴', l:'тропіки' },
+  { e:'🏔️', l:'гори' },{ e:'🌫️', l:'туман' },{ e:'🌈', l:'райдуга' }
+];
+
+const STICKER_COLORS = ['#ffd166','#8fdcf5','#a8e6cf','#ffb4a2','#e0c3fc','#cfe3f2'];
+const CLIENT_ID = Math.random().toString(36).slice(2, 11);
+const TOTAL_TIMER_SECONDS = 30 * 60;
+
+const state = {
+  group: 1, zone: ZONES[0].id,
+  tool: 'brush', color: '#ffb703', size: 5,
+  data: emptyData(),
+  refDrawing: null, refBoard: null,
+  handlerDrawing: null, handlerBoard: null,
+  saveTimer: {}, dirtyDrawing: false, dirtyBoard: false,
+  lastLocalCanvas: null, isDrawing: false, pendingCanvas: undefined,
+  timerSeconds: 0, timerRunning: true,
+  mapReady: false, countriesGeo: null,
+  zonesVisible: true,          // шари
+  labelsVisible: true
+};
+
+function emptyData(){ return { canvas:null, stickers:[], icons:[], zoneFills:{} }; }
+
+/* ============================================================
+   3. DOM
+   ============================================================ */
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+const canvas        = $('#drawCanvas');
+const ctx           = canvas.getContext('2d', { alpha:true, desynchronized:true });
+const stickersLayer = $('#stickersLayer');
+const mapContainer  = $('#mapContainer');
+const svgMap        = $('#svgMap');
+const iconGallery   = $('#iconGallery');
+const tabsEl        = $('#tabs');
+const statusEl      = $('#status');
+const zoneInfoEl    = $('#zoneInfo');
+const zoneInfoTitle = $('#zoneInfoTitle');
+const zoneInfoDesc  = $('#zoneInfoDesc');
+const zoneInfoMeta  = $('#zoneInfoMeta');
+const zoneInfoHint  = $('#zoneInfoHint');
+const timerEl       = $('#timer');
+
+const stickerEls = new Map();
+const iconEls    = new Map();
+
+let dpr = 1, canvasRenderToken = 0, resizeRaf = null;
+
+/* ============================================================
+   4. УТИЛІТИ
+   ============================================================ */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function hexToRgba(hex, alpha){
+  let h = String(hex).replace('#','');
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  const n = parseInt(h, 16);
+  if (Number.isNaN(n)) return `rgba(255,255,255,${alpha})`;
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`;
+}
+
+function setStatus(msg, variant){
+  statusEl.textContent = msg;
+  statusEl.dataset.state = variant || 'ok';
+}
+let statusTimer = null;
+function flashStatus(msg, variant, revertMs = 2600){
+  clearTimeout(statusTimer);
+  setStatus(msg, variant);
+  statusTimer = setTimeout(() => {
+    setStatus(isOnline ? '🟢 Синхронізовано' : '🔴 Офлайн-режим', isOnline ? 'ok' : 'warn');
+  }, revertMs);
+}
+
+/* ============================================================
+   5. ІНТЕРФЕЙС
+   ============================================================ */
+function buildIconGallery(){
+  const frag = document.createDocumentFragment();
+  ICONS.forEach(({ e, l }) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'icon-item';
+    btn.textContent = e;
+    btn.setAttribute('aria-label', `Додати на карту: ${l}`);
+    btn.dataset.icon = e;
+    btn.addEventListener('click', () => addIcon(e));
+    frag.appendChild(btn);
+  });
+  iconGallery.appendChild(frag);
+}
+
+function buildTabs(){
+  const frag = document.createDocumentFragment();
+  ZONES.forEach((z, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tab';
+    btn.textContent = z.title;
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    btn.setAttribute('aria-controls', 'mapContainer');
+    btn.tabIndex = i === 0 ? 0 : -1;
+    btn.dataset.zone = z.id;
+    btn.addEventListener('click', () => switchZone(z.id));
+    frag.appendChild(btn);
+  });
+  tabsEl.appendChild(frag);
+
+  tabsEl.addEventListener('keydown', e => {
+    const tabs = $$('.tab', tabsEl);
+    const idx = tabs.indexOf(document.activeElement);
+    if (idx === -1) return;
+    let next = -1;
+    if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') next = (idx - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = tabs.length - 1;
+    if (next >= 0){
+      e.preventDefault();
+      tabs[next].focus();
+      switchZone(tabs[next].dataset.zone);
+    }
+  });
+}
+
+function buildLegend(){
+  const list = $('#legendList');
+  list.innerHTML = '';
+  CLIMATE_BANDS.forEach(band => {
+    const li = document.createElement('li');
+    li.dataset.zone = band.id;
+    li.setAttribute('role', 'button');
+    li.setAttribute('tabindex', '0');
+    li.setAttribute('aria-label', `Показати інформацію про ${band.name} пояс`);
+
+    const sw = document.createElement('span');
+    sw.className = 'legend__swatch';
+    sw.style.background = band.color;
+
+    const txt = document.createElement('span');
+    txt.textContent = band.name;
+
+    li.append(sw, txt);
+
+    const activate = () => showClimateInfo(band);
+    li.addEventListener('click', activate);
+    li.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(); }
+    });
+
+    list.appendChild(li);
+  });
+}
+
+/* ============================================================
+   6. РЕАЛЬНА КАРТА (D3 + TopoJSON)
+   ============================================================ */
+function makeLatBandPolygon(lat1, lat2){
+  const coords = [];
+  for (let lon = -180; lon <= 180; lon += 3) coords.push([lon, lat1]);
+  for (let lon = 180; lon >= -180; lon -= 3) coords.push([lon, lat2]);
+  coords.push([-180, lat1]);
   return {
-    x: (t.clientX - r.left) * (canvas.width / r.width),
-    y: (t.clientY - r.top) * (canvas.height / r.height)
+    type:'Feature',
+    properties:{},
+    geometry:{ type:'Polygon', coordinates:[coords] }
   };
 }
 
-canvas.addEventListener('mousedown', startDraw);
-canvas.addEventListener('mousemove', draw);
-canvas.addEventListener('mouseup', endDraw);
-canvas.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e); });
-canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e); });
-canvas.addEventListener('touchend', endDraw);
-
-function startDraw(e) {
-  isDrawing = true;
-  const p = getPos(e);
-  lastX = p.x;
-  lastY = p.y;
-  
-  if (currentTool === 'fill') {
-    ctx.fillStyle = currentColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    isDrawing = false;
-    localState.canvas = canvas.toDataURL();
-    saveToFirebase();
-  }
+function getMapSize(){
+  const r = mapContainer.getBoundingClientRect();
+  const w = Math.max(320, Math.round(r.width));
+  const h = Math.max(200, Math.round(r.height));
+  return { w, h };
 }
 
-function draw(e) {
-  if (!isDrawing) return;
-  const p = getPos(e);
-  
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.lineWidth = parseInt(document.getElementById('brushSize').value);
-  
-  if (currentTool === 'eraser') {
+function renderMap(){
+  if (typeof d3 === 'undefined' || typeof topojson === 'undefined'){
+    console.warn('D3 / topojson not loaded');
+    return;
+  }
+  const { w, h } = getMapSize();
+  svgMap.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svgMap.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+  const svg = d3.select('#svgMap');
+  const root = svg.select('#mapRoot');
+  root.selectAll('*').remove();
+
+  const projection = d3.geoEquirectangular()
+    .fitExtent([[6, 6], [w - 6, h - 6]], { type:'Sphere' });
+  const path = d3.geoPath(projection);
+
+  /* 1. Океан */
+  root.append('path')
+    .datum({ type:'Sphere' })
+    .attr('class', 'ocean-sphere')
+    .attr('d', path);
+
+  root.append('path')
+    .datum({ type:'Sphere' })
+    .attr('class', 'ocean-glow')
+    .attr('d', path);
+
+  /* 2. Сітка */
+  const grat = d3.geoGraticule().step([30, 30]);
+  root.append('path')
+    .datum(grat())
+    .attr('class', 'graticule')
+    .attr('d', path);
+
+  const gratMajor = d3.geoGraticule().step([60, 30]);
+  root.append('path')
+    .datum(gratMajor())
+    .attr('class', 'graticule graticule--major')
+    .attr('d', path);
+
+  /* 3. Країни — малюємо ПЕРЕД поясами, щоб пояси були ЗВЕРХУ */
+  const countriesG = root.append('g').attr('class', 'countries');
+  const drawCountries = (geo) => {
+    countriesG.selectAll('path.country')
+      .data(geo.features)
+      .enter()
+      .append('path')
+      .attr('class', d => {
+        const key = normalizeName(d.properties?.name || '');
+        return 'country' + (COUNTRY_CLIMATE_BY_KEY.has(key) ? ' country--has-data' : '');
+      })
+      .attr('data-country', d => d.properties?.name || '')
+      .attr('d', path);
+
+    // Крапки-маркери для країн із даними
+    countriesG.selectAll('circle.country-dot')
+      .data(geo.features.filter(d => COUNTRY_CLIMATE_BY_KEY.has(normalizeName(d.properties?.name || ''))))
+      .enter()
+      .append('circle')
+      .attr('class', 'country-dot')
+      .attr('cx', d => path.centroid(d)[0])
+      .attr('cy', d => path.centroid(d)[1])
+      .attr('r', 1.7);
+
+    state.mapReady = true;
+  };
+
+  if (state.countriesGeo){
+    drawCountries(state.countriesGeo);
+  } else {
+    d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+      .then(world => {
+        const geo = topojson.feature(world, world.objects.countries);
+        state.countriesGeo = geo;
+        const { w: w2, h: h2 } = getMapSize();
+        if (w2 !== w || h2 !== h){ renderMap(); return; }
+        drawCountries(geo);
+      })
+      .catch(err => {
+        console.error('Map load error:', err);
+        flashStatus('⚠️ Карту не завантажено — перевірте інтернет', 'error', 6000);
+        state.mapReady = true;
+      });
+  }
+
+  /* 4. КЛІМАТИЧНІ ПОЯСИ — ЗВЕРХУ над картою, з кольором */
+  const zonesG = root.append('g').attr('class', 'climate-zones');
+
+  CLIMATE_BANDS.forEach(band => {
+    const feat = makeLatBandPolygon(band.lat[0], band.lat[1]);
+    zonesG.append('path')
+      .datum(feat)
+      .attr('class', 'climate-zone')
+      .attr('data-zone', band.id)
+      .attr('data-name', band.name)
+      .attr('data-user-colored', 'false')
+      .attr('d', path)
+      .attr('fill', band.color)
+      .attr('fill-opacity', ZONE_BASE_OPACITY)
+      .attr('stroke', 'rgba(255,255,255,.18)')
+      .attr('stroke-width', 0.55);
+  });
+
+  /* 5. Підписи поясів — ЗАВЖДИ видимі */
+  const labelsG = root.append('g').attr('class', 'climate-labels');
+  CLIMATE_BANDS.forEach(band => {
+    const latMid = (band.lat[0] + band.lat[1]) / 2;
+    const center = projection([0, latMid]);
+    if (!center) return;
+    const span = Math.abs(band.lat[1] - band.lat[0]);
+    const isSmall = span < 12;
+    labelsG.append('text')
+      .attr('class', 'climate-zone__label' + (isSmall ? ' climate-zone__label--small' : ''))
+      .attr('x', center[0])
+      .attr('y', center[1] + 3)
+      .attr('data-zone', band.id)
+      .attr('fill', band.color)
+      .attr('data-visible', 'true')
+      .text(isSmall ? band.short : band.name);
+  });
+
+  /* 6. Важливі паралелі — найтонший шар поверх */
+  const latG = root.append('g').attr('class', 'lat-lines');
+  LAT_LINES.forEach(line => {
+    const feat = makeLatBandPolygon(line.lat - 0.06, line.lat + 0.06);
+    latG.append('path')
+      .datum(feat)
+      .attr('class', 'lat-line' + (line.equator ? ' lat-line--equator' : ''))
+      .attr('d', path);
+
+    const p = projection([-172, line.lat]);
+    if (p){
+      latG.append('text')
+        .attr('class', 'lat-label' + (line.equator ? ' lat-label--equator' : ''))
+        .attr('x', p[0])
+        .attr('y', p[1] - 3)
+        .text(line.label);
+    }
+  });
+
+  // Застосовуємо поточні налаштування шарів
+  applyZoneFills();
+  applyLayerVisibility();
+}
+
+function normalizeName(s){
+  return String(s || '').toLowerCase()
+    .replace(/^the\s+/, '')
+    .replace(/[^a-z]/g, '');
+}
+const COUNTRY_CLIMATE_BY_KEY = new Map(
+  Object.entries(COUNTRY_CLIMATE).map(([k, v]) => [normalizeName(k), v])
+);
+
+/* ============================================================
+   7. ШАРИ / ВИДИМІСТЬ
+   ============================================================ */
+function applyLayerVisibility(){
+  const svg = d3.select('#svgMap');
+  svg.selectAll('.climate-zone')
+    .style('display', state.zonesVisible ? null : 'none');
+  svg.selectAll('.climate-zone__label')
+    .style('display', (state.zonesVisible && state.labelsVisible) ? null : 'none');
+}
+
+function applyZoneFills(){
+  const svg = d3.select('#svgMap');
+
+  svg.selectAll('.climate-zone').each(function(){
+    const el = d3.select(this);
+    const id = el.attr('data-zone');
+    const userColor = state.data.zoneFills[id];
+    const band = CLIMATE_BANDS.find(b => b.id === id);
+
+    if (userColor){
+      el.attr('fill', userColor)
+        .attr('fill-opacity', ZONE_USER_OPACITY)
+        .attr('stroke', userColor)
+        .attr('stroke-width', 1.2)
+        .attr('stroke-dasharray', '5 3')
+        .attr('data-user-colored', 'true');
+      el.style('filter', 'drop-shadow(0 0 4px ' + hexToRgba(userColor, .55) + ')');
+    } else {
+      el.attr('fill', band ? band.color : '#fff')
+        .attr('fill-opacity', ZONE_BASE_OPACITY)
+        .attr('stroke', 'rgba(255,255,255,.18)')
+        .attr('stroke-width', 0.55)
+        .attr('stroke-dasharray', null)
+        .attr('data-user-colored', 'false');
+      el.style('filter', null);
+    }
+  });
+
+  // Оновлюємо колір підпису, якщо пояс зафарбовано користувачем
+  svg.selectAll('.climate-zone__label').each(function(){
+    const el = d3.select(this);
+    const id = el.attr('data-zone');
+    const userColor = state.data.zoneFills[id];
+    const band = CLIMATE_BANDS.find(b => b.id === id);
+    el.attr('fill', userColor || (band ? band.color : '#fff'));
+  });
+}
+
+function attachMapEvents(){
+  svgMap.addEventListener('click', e => {
+    const zoneEl = e.target.closest?.('.climate-zone');
+    if (zoneEl){
+      const band = CLIMATE_BANDS.find(b => b.id === zoneEl.dataset.zone);
+      if (state.tool === 'fill'){
+        const id = zoneEl.dataset.zone;
+        if (state.data.zoneFills[id] === state.color){
+          delete state.data.zoneFills[id];
+        } else {
+          state.data.zoneFills[id] = state.color;
+        }
+        applyZoneFills();
+        state.dirtyBoard = true;
+        scheduleSave('board');
+      }
+      if (band) showClimateInfo(band);
+      return;
+    }
+    const country = e.target.closest?.('.country');
+    if (country){
+      showCountryInfo(country.dataset.country);
+    }
+  });
+}
+
+function showClimateInfo(band){
+  zoneInfoEl.hidden = false;
+  zoneInfoTitle.textContent = band.name + ' пояс';
+  zoneInfoDesc.textContent  = band.desc;
+  const span = Math.abs(band.lat[1] - band.lat[0]);
+  zoneInfoMeta.innerHTML = `
+    <span class="zone-info__chip zone-info__chip--cool">Широта: ${band.lat[0]}°…${band.lat[1]}°</span>
+    <span class="zone-info__chip">Ширина: ≈${span.toFixed(1)}°</span>
+  `;
+  updateZoneHint();
+}
+
+function showCountryInfo(rawName){
+  const key = normalizeName(rawName);
+  const data = COUNTRY_CLIMATE_BY_KEY.get(key);
+  zoneInfoEl.hidden = false;
+
+  if (data){
+    zoneInfoTitle.textContent = `🌍 ${data.uk}`;
+    zoneInfoDesc.textContent  = data.note;
+    zoneInfoMeta.innerHTML = `
+      <span class="zone-info__chip">🌡 ${data.t}</span>
+      <span class="zone-info__chip zone-info__chip--cool">💧 ${data.rain}</span>
+      <span class="zone-info__chip zone-info__chip--warm">${data.zone}</span>
+    `;
+  } else {
+    zoneInfoTitle.textContent = `🌍 ${rawName || 'Країна'}`;
+    zoneInfoDesc.textContent  = 'Дані для цієї країни не внесені до довідника. Скористайтеся кліматичними поясами для аналізу.';
+    zoneInfoMeta.innerHTML = '';
+  }
+  updateZoneHint();
+}
+
+function updateZoneHint(){
+  const hints = {
+    brush:  '✏️ Малюйте пальцем або мишкою по карті.',
+    eraser: '🧽 Проведіть по лінії, щоб стерти.',
+    fill:   '🎨 Торкніться кліматичного поясу, щоб зафарбувати його власним кольором.'
+  };
+  zoneInfoHint.textContent = hints[state.tool] || '';
+}
+
+/* ============================================================
+   8. ПОЛОТНО
+   ============================================================ */
+function resizeCanvasBacking(){
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width < 1 || rect.height < 1) return;
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.round(rect.width  * dpr);
+  const h = Math.round(rect.height * dpr);
+  if (canvas.width === w && canvas.height === h) return;
+  canvas.width  = w;
+  canvas.height = h;
+  renderCanvas(state.data.canvas);
+}
+
+function renderCanvas(url){
+  const token = ++canvasRenderToken;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (!url) return;
+  const img = new Image();
+  img.decoding = 'async';
+  img.onload = () => {
+    if (token !== canvasRenderToken) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  };
+  img.src = url;
+}
+
+function encodeCanvas(){
+  try {
+    const webp = canvas.toDataURL('image/webp', 0.82);
+    if (webp && webp.indexOf('data:image/webp') === 0) return webp;
+  } catch (_){}
+  return canvas.toDataURL('image/png');
+}
+
+function getCanvasPoint(e){
+  const r = canvas.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+let lastX = 0, lastY = 0;
+function beginStroke(e){
+  if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
+  state.isDrawing = true;
+  canvas.setPointerCapture?.(e.pointerId);
+  const p = getCanvasPoint(e);
+  lastX = p.x; lastY = p.y;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = state.size;
+  if (state.tool === 'eraser'){
     ctx.globalCompositeOperation = 'destination-out';
     ctx.strokeStyle = 'rgba(0,0,0,1)';
   } else {
     ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = currentColor;
+    ctx.strokeStyle = state.color;
   }
-  
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, state.size / 2, 0, Math.PI * 2);
+  ctx.fillStyle = state.tool === 'eraser' ? 'rgba(0,0,0,1)' : state.color;
+  ctx.fill();
+}
+function moveStroke(e){
+  if (!state.isDrawing) return;
+  const p = getCanvasPoint(e);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = state.size;
+  if (state.tool === 'eraser'){
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.strokeStyle = 'rgba(0,0,0,1)';
+  } else {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = state.color;
+  }
   ctx.beginPath();
   ctx.moveTo(lastX, lastY);
   ctx.lineTo(p.x, p.y);
   ctx.stroke();
-  
-  lastX = p.x;
-  lastY = p.y;
+  lastX = p.x; lastY = p.y;
 }
-
-function endDraw() {
-  if (isDrawing) {
-    isDrawing = false;
-    ctx.globalCompositeOperation = 'source-over';
-    localState.canvas = canvas.toDataURL();
-    saveToFirebase();
+function endStroke(){
+  if (!state.isDrawing) return;
+  state.isDrawing = false;
+  ctx.globalCompositeOperation = 'source-over';
+  const url = encodeCanvas();
+  state.data.canvas = url;
+  state.lastLocalCanvas = url;
+  state.dirtyDrawing = true;
+  scheduleSave('drawing');
+  if (state.pendingCanvas !== undefined){
+    const pending = state.pendingCanvas;
+    state.pendingCanvas = undefined;
+    if (pending !== url) renderCanvas(pending);
   }
 }
 
-function addSticker() {
-  const colors = ['#ffe66d', '#ff6b6b', '#4ecdc4', '#95e1d3', '#f3a683'];
-  const data = {
-    x: 100 + Math.random() * 200,
-    y: 100 + Math.random() * 200,
-    text: '',
-    color: colors[Math.floor(Math.random() * colors.length)]
-  };
-  localState.stickers.push(data);
-  createStickerElement(data, true);
-  saveToFirebase();
+function attachCanvasEvents(){
+  canvas.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'touch') e.preventDefault();
+    beginStroke(e);
+  });
+  canvas.addEventListener('pointermove', moveStroke);
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+  canvas.addEventListener('lostpointercapture', endStroke);
+  canvas.addEventListener('touchstart', e => e.preventDefault(), { passive:false });
+  canvas.addEventListener('touchmove',  e => e.preventDefault(), { passive:false });
 }
 
-function createStickerElement(data, save) {
+/* ============================================================
+   9. ІНСТРУМЕНТИ
+   ============================================================ */
+function setTool(tool){
+  state.tool = tool;
+  canvas.dataset.tool = tool;
+  $$('.tool-btn[data-tool]').forEach(b => {
+    b.setAttribute('aria-pressed', b.dataset.tool === tool ? 'true' : 'false');
+  });
+  updateZoneHint();
+}
+function setColor(color, sourceEl){
+  state.color = color;
+  $$('.color-swatch').forEach(s => {
+    s.setAttribute('aria-pressed', s.dataset.color === color ? 'true' : 'false');
+  });
+  const picker = $('#colorPicker');
+  if (picker && picker.value.toLowerCase() !== color.toLowerCase()) picker.value = color;
+  if (sourceEl) sourceEl.setAttribute('aria-pressed', 'true');
+}
+
+/* ============================================================
+   10. СТІКЕРИ
+   ============================================================ */
+const findSticker = id => state.data.stickers.find(s => s.id === id);
+const findIcon    = id => state.data.icons.find(i => i.id === id);
+
+function createStickerEl(s){
   const el = document.createElement('div');
   el.className = 'sticker';
-  el.style.left = data.x + 'px';
-  el.style.top = data.y + 'px';
-  el.style.background = data.color;
-  el.innerHTML = `<span class="del">✕</span><textarea placeholder="Пишіть...">${data.text}</textarea>`;
-  
-  el.querySelector('textarea').oninput = e => { 
-    data.text = e.target.value; 
-    if(save) saveToFirebase();
+  el.dataset.id = s.id;
+  el.style.left = s.x + 'px';
+  el.style.top  = s.y + 'px';
+  el.style.background = s.color;
+
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'sticker__del';
+  del.setAttribute('aria-label', 'Видалити стікер');
+  del.textContent = '✕';
+
+  const ta = document.createElement('textarea');
+  ta.value = s.text || '';
+  ta.placeholder = 'Пишіть…';
+  ta.setAttribute('aria-label', 'Текст стікера');
+  ta.rows = 2;
+
+  const autosize = () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 200) + 'px';
   };
-  
-  el.querySelector('.del').onclick = () => {
-    localState.stickers = localState.stickers.filter(s => s !== data);
-    el.remove();
-    if(save) saveToFirebase();
-  };
-  
-  let dragging = false, offX, offY;
-  el.onmousedown = e => {
-    if (e.target.tagName === 'TEXTAREA' || e.target.className === 'del') return;
-    dragging = true;
-    offX = e.clientX - el.offsetLeft;
-    offY = e.clientY - el.offsetTop;
+  ta.addEventListener('input', () => {
+    const t = findSticker(s.id);
+    if (t) t.text = ta.value;
+    autosize();
+    state.dirtyBoard = true;
+    scheduleSave('board');
+  });
+  ta.addEventListener('keydown', e => e.stopPropagation());
+
+  del.addEventListener('click', e => {
+    e.stopPropagation();
+    state.data.stickers = state.data.stickers.filter(x => x.id !== s.id);
+    stickerEls.get(s.id)?.remove();
+    stickerEls.delete(s.id);
+    state.dirtyBoard = true;
+    scheduleSave('board');
+  });
+
+  let drag = null;
+  el.addEventListener('pointerdown', e => {
+    if (e.target.closest('textarea, button')) return;
+    const rect = stickersLayer.getBoundingClientRect();
+    const t = findSticker(s.id);
+    if (!t) return;
+    drag = { pointerId:e.pointerId, dx:e.clientX - rect.left - t.x, dy:e.clientY - rect.top - t.y };
+    el.setPointerCapture?.(e.pointerId);
+    el.style.cursor = 'grabbing';
     e.preventDefault();
+  });
+  el.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const rect = stickersLayer.getBoundingClientRect();
+    const t = findSticker(s.id);
+    if (!t) return;
+    t.x = Math.max(-20, Math.min(rect.width  - 40, e.clientX - rect.left - drag.dx));
+    t.y = Math.max(-10, Math.min(rect.height - 30, e.clientY - rect.top  - drag.dy));
+    el.style.left = t.x + 'px';
+    el.style.top  = t.y + 'px';
+  });
+  const stopDrag = e => {
+    if (!drag || (e && e.pointerId !== drag.pointerId)) return;
+    drag = null;
+    el.style.cursor = '';
+    state.dirtyBoard = true;
+    scheduleSave('board');
   };
-  
-  document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    data.x = e.clientX - offX;
-    data.y = e.clientY - offY;
-    el.style.left = data.x + 'px';
-    el.style.top = data.y + 'px';
-  });
-  
-  document.addEventListener('mouseup', () => {
-    if (dragging && save) saveToFirebase();
-    dragging = false;
-  });
-  
-  stickersLayer.appendChild(el);
+  el.addEventListener('pointerup', stopDrag);
+  el.addEventListener('pointercancel', stopDrag);
+  el.addEventListener('lostpointercapture', stopDrag);
+
+  el.append(del, ta);
+  requestAnimationFrame(autosize);
+  return el;
 }
 
-function clearCurrent() {
-  if (!confirm('Очистити поточну зону для цієї групи?')) return;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  localState.stickers = [];
-  localState.icons = [];
-  localState.canvas = null;
-  stickersLayer.innerHTML = '';
-  saveToFirebase();
-}
-
-function initDragAndDrop() {
-  document.querySelectorAll('.icon-item').forEach(icon => {
-    icon.addEventListener('dragstart', e => {
-      e.dataTransfer.setData('icon', icon.dataset.icon);
-    });
-  });
-  
-  const dropZone = document.querySelector('.map-container');
-  dropZone.addEventListener('dragover', e => e.preventDefault());
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    const icon = e.dataTransfer.getData('icon');
-    if (icon) {
-      const rect = dropZone.getBoundingClientRect();
-      placeIcon(icon, e.clientX - rect.left, e.clientY - rect.top, true);
+function renderStickers(list){
+  const seen = new Set();
+  list.forEach(s => {
+    seen.add(s.id);
+    let el = stickerEls.get(s.id);
+    if (!el){
+      el = createStickerEl(s);
+      stickerEls.set(s.id, el);
+      stickersLayer.appendChild(el);
+    } else {
+      el.style.left = s.x + 'px';
+      el.style.top  = s.y + 'px';
+      el.style.background = s.color;
+      const ta = el.querySelector('textarea');
+      if (ta && document.activeElement !== ta && ta.value !== (s.text || '')) ta.value = s.text || '';
     }
   });
+  stickerEls.forEach((el, id) => {
+    if (!seen.has(id)){ el.remove(); stickerEls.delete(id); }
+  });
 }
 
-function placeIcon(iconChar, x, y, save) {
-  const data = { icon: iconChar, x, y };
-  localState.icons.push(data);
-  createPlacedIcon(data, save);
-  if (save) saveToFirebase();
+function addSticker(){
+  const rect = mapContainer.getBoundingClientRect();
+  const n = state.data.stickers.length;
+  const s = {
+    id: uid(),
+    x: Math.max(10, Math.round(rect.width  / 2 - 85 + (n % 4) * 16)),
+    y: Math.max(10, Math.round(rect.height / 2 - 32 + (n % 4) * 16)),
+    text: '',
+    color: STICKER_COLORS[n % STICKER_COLORS.length]
+  };
+  state.data.stickers.push(s);
+  renderStickers(state.data.stickers);
+  state.dirtyBoard = true;
+  scheduleSave('board');
+  stickerEls.get(s.id)?.querySelector('textarea')?.focus();
 }
 
-function createPlacedIcon(data, save) {
+/* ============================================================
+   11. ІКОНКИ
+   ============================================================ */
+function createIconEl(icon){
   const el = document.createElement('div');
   el.className = 'placed-icon';
-  el.textContent = data.icon;
-  el.style.left = data.x + 'px';
-  el.style.top = data.y + 'px';
-  
-  let dragging = false, offX, offY;
-  el.onmousedown = e => {
-    dragging = true;
-    offX = e.clientX - el.offsetLeft;
-    offY = e.clientY - el.offsetTop;
+  el.dataset.id = icon.id;
+  el.textContent = icon.icon;
+  el.style.left = icon.x + 'px';
+  el.style.top  = icon.y + 'px';
+  el.tabIndex = 0;
+  el.setAttribute('role', 'img');
+  el.setAttribute('aria-label', `Іконка «${icon.icon}». Стрілки — перемістити, Delete — видалити.`);
+
+  let drag = null;
+  el.addEventListener('pointerdown', e => {
+    const rect = stickersLayer.getBoundingClientRect();
+    const t = findIcon(icon.id);
+    if (!t) return;
+    drag = { pointerId:e.pointerId, dx:e.clientX - rect.left - t.x, dy:e.clientY - rect.top - t.y };
+    el.setPointerCapture?.(e.pointerId);
     e.preventDefault();
+  });
+  el.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    const rect = stickersLayer.getBoundingClientRect();
+    const t = findIcon(icon.id);
+    if (!t) return;
+    t.x = Math.max(-10, Math.min(rect.width  - 20, e.clientX - rect.left - drag.dx));
+    t.y = Math.max(-10, Math.min(rect.height - 20, e.clientY - rect.top  - drag.dy));
+    el.style.left = t.x + 'px';
+    el.style.top  = t.y + 'px';
+  });
+  const stopDrag = e => {
+    if (!drag || (e && e.pointerId !== drag.pointerId)) return;
+    drag = null;
+    state.dirtyBoard = true;
+    scheduleSave('board');
   };
-  
-  document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    data.x = e.clientX - offX;
-    data.y = e.clientY - offY;
-    el.style.left = data.x + 'px';
-    el.style.top = data.y + 'px';
-  });
-  
-  document.addEventListener('mouseup', () => {
-    if (dragging && save) saveToFirebase();
-    dragging = false;
-  });
-  
-  el.ondblclick = () => {
-    if (confirm('Видалити іконку?')) {
-      localState.icons = localState.icons.filter(i => i !== data);
-      el.remove();
-      if (save) saveToFirebase();
+  el.addEventListener('pointerup', stopDrag);
+  el.addEventListener('pointercancel', stopDrag);
+  el.addEventListener('lostpointercapture', stopDrag);
+
+  el.addEventListener('keydown', e => {
+    const t = findIcon(icon.id);
+    if (!t) return;
+    const step = e.shiftKey ? 12 : 3;
+    let handled = true;
+    switch (e.key){
+      case 'ArrowLeft':  t.x -= step; break;
+      case 'ArrowRight': t.x += step; break;
+      case 'ArrowUp':    t.y -= step; break;
+      case 'ArrowDown':  t.y += step; break;
+      case 'Delete':
+      case 'Backspace':
+        state.data.icons = state.data.icons.filter(i => i.id !== icon.id);
+        iconEls.get(icon.id)?.remove();
+        iconEls.delete(icon.id);
+        state.dirtyBoard = true;
+        scheduleSave('board');
+        el.blur();
+        return;
+      default: handled = false;
     }
+    if (handled){
+      e.preventDefault();
+      el.style.left = t.x + 'px';
+      el.style.top  = t.y + 'px';
+      state.dirtyBoard = true;
+      scheduleSave('board');
+    }
+  });
+
+  el.addEventListener('dblclick', () => {
+    state.data.icons = state.data.icons.filter(i => i.id !== icon.id);
+    el.remove();
+    iconEls.delete(icon.id);
+    state.dirtyBoard = true;
+    scheduleSave('board');
+  });
+
+  return el;
+}
+
+function renderIcons(list){
+  const seen = new Set();
+  list.forEach(icon => {
+    seen.add(icon.id);
+    let el = iconEls.get(icon.id);
+    if (!el){
+      el = createIconEl(icon);
+      iconEls.set(icon.id, el);
+      stickersLayer.appendChild(el);
+    } else {
+      el.style.left = icon.x + 'px';
+      el.style.top  = icon.y + 'px';
+    }
+  });
+  iconEls.forEach((el, id) => {
+    if (!seen.has(id)){ el.remove(); iconEls.delete(id); }
+  });
+}
+
+function addIcon(emoji){
+  const rect = mapContainer.getBoundingClientRect();
+  const n = state.data.icons.length;
+  const icon = {
+    id: uid(),
+    icon: emoji,
+    x: Math.max(10, Math.round(rect.width  / 2 - 20 + (n % 6) * 18)),
+    y: Math.max(10, Math.round(rect.height / 2 - 20 + (n % 6) * 18))
   };
-  
-  stickersLayer.appendChild(el);
+  state.data.icons.push(icon);
+  renderIcons(state.data.icons);
+  state.dirtyBoard = true;
+  scheduleSave('board');
+  flashStatus(`${emoji} додано на карту`, 'busy', 1400);
 }
 
-function initMapInteractions() {
-  document.querySelectorAll('.climate-zone').forEach(zone => {
-    zone.addEventListener('click', function() {
-      const name = this.dataset.name;
-      const bbox = this.getBBox();
-      const sticker = {
-        x: bbox.x + bbox.width/2 - 50,
-        y: bbox.y + bbox.height/2 - 25,
-        text: name,
-        color: '#4ecdc4'
-      };
-      localState.stickers.push(sticker);
-      createStickerElement(sticker, true);
-      saveToFirebase();
-    });
-  });
-  
-  document.querySelectorAll('.country').forEach(country => {
-    country.addEventListener('click', function() {
-      const name = this.dataset.country;
-      const bbox = this.getBBox();
-      const sticker = {
-        x: bbox.x + bbox.width/2 - 50,
-        y: bbox.y - 30,
-        text: name,
-        color: '#ffe66d'
-      };
-      localState.stickers.push(sticker);
-      createStickerElement(sticker, true);
-      saveToFirebase();
-    });
-  });
+/* ============================================================
+   12. РЕНДЕР
+   ============================================================ */
+function renderBoard(){
+  renderStickers(state.data.stickers);
+  renderIcons(state.data.icons);
+  applyZoneFills();
 }
 
-function startTimer() {
-  updateTimerDisplay();
-  timerInterval = setInterval(() => {
-    if (timerRunning && timerSeconds < totalTimerSeconds) {
-      timerSeconds++;
-      updateTimerDisplay();
-      
-      if (totalTimerSeconds - timerSeconds <= 300 && (totalTimerSeconds - timerSeconds) % 60 === 0) {
-        const mins = Math.floor((totalTimerSeconds - timerSeconds) / 60);
-        setStatus(`⏰ Залишилося ${mins} хв!`, true);
-      }
-    }
-  }, 1000);
+/* ============================================================
+   13. FIREBASE
+   ============================================================ */
+const refsFor = (g, z) => {
+  const base = `groups/group${g}/zones/${z}`;
+  return { drawing: db.ref(base + '/drawing'), board: db.ref(base + '/board') };
+};
+
+function detachListeners(){
+  if (state.refDrawing && state.handlerDrawing)
+    state.refDrawing.off('value', state.handlerDrawing);
+  if (state.refBoard && state.handlerBoard)
+    state.refBoard.off('value', state.handlerBoard);
+  state.refDrawing = state.refBoard = null;
+  state.handlerDrawing = state.handlerBoard = null;
 }
 
-function updateTimerDisplay() {
-  const remaining = totalTimerSeconds - timerSeconds;
-  const mins = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  document.getElementById('timer').textContent = 
-    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+function attachListeners(){
+  if (!db) return;
+  const r = refsFor(state.group, state.zone);
+  state.refDrawing = r.drawing;
+  state.refBoard   = r.board;
+
+  state.handlerDrawing = r.drawing.on('value', snap => {
+    const url = snap.val() || null;
+    if (url === state.lastLocalCanvas) return;
+    if (state.isDrawing){ state.pendingCanvas = url; return; }
+    state.data.canvas = url;
+    renderCanvas(url);
+  }, err => console.error('drawing listener:', err));
+
+  state.handlerBoard = r.board.on('value', snap => {
+    const data = snap.val();
+    if (!data) return;
+    if (state.dirtyBoard) return;
+    state.data.stickers  = Array.isArray(data.stickers) ? data.stickers : [];
+    state.data.icons     = Array.isArray(data.icons)    ? data.icons    : [];
+    state.data.zoneFills = data.zoneFills || {};
+    renderBoard();
+  }, err => console.error('board listener:', err));
 }
 
-function toggleTimer() {
-  timerRunning = !timerRunning;
-  document.getElementById('timerBtn').textContent = timerRunning ? '⏸' : '▶';
+function scheduleSave(kind){
+  clearTimeout(state.saveTimer[kind]);
+  state.saveTimer[kind] = setTimeout(() => flushSave(kind), kind === 'drawing' ? 900 : 450);
 }
 
-function exportPNG() {
-  const workspace = document.getElementById('workspace');
-  setStatus('📸 Створення знімка...', true);
-  html2canvas(workspace, {
-    backgroundColor: '#0a0a1a',
-    scale: 2
-  }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = `Group${currentGroup}-${currentZone}-${Date.now()}.png`;
-    link.href = canvas.toDataURL();
-    link.click();
-    setStatus('✅ PNG збережено!');
-  }).catch(() => {
-    setStatus('❌ Помилка збереження', true);
-  });
-}
+function flushSave(kind){
+  if (!db) return;
+  const kinds = kind ? [kind] : ['drawing', 'board'];
 
-function setStatus(msg, persistent = false) {
-  const statusEl = document.getElementById('status');
-  statusEl.textContent = msg;
-  if (!persistent) {
-    setTimeout(() => statusEl.textContent = '🟢 Синхронізовано', 3000);
+  if (kinds.includes('drawing') && state.dirtyDrawing && state.refDrawing){
+    state.lastLocalCanvas = state.data.canvas;
+    state.refDrawing.set(state.data.canvas || null)
+      .then(() => { state.dirtyDrawing = false; })
+      .catch(err => { console.error('drawing save:', err); flashStatus('⚠️ Не збережено', 'error'); });
+  }
+
+  if (kinds.includes('board') && state.dirtyBoard && state.refBoard){
+    state.refBoard.set({
+      stickers: state.data.stickers,
+      icons: state.data.icons,
+      zoneFills: state.data.zoneFills,
+      updatedAt: Date.now(),
+      by: CLIENT_ID
+    }).then(() => { state.dirtyBoard = false; })
+      .catch(err => { console.error('board save:', err); flashStatus('⚠️ Не збережено', 'error'); });
   }
 }
 
-// Запуск
-window.addEventListener('load', init);
+/* ============================================================
+   14. ПЕРЕМИКАННЯ
+   ============================================================ */
+function openBoard(group, zone){
+  flushSave();
+  detachListeners();
+  state.group = group;
+  state.zone  = zone;
+  state.data  = emptyData();
+  state.dirtyDrawing = state.dirtyBoard = false;
+  state.lastLocalCanvas = null;
+
+  stickerEls.forEach(el => el.remove()); stickerEls.clear();
+  iconEls.forEach(el => el.remove());    iconEls.clear();
+  renderCanvas(null);
+  renderBoard();
+  attachListeners();
+}
+
+function switchGroup(group){
+  if (group === state.group && state.refDrawing) return;
+  openBoard(group, state.zone);
+  $('#currentGroupNum').textContent = group;
+  $$('.group-btn').forEach(b => {
+    b.setAttribute('aria-pressed', Number(b.dataset.group) === group ? 'true' : 'false');
+  });
+  flashStatus(`👥 Група ${group} — завантажено`, 'busy', 1800);
+}
+
+function switchZone(zoneId){
+  if (zoneId === state.zone && state.refDrawing) return;
+  openBoard(state.group, zoneId);
+
+  const zone = ZONES.find(z => z.id === zoneId) || ZONES[0];
+  zoneInfoTitle.textContent = zone.title;
+  zoneInfoDesc.textContent  = zone.desc;
+  zoneInfoMeta.innerHTML    = '';
+  zoneInfoEl.hidden = false;
+  updateZoneHint();
+
+  $$('.tab', tabsEl).forEach(t => {
+    const active = t.dataset.zone === zoneId;
+    t.setAttribute('aria-selected', active ? 'true' : 'false');
+    t.tabIndex = active ? 0 : -1;
+  });
+}
+
+/* ============================================================
+   15. ТАЙМЕР
+   ============================================================ */
+let timerInterval = null;
+function updateTimerDisplay(){
+  const remaining = Math.max(0, TOTAL_TIMER_SECONDS - state.timerSeconds);
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  timerEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  timerEl.dataset.low = remaining <= 300 ? 'true' : 'false';
+}
+function startTimer(){
+  updateTimerDisplay();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (!state.timerRunning) return;
+    if (state.timerSeconds >= TOTAL_TIMER_SECONDS) return;
+    state.timerSeconds++;
+    updateTimerDisplay();
+    const remaining = TOTAL_TIMER_SECONDS - state.timerSeconds;
+    if (remaining === 300 || remaining === 60){
+      flashStatus(`⏰ Залишилося ${remaining / 60} хв!`, 'warn', 5000);
+    }
+    if (remaining === 0) flashStatus('⏰ Час вийшов!', 'error', 8000);
+  }, 1000);
+}
+function toggleTimer(){
+  state.timerRunning = !state.timerRunning;
+  const btn = $('#timerBtn');
+  btn.setAttribute('aria-pressed', state.timerRunning ? 'false' : 'true');
+  btn.setAttribute('aria-label', state.timerRunning ? 'Пауза таймера' : 'Продовжити таймер');
+  $('#timerBtnIcon').textContent = state.timerRunning ? '⏸' : '▶';
+}
+
+/* ============================================================
+   16. ЕКСПОРТ
+   ============================================================ */
+async function exportPNG(){
+  if (typeof html2canvas !== 'function'){
+    flashStatus('❌ Модуль експорту не завантажено', 'error');
+    return;
+  }
+  flashStatus('📸 Створюємо знімок…', 'busy', 8000);
+  try {
+    const shot = await html2canvas(mapContainer, {
+      backgroundColor: '#04182e',
+      scale: Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)),
+      useCORS: true, logging: false, removeContainer: true
+    });
+    const link = document.createElement('a');
+    link.download = `climate-g${state.group}-${state.zone}-${Date.now()}.png`;
+    link.href = shot.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    flashStatus('✅ PNG збережено', 'ok', 3000);
+  } catch (err){
+    console.error('export error:', err);
+    flashStatus('❌ Не вдалося зберегти', 'error', 4000);
+  }
+}
+
+/* ============================================================
+   17. ОЧИЩЕННЯ
+   ============================================================ */
+function clearCurrent(){
+  const zoneName = (ZONES.find(z => z.id === state.zone) || {}).title || '';
+  if (!window.confirm(`Очистити «${zoneName}» для групи ${state.group}?`)) return;
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  state.data.canvas = null;
+  state.data.stickers = [];
+  state.data.icons = [];
+  state.data.zoneFills = {};
+  state.lastLocalCanvas = null;
+  stickerEls.forEach(el => el.remove()); stickerEls.clear();
+  iconEls.forEach(el => el.remove());    iconEls.clear();
+  applyZoneFills();
+  state.dirtyDrawing = true;
+  state.dirtyBoard = true;
+  flushSave();
+  flashStatus('🗑 Дошку очищено (пояси повернуто)', 'warn', 2400);
+}
+
+/* ============================================================
+   18. МЕРЕЖА
+   ============================================================ */
+let isOnline = navigator.onLine;
+function bindConnection(){
+  window.addEventListener('online',  () => { isOnline = true;  flashStatus('🟢 Знову онлайн', 'ok'); });
+  window.addEventListener('offline', () => { isOnline = false; setStatus('🔴 Офлайн-режим', 'warn'); });
+
+  if (db){
+    db.ref('.info/connected').on('value', snap => {
+      isOnline = !!snap.val();
+      if (!statusTimer){
+        setStatus(isOnline ? '🟢 Синхронізовано' : '🟠 Офлайн — зміни збережуться',
+                  isOnline ? 'ok' : 'warn');
+      }
+    });
+  }
+}
+
+/* ============================================================
+   19. UI
+   ============================================================ */
+function bindUI(){
+  $$('.tool-btn[data-tool]').forEach(btn => {
+    btn.addEventListener('click', () => setTool(btn.dataset.tool));
+  });
+  $$('.color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => setColor(sw.dataset.color, sw));
+  });
+  $('#colorPicker').addEventListener('input', e => setColor(e.target.value));
+
+  const sizeInput = $('#brushSize');
+  sizeInput.addEventListener('input', e => {
+    state.size = Number(e.target.value);
+    $('#sizeLabel').textContent = state.size;
+    sizeInput.setAttribute('aria-valuenow', state.size);
+  });
+
+  $$('.group-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchGroup(Number(btn.dataset.group)));
+  });
+
+  $('#addStickerBtn').addEventListener('click', addSticker);
+  $('#clearBtn').addEventListener('click', clearCurrent);
+  $('#timerBtn').addEventListener('click', toggleTimer);
+  $('#exportBtn').addEventListener('click', exportPNG);
+  $('#zoneInfoClose').addEventListener('click', () => { zoneInfoEl.hidden = true; });
+
+  // Перемикачі шарів
+  const zonesToggle = $('#zonesToggle');
+  zonesToggle.addEventListener('click', () => {
+    state.zonesVisible = !state.zonesVisible;
+    zonesToggle.setAttribute('aria-pressed', state.zonesVisible ? 'true' : 'false');
+    applyLayerVisibility();
+    flashStatus(state.zonesVisible ? '🎨 Пояси увімкнено' : '🎨 Пояси вимкнено', 'busy', 1400);
+  });
+
+  const labelsToggle = $('#labelsToggle');
+  labelsToggle.addEventListener('click', () => {
+    state.labelsVisible = !state.labelsVisible;
+    labelsToggle.setAttribute('aria-pressed', state.labelsVisible ? 'true' : 'false');
+    applyLayerVisibility();
+    flashStatus(state.labelsVisible ? '🔤 Підписи увімкнено' : '🔤 Підписи вимкнено', 'busy', 1400);
+  });
+
+  // Легенда
+  const legend = $('#legend');
+  const legendToggle = $('#legendToggle');
+  legendToggle.addEventListener('click', () => {
+    const collapsed = legend.dataset.collapsed === 'true';
+    legend.dataset.collapsed = collapsed ? 'false' : 'true';
+    legendToggle.textContent = collapsed ? '−' : '+';
+    legendToggle.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
+    legendToggle.setAttribute('aria-label', collapsed ? 'Згорнути легенду' : 'Розгорнути легенду');
+  });
+
+  document.addEventListener('keydown', e => {
+    const tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'textarea' || tag === 'input') return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.key === 'b' || e.key === 'B') setTool('brush');
+    else if (e.key === 'e' || e.key === 'E') setTool('eraser');
+    else if (e.key === 'f' || e.key === 'F') setTool('fill');
+    else if (e.key === 'n' || e.key === 'N') addSticker();
+    else if (e.key === 'z' || e.key === 'Z') {
+      state.zonesVisible = !state.zonesVisible;
+      zonesToggle.setAttribute('aria-pressed', state.zonesVisible ? 'true' : 'false');
+      applyLayerVisibility();
+    } else if (e.key === 'l' || e.key === 'L') {
+      state.labelsVisible = !state.labelsVisible;
+      labelsToggle.setAttribute('aria-pressed', state.labelsVisible ? 'true' : 'false');
+      applyLayerVisibility();
+    }
+  });
+
+  window.addEventListener('beforeunload', () => flushSave());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushSave();
+  });
+}
+
+function bindResize(){
+  const schedule = () => {
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => {
+      resizeRaf = null;
+      resizeCanvasBacking();
+      renderMap();
+    });
+  };
+  if ('ResizeObserver' in window){
+    new ResizeObserver(schedule).observe(mapContainer);
+  }
+  window.addEventListener('resize', schedule);
+  window.addEventListener('orientationchange', () => setTimeout(schedule, 250));
+}
+
+/* ============================================================
+   20. ІНІЦІАЛІЗАЦІЯ
+   ============================================================ */
+function init(){
+  buildIconGallery();
+  buildTabs();
+  buildLegend();
+  bindUI();
+  bindConnection();
+  attachCanvasEvents();
+  attachMapEvents();
+  bindResize();
+
+  setTool('brush');
+  setColor('#ffb703');
+
+  openBoard(1, ZONES[0].id);
+  switchZone(ZONES[0].id);
+
+  requestAnimationFrame(() => {
+    renderMap();
+    resizeCanvasBacking();
+    renderCanvas(state.data.canvas);
+  });
+
+  startTimer();
+  updateZoneHint();
+}
+
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
