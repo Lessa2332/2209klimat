@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#03121f">
 <meta name="color-scheme" content="dark">
-<meta name="description" content="Кліматична лабораторія — спільна інтерактивна дошка з реальною географічною картою та зафарбованими кліматичними поясами.">
+<meta name="description" content="Кліматична лабораторія — реальна карта світу з прозорими кліматичними поясами.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,48 +25,22 @@
 <script defer src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 
 <style>
-/* ============================================================
-   ДИЗАЙН-СИСТЕМА «ПОГОДА»
-   ============================================================ */
 :root{
-  --sky-950:#03121f;
-  --sky-900:#061a2b;
-  --sky-850:#082136;
-  --sky-800:#0a2540;
-  --sky-700:#0f3a5f;
-  --sky-600:#15507f;
-  --sky-500:#1f6ea6;
-  --sky-400:#3c9fd4;
-  --rain:#4cc9f0;
-  --rain-soft:#8fdcf5;
-  --sun:#ffb703;
-  --sun-soft:#ffd166;
-  --warm:#ff6b35;
-  --mint:#2ec4b6;
-  --snow:#eaf4fb;
-  --cloud:#cfe3f2;
-  --danger:#ff5470;
-  --ocean-deep:#04182e;
-  --ocean-mid:#062a4a;
-  --ocean-shallow:#0a3d68;
-  --land:#12324f;
-  --land-hi:#1d4a70;
-  --land-stroke:#3a6b96;
-  --text:#eaf4fb;
-  --text-dim:#a8c4d8;
-  --text-mute:#7d9bb3;
-  --surface:rgba(10,37,64,.82);
-  --surface-2:rgba(15,58,95,.9);
-  --line:rgba(111,198,234,.20);
-  --line-strong:rgba(111,198,234,.38);
-  --r-lg:16px;
-  --r-md:12px;
-  --r-sm:9px;
-  --tap:44px;
+  --sky-950:#03121f; --sky-900:#061a2b; --sky-800:#0a2540;
+  --sky-700:#0f3a5f; --sky-600:#15507f; --sky-500:#1f6ea6; --sky-400:#3c9fd4;
+  --rain:#4cc9f0; --rain-soft:#8fdcf5;
+  --sun:#ffb703; --sun-soft:#ffd166;
+  --warm:#ff6b35; --mint:#2ec4b6; --danger:#ff5470;
+  --ocean-deep:#04182e; --ocean-mid:#062a4a;
+  /* Суходіл — світліший, щоб просвічував крізь пояси */
+  --land:#1e4d78; --land-hi:#2b6ea6;
+  --land-stroke:#4a8cb8;
+  --text:#eaf4fb; --text-dim:#a8c4d8; --text-mute:#7d9bb3;
+  --line:rgba(111,198,234,.20); --line-strong:rgba(111,198,234,.38);
+  --r-lg:16px; --r-md:12px; --r-sm:9px; --tap:44px;
   --shadow-1:0 2px 10px rgba(0,0,0,.35);
   --shadow-2:0 10px 34px rgba(0,0,0,.5);
-  --dur:.18s;
-  --ease:cubic-bezier(.4,0,.2,1);
+  --dur:.18s; --ease:cubic-bezier(.4,0,.2,1);
   --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",
          "Noto Sans",Arial,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
 }
@@ -76,541 +50,375 @@ html,body{margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 body{
-  font-family:var(--font);
-  font-size:16px;
-  line-height:1.45;
-  color:var(--text);
+  font-family:var(--font); font-size:16px; line-height:1.45; color:var(--text);
   background-color:var(--sky-950);
   background-image:
     radial-gradient(1200px 620px at 12% -12%, rgba(76,201,240,.16), transparent 62%),
     radial-gradient(900px 520px at 92% -6%, rgba(255,183,3,.10), transparent 60%),
     linear-gradient(180deg,#03121f 0%,#061a2b 46%,#0a2540 100%);
-  background-attachment:fixed;
-  overflow:hidden;
-  overscroll-behavior:none;
-  min-height:100vh;
-  min-height:100dvh;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+  background-attachment:fixed; overflow:hidden; overscroll-behavior:none;
+  min-height:100vh; min-height:100dvh;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
   -webkit-tap-highlight-color:transparent;
 }
 
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,textarea{font:inherit;color:inherit}
-
 :focus{outline:none}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:6px}
 
 @media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{
-    animation-duration:.001ms !important;
-    animation-iteration-count:1 !important;
-    transition-duration:.001ms !important;
-    scroll-behavior:auto !important;
-  }
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;scroll-behavior:auto !important;}
 }
-@media (prefers-contrast:more){
-  :root{ --line:rgba(160,220,255,.55); --text-dim:#d6e9f6; }
-}
+@media (prefers-contrast:more){:root{--line:rgba(160,220,255,.55);--text-dim:#d6e9f6;}}
 
-.sr-only{
-  position:absolute!important;width:1px;height:1px;
-  padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
-}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 
-/* ============================================================
-   КАРКАС
-   ============================================================ */
-.app{
-  display:grid;
-  grid-template-rows:auto auto auto minmax(0,1fr) auto;
-  height:100vh;
-  height:100dvh;
-  width:100%;
-}
+.app{display:grid;grid-template-rows:auto auto auto minmax(0,1fr) auto;
+  height:100vh;height:100dvh;width:100%;}
 
+/* ---------- ШАПКА ---------- */
 .app-header{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:10px 12px;
-  padding-top:calc(10px + env(safe-area-inset-top));
+  padding:10px 12px; padding-top:calc(10px + env(safe-area-inset-top));
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
   background:linear-gradient(180deg, rgba(15,58,95,.95), rgba(8,33,54,.88));
   border-bottom:1px solid var(--line);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  z-index:20;
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:20;
 }
-.app-title{
-  display:flex;align-items:center;gap:8px;
-  font-size:clamp(14px,3.4vw,18px);font-weight:700;letter-spacing:-.01em;
-  margin:0;min-width:0;
-}
+.app-title{display:flex;align-items:center;gap:8px;
+  font-size:clamp(14px,3.4vw,18px);font-weight:700;letter-spacing:-.01em;margin:0;min-width:0;}
 .app-title__text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .app-title__icon{font-size:1.15em;line-height:1}
-.badge{
-  flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;
+.badge{flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;
   font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;
   background:rgba(76,201,240,.14);border:1px solid var(--line-strong);
-  color:var(--rain-soft);white-space:nowrap;
-}
+  color:var(--rain-soft);white-space:nowrap;}
 .header-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto}
-.timer{
-  font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;
+.timer{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;
   font-weight:700;font-size:15px;letter-spacing:.02em;padding:7px 14px;
-  border-radius:999px;
-  background:linear-gradient(135deg,var(--sun),#ff9500);color:#25180a;
-  box-shadow:0 2px 12px rgba(255,183,3,.28);min-width:74px;text-align:center;
-}
-.timer[data-low="true"]{
-  background:linear-gradient(135deg,var(--danger),#c9184a);color:#fff;
-  animation:pulse 1.4s ease-in-out infinite;
-}
+  border-radius:999px;background:linear-gradient(135deg,var(--sun),#ff9500);
+  color:#25180a;box-shadow:0 2px 12px rgba(255,183,3,.28);min-width:74px;text-align:center;}
+.timer[data-low="true"]{background:linear-gradient(135deg,var(--danger),#c9184a);
+  color:#fff;animation:pulse 1.4s ease-in-out infinite;}
 @keyframes pulse{50%{opacity:.68}}
 
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  min-height:var(--tap);min-width:var(--tap);padding:0 14px;
-  border-radius:var(--r-md);font-size:14px;font-weight:600;
-  border:1px solid var(--line-strong);background:rgba(15,58,95,.7);color:var(--text);
-  transition:background var(--dur) var(--ease), transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
-  white-space:nowrap;
-}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:var(--tap);min-width:var(--tap);padding:0 14px;border-radius:var(--r-md);
+  font-size:14px;font-weight:600;border:1px solid var(--line-strong);
+  background:rgba(15,58,95,.7);color:var(--text);
+  transition:background var(--dur) var(--ease),transform var(--dur) var(--ease),border-color var(--dur) var(--ease);
+  white-space:nowrap;}
 .btn:hover{background:rgba(31,110,166,.75);border-color:var(--rain)}
 .btn:active{transform:scale(.96)}
-.btn--primary{
-  background:linear-gradient(135deg,var(--sun),#ff9500);
-  border-color:transparent;color:#25180a;font-weight:700;
-}
+.btn--primary{background:linear-gradient(135deg,var(--sun),#ff9500);
+  border-color:transparent;color:#25180a;font-weight:700;}
 .btn--primary:hover{filter:brightness(1.06);border-color:transparent}
 .btn--ghost{background:transparent;border-color:transparent}
 .btn--ghost:hover{background:rgba(76,201,240,.12);border-color:transparent}
 
-.group-bar{
-  display:flex;align-items:center;gap:8px;padding:8px 12px;
+/* ---------- ГРУПИ ---------- */
+.group-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
   background:rgba(6,26,43,.72);border-bottom:1px solid var(--line);
   overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;z-index:15;
-}
+  -webkit-overflow-scrolling:touch;z-index:15;}
 .group-bar::-webkit-scrollbar{display:none}
-.group-bar__label{
-  flex:0 0 auto;font-size:12px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.06em;color:var(--text-mute);margin-right:2px;
-}
-.group-btn{
-  flex:0 0 auto;min-height:40px;padding:0 18px;border-radius:var(--r-md);
+.group-bar__label{flex:0 0 auto;font-size:12px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--text-mute);margin-right:2px;}
+.group-btn{flex:0 0 auto;min-height:40px;padding:0 18px;border-radius:var(--r-md);
   font-size:14px;font-weight:700;border:1px solid var(--line-strong);
-  background:rgba(15,58,95,.6);color:var(--text-dim);
-  transition:all var(--dur) var(--ease);
-}
+  background:rgba(15,58,95,.6);color:var(--text-dim);transition:all var(--dur) var(--ease);}
 .group-btn:hover{background:rgba(31,110,166,.7);color:#fff}
-.group-btn[aria-pressed="true"]{
-  background:linear-gradient(135deg,var(--rain),#1f9ec9);
-  border-color:transparent;color:#03121f;
-  box-shadow:0 3px 14px rgba(76,201,240,.32);
-}
+.group-btn[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
+  border-color:transparent;color:#03121f;box-shadow:0 3px 14px rgba(76,201,240,.32);}
 
-.tabs{
-  display:flex;gap:6px;padding:9px 12px;
+/* ---------- ВКЛАДКИ ---------- */
+.tabs{display:flex;gap:6px;padding:9px 12px;
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
   background:rgba(10,37,64,.62);border-bottom:1px solid var(--line);
   overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;z-index:14;
-}
+  -webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;z-index:14;}
 .tabs::-webkit-scrollbar{display:none}
-.tab{
-  flex:0 0 auto;scroll-snap-align:start;min-height:40px;padding:0 16px;
+.tab{flex:0 0 auto;scroll-snap-align:start;min-height:40px;padding:0 16px;
   border-radius:999px;font-size:13.5px;font-weight:600;color:var(--text-dim);
   background:rgba(15,58,95,.55);border:1px solid transparent;
-  transition:all var(--dur) var(--ease);white-space:nowrap;
-}
+  transition:all var(--dur) var(--ease);white-space:nowrap;}
 .tab:hover{color:#fff;background:rgba(31,110,166,.7)}
-.tab[aria-selected="true"]{
-  background:linear-gradient(135deg,var(--rain),#1f9ec9);
-  color:#03121f;font-weight:700;
-  box-shadow:0 3px 14px rgba(76,201,240,.3);
-}
+.tab[aria-selected="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
+  color:#03121f;font-weight:700;box-shadow:0 3px 14px rgba(76,201,240,.3);}
 
-/* ============================================================
-   РОБОЧА ОБЛАСТЬ
-   ============================================================ */
-.workspace{
-  display:flex;flex-direction:column;min-height:0;min-width:0;position:relative;
-}
+.workspace{display:flex;flex-direction:column;min-height:0;min-width:0;position:relative;}
 
-.icon-gallery{
-  display:flex;gap:8px;padding:8px 12px;
+.icon-gallery{display:flex;gap:8px;padding:8px 12px;
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
   background:rgba(6,26,43,.85);border-bottom:1px solid var(--line);
   overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;flex:0 0 auto;z-index:10;
-}
+  -webkit-overflow-scrolling:touch;flex:0 0 auto;z-index:10;}
 .icon-gallery::-webkit-scrollbar{display:none}
-.icon-item{
-  flex:0 0 auto;width:var(--tap);height:var(--tap);
-  display:flex;align-items:center;justify-content:center;
-  font-size:24px;line-height:1;border-radius:var(--r-md);
-  background:rgba(15,58,95,.72);border:1px solid transparent;
-  transition:transform var(--dur) var(--ease), background var(--dur) var(--ease), border-color var(--dur) var(--ease);
-  user-select:none;-webkit-user-select:none;
-}
+.icon-item{flex:0 0 auto;width:var(--tap);height:var(--tap);
+  display:flex;align-items:center;justify-content:center;font-size:24px;line-height:1;
+  border-radius:var(--r-md);background:rgba(15,58,95,.72);border:1px solid transparent;
+  transition:transform var(--dur) var(--ease),background var(--dur) var(--ease),border-color var(--dur) var(--ease);
+  user-select:none;-webkit-user-select:none;}
 .icon-item:hover{background:rgba(31,110,166,.8);border-color:var(--rain);transform:translateY(-2px)}
 .icon-item:active{transform:scale(.92)}
 
-/* ---------- КАРТА ---------- */
-.map-container{
-  position:relative;flex:1 1 auto;min-height:200px;overflow:hidden;
-  background:
-    radial-gradient(120% 90% at 50% 45%, #0a3d68 0%, #062a4a 42%, #04182e 78%, #020a14 100%);
-  touch-action:manipulation;
-}
-#svgMap{
-  position:absolute;inset:0;width:100%;height:100%;display:block;
-}
+/* ============================================================
+   КАРТА — ГОЛОВНЕ
+   ============================================================ */
+.map-container{position:relative;flex:1 1 auto;min-height:200px;overflow:hidden;
+  background:radial-gradient(120% 90% at 50% 45%, #0a3d68 0%, #062a4a 42%, #04182e 78%, #020a14 100%);
+  touch-action:manipulation;}
+#svgMap{position:absolute;inset:0;width:100%;height:100%;display:block;}
 
 .ocean-sphere{fill:url(#oceanGrad)}
 .ocean-glow{fill:url(#oceanGlow);pointer-events:none}
 
-.graticule{
-  fill:none;stroke:rgba(120,190,230,.10);
-  stroke-width:.5;vector-effect:non-scaling-stroke;pointer-events:none;
-}
-.graticule--major{stroke:rgba(120,190,230,.22);stroke-width:.7}
+.graticule{fill:none;stroke:rgba(120,190,230,.13);stroke-width:.5;
+  vector-effect:non-scaling-stroke;pointer-events:none;}
+.graticule--major{stroke:rgba(120,190,230,.24);stroke-width:.7}
 
-/* ============================================================
-   КЛІМАТИЧНІ ПОЯСИ — ГОЛОВНА ВІЗУАЛІЗАЦІЯ
-   ============================================================ */
+/* ---------- КЛІМАТИЧНІ ПОЯСИ ---------- */
+/* Дуже прозорий базовий шар — материки чітко видно */
 .climate-zone{
-  stroke:rgba(255,255,255,.18);
-  stroke-width:.55;
-  stroke-dasharray:none;
-  vector-effect:non-scaling-stroke;
+  stroke:none;
   cursor:pointer;
-  /* плавна зміна при наведенні */
-  transition:fill-opacity .25s cubic-bezier(.4,0,.2,1),
-             stroke .25s cubic-bezier(.4,0,.2,1),
-             filter .25s cubic-bezier(.4,0,.2,1);
+  transition:fill-opacity .25s var(--ease);
 }
-.climate-zone:hover{
-  stroke:rgba(255,255,255,.85);
-  stroke-width:1;
-  filter:url(#zoneGlow);
-}
+.climate-zone:hover{stroke:rgba(255,255,255,.9);stroke-width:1.4}
 .climate-zone[data-user-colored="true"]{
-  stroke-dasharray:6 3;
-  stroke-width:1;
+  stroke-width:1.2;stroke-dasharray:5 3;
 }
 
-/* Підписи поясів — завжди видимі */
-.climate-zone__label{
-  font-size:9.5px;
-  font-weight:800;
-  letter-spacing:.03em;
-  paint-order:stroke;
-  stroke:#0a1520;
-  stroke-width:3px;
-  stroke-linejoin:round;
+/* ЖИРНІ МЕЖІ МІЖ ПОЯСАМИ */
+.zone-boundary{
+  fill:none;
+  stroke:rgba(255,255,255,.7);
+  stroke-width:1.6;
+  stroke-dasharray:7 4;
+  stroke-linecap:round;
+  vector-effect:non-scaling-stroke;
   pointer-events:none;
-  text-anchor:middle;
-  font-family:var(--font);
-  text-transform:uppercase;
-  opacity:.95;
-  transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+  filter:drop-shadow(0 0 2px rgba(0,0,0,.6));
 }
-.climate-zone__label--small{
-  font-size:7.5px;
-  letter-spacing:.01em;
+.zone-boundary--equator{
+  stroke:rgba(255,255,255,1);
+  stroke-width:2.4;
+  stroke-dasharray:none;
 }
-.climate-zone__label[data-visible="true"]{opacity:1}
+.zone-boundary--tropic{
+  stroke:rgba(255,224,130,.85);
+  stroke-width:1.8;
+  stroke-dasharray:8 4;
+}
 
-/* Країни */
+/* ---------- КРАЇНИ — поверх океану, під поясами ---------- */
 .country{
   fill:var(--land);
   stroke:var(--land-stroke);
-  stroke-width:.45;
+  stroke-width:.6;
   vector-effect:non-scaling-stroke;
-  transition:fill var(--dur) var(--ease), stroke var(--dur) var(--ease);
+  transition:fill var(--dur) var(--ease),stroke var(--dur) var(--ease);
   cursor:pointer;
+  filter:drop-shadow(0 0 0.6px rgba(0,0,0,.5));
 }
 .country:hover{
   fill:var(--land-hi);
   stroke:var(--sun);
-  stroke-width:1;
+  stroke-width:1.2;
 }
-.country--has-data .country-dot{opacity:.9}
-
+.country--has-data .country-dot{opacity:1}
 .country-dot{
-  fill:var(--sun);stroke:#03121f;stroke-width:.8;
+  fill:var(--sun);stroke:#03121f;stroke-width:.9;
   pointer-events:none;opacity:0;
   transition:opacity var(--dur) var(--ease);
 }
 
-/* Важливі паралелі */
-.lat-line{
-  fill:none;stroke:rgba(255,255,255,.45);
-  stroke-width:.8;stroke-dasharray:5 4;
-  vector-effect:non-scaling-stroke;pointer-events:none;
+/* ---------- ПІДПИСИ ПОЯСІВ ---------- */
+.climate-zone__label{
+  font-size:10px;font-weight:800;letter-spacing:.05em;
+  paint-order:stroke;stroke:#04121c;stroke-width:3.2px;stroke-linejoin:round;
+  pointer-events:none;text-anchor:middle;font-family:var(--font);
+  text-transform:uppercase;opacity:.98;
+  transition:opacity var(--dur) var(--ease);
 }
-.lat-line--equator{
-  stroke:rgba(255,255,255,.85);stroke-width:1.3;stroke-dasharray:none;
-}
+.climate-zone__label--small{font-size:8px;letter-spacing:.02em}
+
+/* ---------- ПАРАЛЕЛІ ---------- */
 .lat-label{
-  fill:#ffffff;font-size:9px;font-weight:800;
-  paint-order:stroke;stroke:#0a1520;stroke-width:3px;stroke-linejoin:round;
+  fill:#fff;font-size:9px;font-weight:800;
+  paint-order:stroke;stroke:#04121c;stroke-width:3.2px;stroke-linejoin:round;
   pointer-events:none;font-family:var(--font);letter-spacing:.02em;
 }
-.lat-label--equator{fill:#ffffff}
+.lat-label--equator{fill:#ffe066}
 
-/* Полотно малювання */
-#drawCanvas{
-  position:absolute;inset:0;width:100%;height:100%;z-index:2;
-  touch-action:none;cursor:crosshair;display:block;
-}
+/* ---------- ПОЛОТНО ---------- */
+#drawCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;
+  touch-action:none;cursor:crosshair;display:block;}
 #drawCanvas[data-tool="eraser"]{cursor:cell}
 #drawCanvas[data-tool="fill"]{pointer-events:none;cursor:pointer}
+#stickersLayer{position:absolute;inset:0;z-index:3;pointer-events:none;}
 
-#stickersLayer{
-  position:absolute;inset:0;z-index:3;pointer-events:none;
-}
-
-/* Стікери */
-.sticker{
-  position:absolute;width:170px;min-height:64px;padding:20px 10px 10px;
-  border-radius:var(--r-md);box-shadow:var(--shadow-2);
-  pointer-events:auto;color:#1b2733;touch-action:none;
-  user-select:none;-webkit-user-select:none;
-  transition:box-shadow var(--dur) var(--ease);
-}
+/* ---------- СТІКЕРИ ---------- */
+.sticker{position:absolute;width:170px;min-height:64px;padding:20px 10px 10px;
+  border-radius:var(--r-md);box-shadow:var(--shadow-2);pointer-events:auto;
+  color:#1b2733;touch-action:none;user-select:none;-webkit-user-select:none;
+  transition:box-shadow var(--dur) var(--ease);}
 .sticker:hover{box-shadow:0 14px 40px rgba(0,0,0,.55)}
-.sticker textarea{
-  width:100%;min-height:44px;max-height:200px;border:0;background:transparent;
-  resize:none;outline:none;font-size:13px;line-height:1.4;color:#1b2733;
-  font-family:var(--font);overflow:hidden;display:block;
-}
+.sticker textarea{width:100%;min-height:44px;max-height:200px;border:0;
+  background:transparent;resize:none;outline:none;font-size:13px;line-height:1.4;
+  color:#1b2733;font-family:var(--font);overflow:hidden;display:block;}
 .sticker textarea::placeholder{color:rgba(27,39,51,.42)}
-.sticker__del{
-  position:absolute;top:2px;right:2px;width:28px;height:28px;
+.sticker__del{position:absolute;top:2px;right:2px;width:28px;height:28px;
   display:flex;align-items:center;justify-content:center;border-radius:8px;
   font-size:13px;font-weight:700;color:rgba(27,39,51,.55);
-  transition:all var(--dur) var(--ease);
-}
+  transition:all var(--dur) var(--ease);}
 .sticker__del:hover{background:rgba(255,84,112,.9);color:#fff}
 
-.placed-icon{
-  position:absolute;font-size:34px;line-height:1;padding:4px;
-  cursor:grab;pointer-events:auto;touch-action:none;
-  user-select:none;-webkit-user-select:none;
-  filter:drop-shadow(0 3px 8px rgba(0,0,0,.55));
-  transition:transform var(--dur) var(--ease);
-}
+.placed-icon{position:absolute;font-size:34px;line-height:1;padding:4px;
+  cursor:grab;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.55));transition:transform var(--dur) var(--ease);}
 .placed-icon:active{cursor:grabbing;transform:scale(1.12)}
 
-/* Інфо-картка */
-.zone-info{
-  position:absolute;top:10px;left:10px;z-index:6;
-  max-width:min(360px, calc(100% - 20px));
-  padding:11px 42px 11px 14px;border-radius:var(--r-md);
-  border:1px solid var(--line-strong);border-left:4px solid var(--sun);
-  background:rgba(6,26,43,.94);
+/* ---------- ІНФО-КАРТКА ---------- */
+.zone-info{position:absolute;top:10px;left:10px;z-index:6;
+  max-width:min(360px, calc(100% - 20px));padding:11px 42px 11px 14px;
+  border-radius:var(--r-md);border:1px solid var(--line-strong);
+  border-left:4px solid var(--sun);background:rgba(6,26,43,.94);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  box-shadow:var(--shadow-1);font-size:13px;
-  animation:fadeIn .25s var(--ease);
-  max-height:calc(100% - 20px);overflow:auto;
-}
+  box-shadow:var(--shadow-1);font-size:13px;animation:fadeIn .25s var(--ease);
+  max-height:calc(100% - 20px);overflow:auto;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .zone-info[hidden]{display:none}
-.zone-info h2{
-  margin:0 0 3px;font-size:14px;font-weight:700;
-  color:var(--sun-soft);letter-spacing:-.01em;
-}
+.zone-info h2{margin:0 0 3px;font-size:14px;font-weight:700;
+  color:var(--sun-soft);letter-spacing:-.01em;}
 .zone-info p{margin:0;color:var(--text-dim);line-height:1.4}
 .zone-info__meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.zone-info__chip{
-  display:inline-flex;align-items:center;gap:4px;
+.zone-info__chip{display:inline-flex;align-items:center;gap:4px;
   padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:700;
-  background:rgba(76,201,240,.14);border:1px solid var(--line);
-  color:var(--rain-soft);
-}
-.zone-info__chip--warm{background:rgba(255,183,3,.16);border-color:rgba(255,183,3,.3);color:var(--sun-soft)}
-.zone-info__chip--cool{background:rgba(143,220,245,.14);border-color:rgba(143,220,245,.3);color:var(--rain-soft)}
-.zone-info__hint{
-  display:block;margin-top:6px;font-size:11.5px;
-  color:var(--rain-soft);font-weight:600;
-}
-.zone-info__close{
-  position:absolute;top:6px;right:6px;width:30px;height:30px;
+  background:rgba(76,201,240,.14);border:1px solid var(--line);color:var(--rain-soft);}
+.zone-info__chip--warm{background:rgba(255,183,3,.16);
+  border-color:rgba(255,183,3,.3);color:var(--sun-soft);}
+.zone-info__chip--cool{background:rgba(143,220,245,.14);
+  border-color:rgba(143,220,245,.3);color:var(--rain-soft);}
+.zone-info__hint{display:block;margin-top:6px;font-size:11.5px;
+  color:var(--rain-soft);font-weight:600;}
+.zone-info__close{position:absolute;top:6px;right:6px;width:30px;height:30px;
   display:flex;align-items:center;justify-content:center;border-radius:8px;
-  font-size:14px;color:var(--text-mute);transition:all var(--dur) var(--ease);
-}
+  font-size:14px;color:var(--text-mute);transition:all var(--dur) var(--ease);}
 .zone-info__close:hover{background:rgba(76,201,240,.16);color:#fff}
 
-/* Легенда */
-.legend{
-  position:absolute;top:10px;right:10px;z-index:6;
+/* ---------- ЛЕГЕНДА ---------- */
+.legend{position:absolute;top:10px;right:10px;z-index:6;
   max-width:230px;padding:10px 12px;border-radius:var(--r-md);
   background:rgba(6,26,43,.9);border:1px solid var(--line-strong);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  font-size:11px;line-height:1.35;color:var(--text-dim);
-  box-shadow:var(--shadow-1);
-}
-.legend h4{
-  margin:0 0 6px;font-size:11.5px;font-weight:800;
-  text-transform:uppercase;letter-spacing:.06em;color:var(--sun-soft);
-}
+  font-size:11px;line-height:1.35;color:var(--text-dim);box-shadow:var(--shadow-1);}
+.legend h4{margin:0 0 6px;font-size:11.5px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em;color:var(--sun-soft);}
 .legend ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
-.legend li{display:flex;align-items:center;gap:7px;cursor:pointer;padding:2px 0;border-radius:5px}
+.legend li{display:flex;align-items:center;gap:7px;cursor:pointer;
+  padding:2px 0;border-radius:5px;}
 .legend li:hover{background:rgba(76,201,240,.08)}
-.legend__swatch{
-  flex:0 0 auto;width:16px;height:11px;border-radius:3px;
-  border:1px solid rgba(255,255,255,.28);
-}
-.legend__toggle{
-  position:absolute;top:6px;right:6px;width:24px;height:24px;
-  display:flex;align-items:center;justify-content:center;
-  border-radius:6px;font-size:12px;color:var(--text-mute);
-  transition:all var(--dur) var(--ease);
-}
+.legend__swatch{flex:0 0 auto;width:16px;height:11px;border-radius:3px;
+  border:1px solid rgba(255,255,255,.28);}
+.legend__toggle{position:absolute;top:6px;right:6px;width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;border-radius:6px;
+  font-size:12px;color:var(--text-mute);transition:all var(--dur) var(--ease);}
 .legend__toggle:hover{background:rgba(76,201,240,.16);color:#fff}
 .legend[data-collapsed="true"] ul{display:none}
 .legend[data-collapsed="true"]{max-width:120px}
 
-/* Перемикач поясів */
-.layers{
-  position:absolute;top:10px;right:10px;z-index:7;
-  display:flex;flex-direction:column;gap:6px;
-}
-.layer-toggle{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:7px 11px;border-radius:999px;
-  font-size:11.5px;font-weight:700;
-  background:rgba(6,26,43,.9);border:1px solid var(--line-strong);
-  color:var(--text-dim);
-  transition:all var(--dur) var(--ease);
-  box-shadow:var(--shadow-1);
-}
+/* ---------- КНОПКИ ШАРІВ ---------- */
+.layers{position:absolute;top:10px;right:10px;z-index:7;
+  display:flex;flex-direction:column;gap:6px;}
+.layer-toggle{display:inline-flex;align-items:center;gap:6px;
+  padding:8px 12px;border-radius:999px;font-size:11.5px;font-weight:700;
+  background:rgba(6,26,43,.92);border:1px solid var(--line-strong);
+  color:var(--text-dim);transition:all var(--dur) var(--ease);
+  box-shadow:var(--shadow-1);white-space:nowrap;}
 .layer-toggle:hover{color:#fff;background:rgba(31,110,166,.85)}
-.layer-toggle[aria-pressed="true"]{
-  background:linear-gradient(135deg,var(--rain),#1f9ec9);
-  color:#03121f;border-color:transparent;
-}
+.layer-toggle[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
+  color:#03121f;border-color:transparent;}
+.layer-toggle[aria-pressed="false"]{opacity:.75}
+.layer-toggle__dot{width:8px;height:8px;border-radius:50%;
+  background:currentColor;flex:0 0 auto;}
 
-/* Статус */
-.status{
-  position:absolute;bottom:10px;right:10px;z-index:6;
+/* ---------- СТАТУС ---------- */
+.status{position:absolute;bottom:10px;right:10px;z-index:6;
   max-width:calc(100% - 20px);padding:8px 14px;border-radius:999px;
-  font-size:12px;font-weight:700;
-  background:rgba(46,196,182,.92);color:#04231f;
-  box-shadow:var(--shadow-1);
-  transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
-}
+  font-size:12px;font-weight:700;background:rgba(46,196,182,.92);color:#04231f;
+  box-shadow:var(--shadow-1);transition:background var(--dur) var(--ease),color var(--dur) var(--ease);}
 .status[data-state="warn"]{background:rgba(255,183,3,.94);color:#2a1c00}
 .status[data-state="error"]{background:rgba(255,84,112,.94);color:#fff}
 .status[data-state="busy"]{background:rgba(76,201,240,.94);color:#03121f}
 
-/* ============================================================
-   ТУЛБАР
-   ============================================================ */
-.toolbar{
-  display:flex;align-items:center;gap:6px;padding:8px 12px;
+/* ---------- ТУЛБАР ---------- */
+.toolbar{display:flex;align-items:center;gap:6px;padding:8px 12px;
   padding-bottom:calc(8px + env(safe-area-inset-bottom));
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
   background:linear-gradient(180deg, rgba(8,33,54,.92), rgba(6,26,43,.98));
-  border-top:1px solid var(--line);
-  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;z-index:20;
-}
+  border-top:1px solid var(--line);overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;z-index:20;}
 .toolbar::-webkit-scrollbar{display:none}
-
-.tool-group{
-  display:flex;align-items:center;gap:6px;flex:0 0 auto;
-  padding-right:8px;margin-right:2px;border-right:1px solid var(--line);
-}
+.tool-group{display:flex;align-items:center;gap:6px;flex:0 0 auto;
+  padding-right:8px;margin-right:2px;border-right:1px solid var(--line);}
 .tool-group:last-child{border-right:0;padding-right:0;margin-right:0}
-
-.tool-btn{
-  display:inline-flex;align-items:center;gap:6px;
+.tool-btn{display:inline-flex;align-items:center;gap:6px;
   min-height:var(--tap);padding:0 14px;border-radius:var(--r-md);
   font-size:13.5px;font-weight:600;color:var(--text-dim);
   background:rgba(15,58,95,.62);border:1px solid transparent;
-  transition:all var(--dur) var(--ease);white-space:nowrap;
-}
+  transition:all var(--dur) var(--ease);white-space:nowrap;}
 .tool-btn:hover{background:rgba(31,110,166,.75);color:#fff}
 .tool-btn:active{transform:scale(.96)}
-.tool-btn[aria-pressed="true"]{
-  background:linear-gradient(135deg,var(--rain),#1f9ec9);
-  color:#03121f;font-weight:700;
-  box-shadow:0 3px 14px rgba(76,201,240,.3);
-}
+.tool-btn[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
+  color:#03121f;font-weight:700;box-shadow:0 3px 14px rgba(76,201,240,.3);}
 
-.color-swatch{
-  width:34px;height:34px;border-radius:50%;
-  border:3px solid transparent;
-  box-shadow:0 0 0 1px rgba(255,255,255,.16) inset;
-  transition:transform var(--dur) var(--ease), border-color var(--dur) var(--ease);
-  flex:0 0 auto;
-}
+.color-swatch{width:34px;height:34px;border-radius:50%;
+  border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.16) inset;
+  transition:transform var(--dur) var(--ease),border-color var(--dur) var(--ease);flex:0 0 auto;}
 .color-swatch:hover{transform:scale(1.1)}
-.color-swatch[aria-pressed="true"]{
-  border-color:#fff;transform:scale(1.16);
-  box-shadow:0 0 0 3px rgba(255,255,255,.18);
-}
-
-input[type="color"]{
-  width:var(--tap);height:34px;padding:0;
+.color-swatch[aria-pressed="true"]{border-color:#fff;transform:scale(1.16);
+  box-shadow:0 0 0 3px rgba(255,255,255,.18);}
+input[type="color"]{width:var(--tap);height:34px;padding:0;
   border:2px solid var(--line-strong);border-radius:var(--r-sm);
-  background:transparent;cursor:pointer;
-}
+  background:transparent;cursor:pointer;}
 input[type="color"]::-webkit-color-swatch-wrapper{padding:2px}
 input[type="color"]::-webkit-color-swatch{border:0;border-radius:5px}
+input[type="range"]{-webkit-appearance:none;appearance:none;
+  width:88px;height:var(--tap);background:transparent;cursor:pointer;flex:0 0 auto;}
+input[type="range"]::-webkit-slider-runnable-track{height:6px;border-radius:999px;
+  background:linear-gradient(90deg,var(--rain),var(--sun));}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
+  margin-top:-7px;border-radius:50%;background:#fff;border:2px solid var(--sky-800);
+  box-shadow:0 2px 6px rgba(0,0,0,.4);}
+input[type="range"]::-moz-range-track{height:6px;border-radius:999px;
+  background:linear-gradient(90deg,var(--rain),var(--sun));}
+input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
+  background:#fff;border:2px solid var(--sky-800);}
+.size-label{font-size:12px;font-variant-numeric:tabular-nums;
+  color:var(--text-mute);min-width:20px;text-align:center;font-weight:700;}
 
-input[type="range"]{
-  -webkit-appearance:none;appearance:none;
-  width:88px;height:var(--tap);background:transparent;
-  cursor:pointer;flex:0 0 auto;
-}
-input[type="range"]::-webkit-slider-runnable-track{
-  height:6px;border-radius:999px;
-  background:linear-gradient(90deg,var(--rain),var(--sun));
-}
-input[type="range"]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:20px;height:20px;margin-top:-7px;
-  border-radius:50%;background:#fff;border:2px solid var(--sky-800);
-  box-shadow:0 2px 6px rgba(0,0,0,.4);
-}
-input[type="range"]::-moz-range-track{
-  height:6px;border-radius:999px;
-  background:linear-gradient(90deg,var(--rain),var(--sun));
-}
-input[type="range"]::-moz-range-thumb{
-  width:18px;height:18px;border-radius:50%;
-  background:#fff;border:2px solid var(--sky-800);
-}
-.size-label{
-  font-size:12px;font-variant-numeric:tabular-nums;
-  color:var(--text-mute);min-width:20px;text-align:center;font-weight:700;
-}
-
-/* ============================================================
-   АДАПТАЦІЯ
-   ============================================================ */
+/* ---------- АДАПТАЦІЯ ---------- */
 @media (min-width:900px){
   .workspace{flex-direction:row}
-  .icon-gallery{
-    flex-direction:column;width:76px;padding:10px 0;
+  .icon-gallery{flex-direction:column;width:76px;padding:10px 0;
     border-bottom:0;border-right:1px solid var(--line);
-    overflow-x:hidden;overflow-y:auto;align-items:center;
-  }
+    overflow-x:hidden;overflow-y:auto;align-items:center;}
   .icon-item{width:52px;height:52px;font-size:26px}
   .toolbar{flex-wrap:wrap;overflow:visible}
   .zone-info{max-width:400px;font-size:13.5px}
   .zone-info h2{font-size:15px}
   .legend{max-width:270px}
 }
-
 @media (max-width:400px){
   .app-title__text{display:none}
   .badge{font-size:10px;padding:2px 7px}
@@ -621,8 +429,8 @@ input[type="range"]::-moz-range-thumb{
   .tab{padding:0 13px;font-size:13px}
   .legend{max-width:180px;font-size:10.5px}
   .zone-info{font-size:12px;padding:9px 38px 9px 11px}
+  .layer-toggle{padding:7px 10px;font-size:11px}
 }
-
 @media (orientation:landscape) and (max-height:560px){
   .group-bar{padding-top:5px;padding-bottom:5px}
   .group-btn{min-height:34px}
@@ -633,10 +441,8 @@ input[type="range"]::-moz-range-thumb{
   .toolbar{padding-top:5px;padding-bottom:calc(5px + env(safe-area-inset-bottom))}
   .tool-btn{min-height:38px}
   .zone-info{font-size:12px;padding:8px 34px 8px 11px}
-  .legend{display:none}
-  .layers{display:none}
+  .legend,.layers{display:none}
 }
-
 @media (min-width:1400px){
   .app-header{padding-left:24px;padding-right:24px}
   .toolbar{padding-left:24px;padding-right:24px}
@@ -648,14 +454,12 @@ input[type="range"]::-moz-range-thumb{
 
 <div class="app">
 
-  <!-- ================= ШАПКА ================= -->
   <header class="app-header">
     <h1 class="app-title">
       <span class="app-title__icon" aria-hidden="true">🌍</span>
       <span class="app-title__text">Кліматична лабораторія</span>
       <span class="badge">Група <span id="currentGroupNum">1</span></span>
     </h1>
-
     <div class="header-controls">
       <div class="timer" id="timer" role="timer" aria-label="Залишилось часу">30:00</div>
       <button class="btn btn--ghost" id="timerBtn" type="button"
@@ -668,7 +472,6 @@ input[type="range"]::-moz-range-thumb{
     </div>
   </header>
 
-  <!-- ================= ГРУПИ ================= -->
   <div class="group-bar" role="group" aria-label="Вибір групи">
     <span class="group-bar__label" aria-hidden="true">👥 Група</span>
     <button class="group-btn" type="button" data-group="1" aria-pressed="true">Група 1</button>
@@ -676,19 +479,15 @@ input[type="range"]::-moz-range-thumb{
     <button class="group-btn" type="button" data-group="3" aria-pressed="false">Група 3</button>
   </div>
 
-  <!-- ================= ВКЛАДКИ ================= -->
   <div class="tabs" id="tabs" role="tablist" aria-label="Етапи дослідження"></div>
 
-  <!-- ================= РОБОЧА ОБЛАСТЬ ================= -->
   <main class="workspace">
-
     <div class="icon-gallery" id="iconGallery" role="group" aria-label="Погодні іконки"></div>
 
     <div class="map-container" id="mapContainer" role="tabpanel" aria-label="Інтерактивна карта світу">
 
       <svg id="svgMap" xmlns="http://www.w3.org/2000/svg"
-           aria-label="Реальна географічна карта світу з зафарбованими кліматичними поясами"
-           role="img">
+           aria-label="Реальна географічна карта світу з кліматичними поясами" role="img">
         <defs>
           <radialGradient id="oceanGrad" cx="50%" cy="45%" r="75%">
             <stop offset="0%"   stop-color="#0d3f6b"/>
@@ -700,37 +499,35 @@ input[type="range"]::-moz-range-thumb{
             <stop offset="70%"  stop-color="#0a3d68" stop-opacity="0"/>
             <stop offset="100%" stop-color="#020a14" stop-opacity="0"/>
           </radialGradient>
-          <filter id="zoneGlow" x="-10%" y="-10%" width="120%" height="120%">
-            <feGaussianBlur stdDeviation="0.9" result="blur"/>
-            <feMerge>
-              <feMergeNode in="blur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
         </defs>
         <g id="mapRoot"></g>
       </svg>
 
-      <canvas id="drawCanvas" data-tool="brush"
-              aria-label="Полотно для малювання на карті">
+      <canvas id="drawCanvas" data-tool="brush" aria-label="Полотно для малювання на карті">
         Ваш браузер не підтримує полотно для малювання.
       </canvas>
 
       <div id="stickersLayer"></div>
 
-      <!-- Перемикачі шарів -->
+      <!-- КНОПКИ ШАРІВ -->
       <div class="layers" role="group" aria-label="Керування шарами карти">
         <button class="layer-toggle" id="zonesToggle" type="button"
-                aria-pressed="true" aria-label="Показати / сховати кліматичні пояси">
-          <span aria-hidden="true">🎨</span> Пояси
+                aria-pressed="true" aria-label="Увімкнути / вимкнути кольорове зафарбування кліматичних поясів">
+          <span class="layer-toggle__dot" aria-hidden="true"></span>
+          <span>Зафарбування</span>
         </button>
         <button class="layer-toggle" id="labelsToggle" type="button"
-                aria-pressed="true" aria-label="Показати / сховати підписи поясів">
-          <span aria-hidden="true">🔤</span> Підписи
+                aria-pressed="true" aria-label="Увімкнути / вимкнути підписи поясів">
+          <span aria-hidden="true">🔤</span>
+          <span>Підписи</span>
+        </button>
+        <button class="layer-toggle" id="bordersToggle" type="button"
+                aria-pressed="true" aria-label="Увімкнути / вимкнути жирні межі між поясами">
+          <span aria-hidden="true">━━</span>
+          <span>Межі</span>
         </button>
       </div>
 
-      <!-- Легенда -->
       <aside class="legend" id="legend" aria-label="Легенда кліматичних поясів">
         <button class="legend__toggle" id="legendToggle" type="button"
                 aria-label="Згорнути легенду" aria-expanded="true">−</button>
@@ -738,7 +535,6 @@ input[type="range"]::-moz-range-thumb{
         <ul id="legendList"></ul>
       </aside>
 
-      <!-- Інфо-картка -->
       <div class="zone-info" id="zoneInfo">
         <button class="zone-info__close" type="button" id="zoneInfoClose"
                 aria-label="Закрити підказку">✕</button>
@@ -752,9 +548,7 @@ input[type="range"]::-moz-range-thumb{
     </div>
   </main>
 
-  <!-- ================= ТУЛБАР ================= -->
   <footer class="toolbar" aria-label="Інструменти малювання">
-
     <div class="tool-group" role="group" aria-label="Інструмент">
       <button class="tool-btn" type="button" data-tool="brush"  aria-pressed="true">
         <span aria-hidden="true">✏️</span><span class="btn-label">Пензель</span>
@@ -813,19 +607,16 @@ const firebaseConfig = {
   messagingSenderId: "154142013253",
   appId: "1:154142013253:web:2b3bfde1a8ecea5565f02c"
 };
-
 let db = null;
-try {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-} catch (err) { console.error("Firebase init error:", err); }
+try { firebase.initializeApp(firebaseConfig); db = firebase.database(); }
+catch (err) { console.error("Firebase init error:", err); }
 
 /* ============================================================
-   1. КЛІМАТИЧНІ ПОЯСИ — з РЕАЛЬНИМИ КОЛЬОРАМИ, які видно
-      поверх карти за замовчуванням
+   1. ДАНІ КЛІМАТУ
    ============================================================ */
-const ZONE_BASE_OPACITY   = 0.34;   // базова прозорість кольору поясу
-const ZONE_USER_OPACITY   = 0.55;   // прозорість, якщо користувач зафарбував пояс
+/* Дуже прозорі базові кольори — материки просвічують */
+const ZONE_BASE_OPACITY = 0.13;   // було 0.34 → тепер ледь помітний відтінок
+const ZONE_USER_OPACITY = 0.42;   // коли дитина сама зафарбувала пояс
 
 const CLIMATE_BANDS = [
   { id:'arctic',        name:'Арктичний',          short:'АРКТ.',
@@ -857,7 +648,20 @@ const CLIMATE_BANDS = [
     desc:'Крижаний щит, t° до −60 °C, полярні станції.' }
 ];
 
-const LAT_LINES = [
+/* Межі між поясами (унікальні значення) */
+const ZONE_BOUNDARIES = [
+  { lat: 66.5, type:'polar' },
+  { lat: 50,   type:'mid'   },
+  { lat: 35,   type:'mid'   },
+  { lat: 23.5, type:'tropic'},
+  { lat: 0,    type:'equator'},
+  { lat:-23.5, type:'tropic'},
+  { lat:-35,   type:'mid'   },
+  { lat:-50,   type:'mid'   },
+  { lat:-66.5, type:'polar' }
+];
+
+const LAT_LABELS = [
   { lat: 66.5, label:'Полярне коло (66.5°N)' },
   { lat: 23.5, label:'Тропік Рака (23.5°N)' },
   { lat: 0,    label:'ЕКВАТОР (0°)', equator:true },
@@ -923,7 +727,7 @@ const COUNTRY_CLIMATE = {
    ============================================================ */
 const ZONES = [
   { id:'hypothesis',     title:'🧠 1. Гіпотеза',     desc:'Запишіть припущення та план дослідження.' },
-  { id:'classification', title:'🗺 2. Класифікація', desc:'Кліматичні пояси вже зафарбовані. Наведіть на пояс — побачите його характеристики.' },
+  { id:'classification', title:'🗺 2. Класифікація', desc:'Порівняйте кліматичні пояси. Наведіть на пояс — побачите характеристики.' },
   { id:'comfort',        title:'🏖 3. Комфорт',      desc:'Позначте 3 найкомфортніші пояси для життя.' },
   { id:'changes',        title:'🌡 4. Зміни',        desc:'Причини та наслідки глобальних змін клімату.' },
   { id:'history',        title:'🏛 5. Цивілізації',  desc:'Давні цивілізації та їхній кліматичний пояс.' }
@@ -951,8 +755,9 @@ const state = {
   lastLocalCanvas: null, isDrawing: false, pendingCanvas: undefined,
   timerSeconds: 0, timerRunning: true,
   mapReady: false, countriesGeo: null,
-  zonesVisible: true,          // шари
-  labelsVisible: true
+  showZones: true,      // КОЛЬОРОВЕ ЗАФАРБУВАННЯ
+  showLabels: true,
+  showBorders: true
 };
 
 function emptyData(){ return { canvas:null, stickers:[], icons:[], zoneFills:{} }; }
@@ -995,7 +800,6 @@ function hexToRgba(hex, alpha){
   if (Number.isNaN(n)) return `rgba(255,255,255,${alpha})`;
   return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`;
 }
-
 function setStatus(msg, variant){
   statusEl.textContent = msg;
   statusEl.dataset.state = variant || 'ok';
@@ -1070,46 +874,40 @@ function buildLegend(){
     li.setAttribute('role', 'button');
     li.setAttribute('tabindex', '0');
     li.setAttribute('aria-label', `Показати інформацію про ${band.name} пояс`);
-
     const sw = document.createElement('span');
     sw.className = 'legend__swatch';
-    sw.style.background = band.color;
-
+    sw.style.background = hexToRgba(band.color, .85);
     const txt = document.createElement('span');
     txt.textContent = band.name;
-
     li.append(sw, txt);
-
     const activate = () => showClimateInfo(band);
     li.addEventListener('click', activate);
     li.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(); }
     });
-
     list.appendChild(li);
   });
 }
 
 /* ============================================================
-   6. РЕАЛЬНА КАРТА (D3 + TopoJSON)
+   6. КАРТА — ПОРЯДОК ШАРІВ КРИТИЧНО ВАЖЛИВИЙ:
+      1) океан, 2) сітка, 3) КРАЇНИ (знизу),
+      4) ПОЯСИ (прозорі зверху), 5) МЕЖІ ПОЯСІВ (жирні),
+      6) підписи, 7) паралелі
    ============================================================ */
 function makeLatBandPolygon(lat1, lat2){
   const coords = [];
   for (let lon = -180; lon <= 180; lon += 3) coords.push([lon, lat1]);
   for (let lon = 180; lon >= -180; lon -= 3) coords.push([lon, lat2]);
   coords.push([-180, lat1]);
-  return {
-    type:'Feature',
-    properties:{},
-    geometry:{ type:'Polygon', coordinates:[coords] }
-  };
+  return { type:'Feature', properties:{},
+    geometry:{ type:'Polygon', coordinates:[coords] } };
 }
 
 function getMapSize(){
   const r = mapContainer.getBoundingClientRect();
-  const w = Math.max(320, Math.round(r.width));
-  const h = Math.max(200, Math.round(r.height));
-  return { w, h };
+  return { w: Math.max(320, Math.round(r.width)),
+           h: Math.max(200, Math.round(r.height)) };
 }
 
 function renderMap(){
@@ -1130,31 +928,20 @@ function renderMap(){
   const path = d3.geoPath(projection);
 
   /* 1. Океан */
-  root.append('path')
-    .datum({ type:'Sphere' })
-    .attr('class', 'ocean-sphere')
-    .attr('d', path);
-
-  root.append('path')
-    .datum({ type:'Sphere' })
-    .attr('class', 'ocean-glow')
-    .attr('d', path);
+  root.append('path').datum({ type:'Sphere' })
+    .attr('class', 'ocean-sphere').attr('d', path);
+  root.append('path').datum({ type:'Sphere' })
+    .attr('class', 'ocean-glow').attr('d', path);
 
   /* 2. Сітка */
-  const grat = d3.geoGraticule().step([30, 30]);
-  root.append('path')
-    .datum(grat())
-    .attr('class', 'graticule')
-    .attr('d', path);
+  root.append('path').datum(d3.geoGraticule().step([30, 30])())
+    .attr('class', 'graticule').attr('d', path);
+  root.append('path').datum(d3.geoGraticule().step([60, 30])())
+    .attr('class', 'graticule graticule--major').attr('d', path);
 
-  const gratMajor = d3.geoGraticule().step([60, 30]);
-  root.append('path')
-    .datum(gratMajor())
-    .attr('class', 'graticule graticule--major')
-    .attr('d', path);
-
-  /* 3. Країни — малюємо ПЕРЕД поясами, щоб пояси були ЗВЕРХУ */
+  /* 3. КРАЇНИ — ЗНИЗУ (під поясами). Фарбуємо світліше за океан */
   const countriesG = root.append('g').attr('class', 'countries');
+
   const drawCountries = (geo) => {
     countriesG.selectAll('path.country')
       .data(geo.features)
@@ -1169,15 +956,19 @@ function renderMap(){
 
     // Крапки-маркери для країн із даними
     countriesG.selectAll('circle.country-dot')
-      .data(geo.features.filter(d => COUNTRY_CLIMATE_BY_KEY.has(normalizeName(d.properties?.name || ''))))
+      .data(geo.features.filter(d =>
+        COUNTRY_CLIMATE_BY_KEY.has(normalizeName(d.properties?.name || ''))))
       .enter()
       .append('circle')
       .attr('class', 'country-dot')
       .attr('cx', d => path.centroid(d)[0])
       .attr('cy', d => path.centroid(d)[1])
-      .attr('r', 1.7);
+      .attr('r', 1.8);
 
     state.mapReady = true;
+    // Застосувати поточні шари
+    applyZoneFills();
+    applyLayerVisibility();
   };
 
   if (state.countriesGeo){
@@ -1193,14 +984,20 @@ function renderMap(){
       })
       .catch(err => {
         console.error('Map load error:', err);
-        flashStatus('⚠️ Карту не завантажено — перевірте інтернет', 'error', 6000);
+        flashStatus('⚠️ Карту не завантажено', 'error', 6000);
         state.mapReady = true;
+        // Все одно малюємо пояси й межі
+        drawZones();
+        drawBorders();
+        drawLabels();
+        drawLatLines();
+        applyZoneFills();
+        applyLayerVisibility();
       });
   }
 
-  /* 4. КЛІМАТИЧНІ ПОЯСИ — ЗВЕРХУ над картою, з кольором */
+  /* 4. ПОЯСИ — ПРОЗОРІ ЗАЛИВКИ ЗВЕРХУ */
   const zonesG = root.append('g').attr('class', 'climate-zones');
-
   CLIMATE_BANDS.forEach(band => {
     const feat = makeLatBandPolygon(band.lat[0], band.lat[1]);
     zonesG.append('path')
@@ -1211,12 +1008,23 @@ function renderMap(){
       .attr('data-user-colored', 'false')
       .attr('d', path)
       .attr('fill', band.color)
-      .attr('fill-opacity', ZONE_BASE_OPACITY)
-      .attr('stroke', 'rgba(255,255,255,.18)')
-      .attr('stroke-width', 0.55);
+      .attr('fill-opacity', ZONE_BASE_OPACITY);
   });
 
-  /* 5. Підписи поясів — ЗАВЖДИ видимі */
+  /* 5. ЖИРНІ МЕЖІ МІЖ ПОЯСАМИ */
+  const bordersG = root.append('g').attr('class', 'zone-borders');
+  ZONE_BOUNDARIES.forEach(b => {
+    const feat = makeLatBandPolygon(b.lat - 0.08, b.lat + 0.08);
+    let cls = 'zone-boundary';
+    if (b.type === 'equator') cls += ' zone-boundary--equator';
+    else if (b.type === 'tropic') cls += ' zone-boundary--tropic';
+    bordersG.append('path')
+      .datum(feat)
+      .attr('class', cls)
+      .attr('d', path);
+  });
+
+  /* 6. ПІДПИСИ ПОЯСІВ */
   const labelsG = root.append('g').attr('class', 'climate-labels');
   CLIMATE_BANDS.forEach(band => {
     const latMid = (band.lat[0] + band.lat[1]) / 2;
@@ -1230,52 +1038,59 @@ function renderMap(){
       .attr('y', center[1] + 3)
       .attr('data-zone', band.id)
       .attr('fill', band.color)
-      .attr('data-visible', 'true')
       .text(isSmall ? band.short : band.name);
   });
 
-  /* 6. Важливі паралелі — найтонший шар поверх */
+  /* 7. ПАРАЛЕЛІ з підписами */
   const latG = root.append('g').attr('class', 'lat-lines');
-  LAT_LINES.forEach(line => {
-    const feat = makeLatBandPolygon(line.lat - 0.06, line.lat + 0.06);
-    latG.append('path')
-      .datum(feat)
-      .attr('class', 'lat-line' + (line.equator ? ' lat-line--equator' : ''))
-      .attr('d', path);
-
+  LAT_LABELS.forEach(line => {
     const p = projection([-172, line.lat]);
-    if (p){
-      latG.append('text')
-        .attr('class', 'lat-label' + (line.equator ? ' lat-label--equator' : ''))
-        .attr('x', p[0])
-        .attr('y', p[1] - 3)
-        .text(line.label);
-    }
+    if (!p) return;
+    latG.append('text')
+      .attr('class', 'lat-label' + (line.equator ? ' lat-label--equator' : ''))
+      .attr('x', p[0])
+      .attr('y', p[1] - 4)
+      .text(line.label);
   });
 
-  // Застосовуємо поточні налаштування шарів
-  applyZoneFills();
-  applyLayerVisibility();
+  // Якщо країни вже завантажені — фарбуємо зараз
+  if (state.countriesGeo){
+    applyZoneFills();
+    applyLayerVisibility();
+  }
 }
+
+/* Допоміжні функції для випадку, якщо країни не завантажились */
+function drawZones(){ /* пропускаємо — воно вже є в renderMap */ }
+function drawBorders(){}
+function drawLabels(){}
+function drawLatLines(){}
 
 function normalizeName(s){
   return String(s || '').toLowerCase()
-    .replace(/^the\s+/, '')
-    .replace(/[^a-z]/g, '');
+    .replace(/^the\s+/, '').replace(/[^a-z]/g, '');
 }
 const COUNTRY_CLIMATE_BY_KEY = new Map(
   Object.entries(COUNTRY_CLIMATE).map(([k, v]) => [normalizeName(k), v])
 );
 
 /* ============================================================
-   7. ШАРИ / ВИДИМІСТЬ
+   7. ШАРИ
    ============================================================ */
 function applyLayerVisibility(){
   const svg = d3.select('#svgMap');
+  // Кольорові заливки поясів
   svg.selectAll('.climate-zone')
-    .style('display', state.zonesVisible ? null : 'none');
+    .style('display', state.showZones ? null : 'none');
+  // Підписи — тільки якщо увімкнено і заливки, і підписи
   svg.selectAll('.climate-zone__label')
-    .style('display', (state.zonesVisible && state.labelsVisible) ? null : 'none');
+    .style('display', (state.showZones && state.showLabels) ? null : 'none');
+  // Жирні межі
+  svg.selectAll('.zone-boundary')
+    .style('display', state.showBorders ? null : 'none');
+  // Паралелі з підписами
+  svg.selectAll('.lat-label')
+    .style('display', state.showBorders ? null : 'none');
 }
 
 function applyZoneFills(){
@@ -1294,19 +1109,16 @@ function applyZoneFills(){
         .attr('stroke-width', 1.2)
         .attr('stroke-dasharray', '5 3')
         .attr('data-user-colored', 'true');
-      el.style('filter', 'drop-shadow(0 0 4px ' + hexToRgba(userColor, .55) + ')');
     } else {
       el.attr('fill', band ? band.color : '#fff')
         .attr('fill-opacity', ZONE_BASE_OPACITY)
-        .attr('stroke', 'rgba(255,255,255,.18)')
-        .attr('stroke-width', 0.55)
+        .attr('stroke', 'none')
         .attr('stroke-dasharray', null)
         .attr('data-user-colored', 'false');
-      el.style('filter', null);
     }
   });
 
-  // Оновлюємо колір підпису, якщо пояс зафарбовано користувачем
+  // Колір підпису = колір поясу (або власний колір)
   svg.selectAll('.climate-zone__label').each(function(){
     const el = d3.select(this);
     const id = el.attr('data-zone');
@@ -1358,7 +1170,6 @@ function showCountryInfo(rawName){
   const key = normalizeName(rawName);
   const data = COUNTRY_CLIMATE_BY_KEY.get(key);
   zoneInfoEl.hidden = false;
-
   if (data){
     zoneInfoTitle.textContent = `🌍 ${data.uk}`;
     zoneInfoDesc.textContent  = data.note;
@@ -1369,7 +1180,7 @@ function showCountryInfo(rawName){
     `;
   } else {
     zoneInfoTitle.textContent = `🌍 ${rawName || 'Країна'}`;
-    zoneInfoDesc.textContent  = 'Дані для цієї країни не внесені до довідника. Скористайтеся кліматичними поясами для аналізу.';
+    zoneInfoDesc.textContent  = 'Дані для цієї країни не внесені до довідника.';
     zoneInfoMeta.innerHTML = '';
   }
   updateZoneHint();
@@ -1821,14 +1632,12 @@ function scheduleSave(kind){
 function flushSave(kind){
   if (!db) return;
   const kinds = kind ? [kind] : ['drawing', 'board'];
-
   if (kinds.includes('drawing') && state.dirtyDrawing && state.refDrawing){
     state.lastLocalCanvas = state.data.canvas;
     state.refDrawing.set(state.data.canvas || null)
       .then(() => { state.dirtyDrawing = false; })
       .catch(err => { console.error('drawing save:', err); flashStatus('⚠️ Не збережено', 'error'); });
   }
-
   if (kinds.includes('board') && state.dirtyBoard && state.refBoard){
     state.refBoard.set({
       stickers: state.data.stickers,
@@ -1852,7 +1661,6 @@ function openBoard(group, zone){
   state.data  = emptyData();
   state.dirtyDrawing = state.dirtyBoard = false;
   state.lastLocalCanvas = null;
-
   stickerEls.forEach(el => el.remove()); stickerEls.clear();
   iconEls.forEach(el => el.remove());    iconEls.clear();
   renderCanvas(null);
@@ -1873,14 +1681,12 @@ function switchGroup(group){
 function switchZone(zoneId){
   if (zoneId === state.zone && state.refDrawing) return;
   openBoard(state.group, zoneId);
-
   const zone = ZONES.find(z => z.id === zoneId) || ZONES[0];
   zoneInfoTitle.textContent = zone.title;
   zoneInfoDesc.textContent  = zone.desc;
   zoneInfoMeta.innerHTML    = '';
   zoneInfoEl.hidden = false;
   updateZoneHint();
-
   $$('.tab', tabsEl).forEach(t => {
     const active = t.dataset.zone === zoneId;
     t.setAttribute('aria-selected', active ? 'true' : 'false');
@@ -1956,7 +1762,6 @@ async function exportPNG(){
 function clearCurrent(){
   const zoneName = (ZONES.find(z => z.id === state.zone) || {}).title || '';
   if (!window.confirm(`Очистити «${zoneName}» для групи ${state.group}?`)) return;
-
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   state.data.canvas = null;
@@ -1980,7 +1785,6 @@ let isOnline = navigator.onLine;
 function bindConnection(){
   window.addEventListener('online',  () => { isOnline = true;  flashStatus('🟢 Знову онлайн', 'ok'); });
   window.addEventListener('offline', () => { isOnline = false; setStatus('🔴 Офлайн-режим', 'warn'); });
-
   if (db){
     db.ref('.info/connected').on('value', snap => {
       isOnline = !!snap.val();
@@ -2021,21 +1825,30 @@ function bindUI(){
   $('#exportBtn').addEventListener('click', exportPNG);
   $('#zoneInfoClose').addEventListener('click', () => { zoneInfoEl.hidden = true; });
 
-  // Перемикачі шарів
+  // ─── ШАРИ ───
   const zonesToggle = $('#zonesToggle');
   zonesToggle.addEventListener('click', () => {
-    state.zonesVisible = !state.zonesVisible;
-    zonesToggle.setAttribute('aria-pressed', state.zonesVisible ? 'true' : 'false');
+    state.showZones = !state.showZones;
+    zonesToggle.setAttribute('aria-pressed', state.showZones ? 'true' : 'false');
     applyLayerVisibility();
-    flashStatus(state.zonesVisible ? '🎨 Пояси увімкнено' : '🎨 Пояси вимкнено', 'busy', 1400);
+    flashStatus(state.showZones ? '🎨 Зафарбування увімкнено' : '🎨 Зафарбування вимкнено — видно чисту карту',
+                'busy', 2000);
   });
 
   const labelsToggle = $('#labelsToggle');
   labelsToggle.addEventListener('click', () => {
-    state.labelsVisible = !state.labelsVisible;
-    labelsToggle.setAttribute('aria-pressed', state.labelsVisible ? 'true' : 'false');
+    state.showLabels = !state.showLabels;
+    labelsToggle.setAttribute('aria-pressed', state.showLabels ? 'true' : 'false');
     applyLayerVisibility();
-    flashStatus(state.labelsVisible ? '🔤 Підписи увімкнено' : '🔤 Підписи вимкнено', 'busy', 1400);
+    flashStatus(state.showLabels ? '🔤 Підписи увімкнено' : '🔤 Підписи вимкнено', 'busy', 1400);
+  });
+
+  const bordersToggle = $('#bordersToggle');
+  bordersToggle.addEventListener('click', () => {
+    state.showBorders = !state.showBorders;
+    bordersToggle.setAttribute('aria-pressed', state.showBorders ? 'true' : 'false');
+    applyLayerVisibility();
+    flashStatus(state.showBorders ? '━━ Межі увімкнено' : '━━ Межі вимкнено', 'busy', 1400);
   });
 
   // Легенда
@@ -2057,15 +1870,9 @@ function bindUI(){
     else if (e.key === 'e' || e.key === 'E') setTool('eraser');
     else if (e.key === 'f' || e.key === 'F') setTool('fill');
     else if (e.key === 'n' || e.key === 'N') addSticker();
-    else if (e.key === 'z' || e.key === 'Z') {
-      state.zonesVisible = !state.zonesVisible;
-      zonesToggle.setAttribute('aria-pressed', state.zonesVisible ? 'true' : 'false');
-      applyLayerVisibility();
-    } else if (e.key === 'l' || e.key === 'L') {
-      state.labelsVisible = !state.labelsVisible;
-      labelsToggle.setAttribute('aria-pressed', state.labelsVisible ? 'true' : 'false');
-      applyLayerVisibility();
-    }
+    else if (e.key === 'z' || e.key === 'Z') zonesToggle.click();
+    else if (e.key === 'l' || e.key === 'L') labelsToggle.click();
+    else if (e.key === 'm' || e.key === 'M') bordersToggle.click();
   });
 
   window.addEventListener('beforeunload', () => flushSave());
