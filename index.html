@@ -148,7 +148,6 @@ input,textarea{font:inherit;color:inherit}
 
 .workspace{display:flex;flex-direction:column;min-height:0;min-width:0;position:relative;}
 
-/* ГАЛЕРЕЯ ІКОНОК — на десктопі ліва колонка, на мобільному плаваюча */
 .icon-gallery{display:flex;gap:8px;padding:8px 12px;
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
@@ -164,19 +163,13 @@ input,textarea{font:inherit;color:inherit}
 .icon-item:hover{background:rgba(31,110,166,.8);border-color:var(--rain);transform:translateY(-2px)}
 .icon-item:active{transform:scale(.92)}
 
-/* КАРТА */
 .map-container{position:relative;flex:1 1 auto;min-height:200px;overflow:hidden;
-  background:#020a14;
-  touch-action:manipulation;}
-.map-viewport{
-  position:absolute;
+  background:#020a14;touch-action:manipulation;}
+.map-viewport{position:absolute;
   background:radial-gradient(120% 90% at 50% 45%, #0a3d68 0%, #062a4a 42%, #04182e 78%, #020a14 100%);
-  overflow:hidden;
-  transform-origin:center center;
+  overflow:hidden;transform-origin:center center;
   transition:transform .18s var(--ease);
-  box-shadow:0 0 40px rgba(0,0,0,.5);
-  border-radius:4px;
-}
+  box-shadow:0 0 40px rgba(0,0,0,.5);border-radius:4px;}
 #svgMap{position:absolute;inset:0;width:100%;height:100%;display:block;}
 
 .ocean-sphere{fill:url(#oceanGrad)}
@@ -220,28 +213,81 @@ input,textarea{font:inherit;color:inherit}
   -webkit-user-select:none;user-select:none;
   cursor:crosshair;display:block;
 }
+#drawCanvas[data-tool="idle"]{pointer-events:none;cursor:default}
 #drawCanvas[data-tool="eraser"]{cursor:cell}
 #drawCanvas[data-tool="fill"]{pointer-events:none;cursor:pointer}
 #stickersLayer{position:absolute;inset:0;z-index:3;pointer-events:none;}
 
-.sticker{position:absolute;width:170px;min-height:64px;padding:20px 10px 10px;
-  border-radius:var(--r-md);box-shadow:var(--shadow-2);pointer-events:auto;
-  color:#1b2733;touch-action:none;user-select:none;-webkit-user-select:none;}
-.sticker textarea{width:100%;min-height:44px;max-height:200px;border:0;
-  background:transparent;resize:none;outline:none;font-size:13px;line-height:1.4;
-  color:#1b2733;font-family:var(--font);overflow:hidden;display:block;}
+/* ═════════════ СТІКЕРИ — НОВА СТРУКТУРА ═════════════ */
+.sticker{
+  position:absolute;width:180px;min-height:70px;
+  border-radius:var(--r-md);
+  box-shadow:var(--shadow-2);
+  pointer-events:auto;
+  color:#1b2733;
+  user-select:none;-webkit-user-select:none;
+  touch-action:none;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+.sticker.dragging{
+  box-shadow:0 20px 60px rgba(0,0,0,.7);
+  transform:scale(1.04);
+  cursor:grabbing;
+  z-index:100;
+}
+.sticker__bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:2px 4px 2px 6px;
+  cursor:grab;
+  touch-action:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.04));
+  flex:0 0 auto;
+  min-height:32px;
+}
+.sticker__bar:active{cursor:grabbing}
+.sticker__grip{
+  font-size:16px;letter-spacing:-2px;font-weight:900;
+  color:rgba(27,39,51,.5);
+  user-select:none;-webkit-user-select:none;
+  line-height:1;
+  padding:0 6px;
+  pointer-events:none;
+}
+.sticker__del{
+  width:36px;height:36px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:8px;
+  font-size:15px;font-weight:700;
+  color:rgba(27,39,51,.55);
+  flex:0 0 auto;
+  touch-action:manipulation;
+}
+.sticker__del:hover,.sticker__del:active{background:rgba(255,84,112,.9);color:#fff}
+.sticker textarea{
+  width:100%;min-height:44px;max-height:200px;border:0;
+  background:transparent;resize:none;outline:none;
+  font-size:13px;line-height:1.4;color:#1b2733;
+  font-family:var(--font);overflow:hidden;display:block;
+  padding:4px 10px 10px;box-sizing:border-box;
+  touch-action:manipulation;
+  -webkit-user-select:text;user-select:text;
+}
 .sticker textarea::placeholder{color:rgba(27,39,51,.42)}
-.sticker__del{position:absolute;top:2px;right:2px;width:28px;height:28px;
-  display:flex;align-items:center;justify-content:center;border-radius:8px;
-  font-size:13px;font-weight:700;color:rgba(27,39,51,.55);}
-.sticker__del:hover{background:rgba(255,84,112,.9);color:#fff}
 
-.placed-icon{position:absolute;font-size:34px;line-height:1;padding:4px;
-  cursor:grab;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;
-  filter:drop-shadow(0 3px 8px rgba(0,0,0,.55));}
-.placed-icon:active{cursor:grabbing;transform:scale(1.12)}
+/* ═════════════ ІКОНКИ ═════════════ */
+.placed-icon{position:absolute;font-size:34px;line-height:1;padding:6px;
+  cursor:grab;pointer-events:auto;touch-action:none;
+  user-select:none;-webkit-user-select:none;
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.55));
+  border-radius:50%;
+  transition:transform var(--dur) var(--ease), background var(--dur) var(--ease);}
+.placed-icon:active,.placed-icon.dragging{
+  cursor:grabbing;transform:scale(1.15);
+  background:rgba(76,201,240,.25);
+}
 
-/* КАРТКА ІНФО */
 .zone-info{position:absolute;top:10px;left:10px;z-index:6;
   max-width:min(340px, calc(100% - 20px));padding:10px 38px 10px 12px;
   border-radius:var(--r-md);border:1px solid var(--line-strong);
@@ -302,7 +348,6 @@ input,textarea{font:inherit;color:inherit}
 }
 @media (max-width:500px){.first-hint{font-size:12px;padding:10px 14px;white-space:normal;text-align:center;max-width:80%}}
 
-/* ЛЕГЕНДА */
 .legend{position:absolute;top:10px;right:10px;z-index:6;
   max-width:230px;padding:9px 11px;border-radius:var(--r-md);
   background:rgba(6,26,43,.94);border:1px solid var(--line-strong);
@@ -324,7 +369,6 @@ input,textarea{font:inherit;color:inherit}
 .legend[data-collapsed="true"] ul{display:none}
 .legend[data-collapsed="true"]{max-width:120px}
 
-/* ШАРИ — вертикальна колонка праворуч */
 .layers{position:absolute;top:10px;right:10px;z-index:7;
   display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
 .layer-toggle{display:inline-flex;align-items:center;gap:5px;
@@ -338,19 +382,16 @@ input,textarea{font:inherit;color:inherit}
 .layer-toggle[aria-pressed="false"]{opacity:.75}
 .layer-toggle__dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 
-/* СТАТУС */
 .status{position:absolute;bottom:10px;right:10px;z-index:6;
   max-width:calc(100% - 20px);padding:6px 12px;border-radius:999px;
   font-size:11px;font-weight:700;background:rgba(46,196,182,.92);color:#04231f;
-  box-shadow:var(--shadow-1);
-  opacity:1;
+  box-shadow:var(--shadow-1);opacity:1;
   transition:opacity .35s var(--ease), transform .35s var(--ease);}
 .status[data-state="warn"]{background:rgba(255,183,3,.94);color:#2a1c00}
 .status[data-state="error"]{background:rgba(255,84,112,.94);color:#fff}
 .status[data-state="busy"]{background:rgba(76,201,240,.94);color:#03121f}
 .status[data-hide="true"]{opacity:0;transform:translateY(6px);pointer-events:none}
 
-/* Штамп PNG */
 .export-stamp{
   position:absolute;bottom:12px;left:12px;z-index:999;
   padding:10px 16px;border-radius:12px;
@@ -383,7 +424,6 @@ input,textarea{font:inherit;color:inherit}
   max-width:calc(100% - 40px);text-align:center;}
 .toast[data-show="true"]{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* ПІД ЧАС ЕКСПОРТУ PNG */
 .map-container.is-exporting .layers,
 .map-container.is-exporting .legend,
 .map-container.is-exporting .status,
@@ -396,7 +436,6 @@ input,textarea{font:inherit;color:inherit}
   visibility:hidden !important;
 }
 
-/* ЗУМ */
 .zoom-controls{
   position:absolute;bottom:10px;left:10px;z-index:6;
   display:flex;flex-direction:column;gap:4px;
@@ -413,7 +452,6 @@ input,textarea{font:inherit;color:inherit}
 .zoom-btn:hover{background:rgba(31,110,166,.9);color:#fff}
 .zoom-btn:active{transform:scale(.92)}
 
-/* МОБІЛЬНІ ПЛАВАЮЧІ КНОПКИ */
 .mobile-fabs{
   display:none;
   position:absolute;
@@ -441,7 +479,6 @@ input,textarea{font:inherit;color:inherit}
   box-shadow:0 6px 24px rgba(76,201,240,.55);
 }
 
-/* ТУЛБАР */
 .toolbar{display:flex;align-items:center;gap:5px;padding:7px 10px;
   padding-bottom:calc(7px + env(safe-area-inset-bottom));
   padding-left:max(10px, env(safe-area-inset-left));
@@ -462,6 +499,10 @@ input,textarea{font:inherit;color:inherit}
 .tool-btn:active{transform:scale(.96)}
 .tool-btn[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
   color:#03121f;font-weight:700;box-shadow:0 3px 14px rgba(76,201,240,.3);}
+.tool-btn[data-tool="idle"][aria-pressed="true"]{
+  background:linear-gradient(135deg,#a0c4e0,#7ea6c8);
+  color:#03121f;box-shadow:0 3px 14px rgba(160,196,224,.3);
+}
 .color-swatch{width:32px;height:32px;border-radius:50%;
   border:3px solid transparent;box-shadow:0 0 0 1px rgba(255,255,255,.16) inset;
   transition:transform var(--dur) var(--ease),border-color var(--dur) var(--ease);flex:0 0 auto;}
@@ -486,7 +527,6 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 .size-label{font-size:12px;font-variant-numeric:tabular-nums;
   color:var(--text-mute);min-width:18px;text-align:center;font-weight:700;}
 
-/* ДЕСКТОП (≥ 900px) */
 @media (min-width:900px){
   .workspace{flex-direction:row}
   .icon-gallery{flex-direction:column;width:64px;padding:8px 0;
@@ -501,47 +541,26 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .map-viewport{border-radius:0}
 }
 
-/* МОБІЛЬНИЙ (< 900px) — ПОВНА ПЕРЕРОБКА UI */
 @media (max-width:899px){
-  /* Галерея іконок — прихована, показується як плаваюча панель */
   .icon-gallery{
-    display:none;
-    position:absolute;
-    left:10px;right:10px;
-    bottom:64px;
-    max-width:500px;
-    margin:0 auto;
-    padding:10px;
-    border-radius:14px;
-    background:rgba(6,26,43,.97);
-    border:1px solid var(--line-strong);
+    display:none;position:absolute;left:10px;right:10px;bottom:64px;
+    max-width:500px;margin:0 auto;padding:10px;border-radius:14px;
+    background:rgba(6,26,43,.97);border:1px solid var(--line-strong);
     box-shadow:0 10px 40px rgba(0,0,0,.6);
-    flex-wrap:wrap;
-    gap:6px;
-    max-height:50vh;
-    overflow-y:auto;
-    overflow-x:hidden;
-    justify-content:center;
-    z-index:22;
+    flex-wrap:wrap;gap:6px;max-height:50vh;overflow-y:auto;overflow-x:hidden;
+    justify-content:center;z-index:22;
   }
   .icon-gallery.open{display:flex}
   .icon-item{width:46px;height:46px;font-size:22px}
 
-  /* Легенда — прихована, показується як модальне вікно */
   .legend{
-    display:none;
-    position:absolute;
-    top:50%;left:50%;
+    display:none;position:absolute;top:50%;left:50%;
     transform:translate(-50%,-50%);
-    max-width:min(340px, calc(100% - 24px));
-    max-height:70%;
-    z-index:30;
-    padding:14px;
-    border:2px solid var(--line-strong);
-    border-radius:14px;
+    max-width:min(340px, calc(100% - 24px));max-height:70%;
+    z-index:30;padding:14px;
+    border:2px solid var(--line-strong);border-radius:14px;
     box-shadow:0 20px 60px rgba(0,0,0,.75);
-    font-size:13px;
-    overflow-y:auto;
+    font-size:13px;overflow-y:auto;
   }
   .legend.open{display:block}
   .legend h4{font-size:13px;margin-bottom:8px}
@@ -551,70 +570,38 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .legend[data-collapsed="true"] ul{display:flex}
   .legend[data-collapsed="true"]{max-width:min(340px, calc(100% - 24px))}
 
-  /* Шари — приховані за замовчуванням */
-  .layers{
-    display:none;
-    top:auto;
-    bottom:64px;
-    right:10px;
-    z-index:25;
-  }
+  .layers{display:none;top:auto;bottom:64px;right:10px;z-index:25;}
   .layers.open{display:flex}
   .layer-toggle{padding:9px 13px;font-size:12px}
 
-  /* Мобільні плаваючі кнопки */
   .mobile-fabs{display:flex}
 
-  /* Картка поясу — компактніша */
   .zone-info{
-    top:auto;
-    left:10px;right:10px;
-    bottom:118px;
-    max-width:calc(100% - 20px);
-    max-height:44vh;
-    padding:10px 38px 10px 12px;
-    font-size:12.5px;
-    border-left-width:4px;
-    z-index:15;
+    top:auto;left:10px;right:10px;bottom:118px;
+    max-width:calc(100% - 20px);max-height:44vh;
+    padding:10px 38px 10px 12px;font-size:12.5px;
+    border-left-width:4px;z-index:15;
   }
   .zone-info h2{font-size:13.5px}
   .zone-info__chip{font-size:10.5px;padding:2px 7px}
   .zone-info__hint{font-size:10.5px}
 
-  /* Кнопка ℹ️ — компактніша */
   .info-reopen{
-    top:auto;
-    bottom:118px;
-    left:10px;
-    width:40px;height:40px;font-size:18px;
-    z-index:16;
+    top:auto;bottom:118px;left:10px;
+    width:40px;height:40px;font-size:18px;z-index:16;
   }
 
-  /* Статус — зверху праворуч, компактний */
-  .status{
-    top:8px;
-    right:8px;
-    bottom:auto;
-    font-size:10.5px;
-    padding:5px 10px;
-    z-index:16;
-  }
-
-  /* Зум — вертикально ліворуч */
-  .zoom-controls{
-    bottom:auto;
-    top:50%;
-    left:8px;
-    transform:translateY(-50%);
-    z-index:14;
-  }
+  .status{top:8px;right:8px;bottom:auto;font-size:10.5px;padding:5px 10px;z-index:16;}
+  .zoom-controls{bottom:auto;top:50%;left:8px;transform:translateY(-50%);z-index:14;}
   .zoom-btn{width:38px;height:38px;font-size:18px}
-
-  /* Toast — вище тулбару */
   .toast{bottom:auto;top:50%;}
+
+  /* Стікери — трохи компактніші на мобільному */
+  .sticker{width:160px}
+  .sticker__bar{min-height:36px}
+  .sticker__del{width:40px;height:40px;font-size:16px}
 }
 
-/* ДУЖЕ МАЛЕНЬКІ (< 400px) */
 @media (max-width:400px){
   .app-title__text{display:none}
   .btn-label{display:none}
@@ -626,7 +613,6 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .fab{width:44px;height:44px;font-size:20px}
 }
 
-/* ГОРИЗОНТАЛЬНИЙ ТЕЛЕФОН */
 @media (orientation:landscape) and (max-height:520px){
   .group-bar{padding-top:4px;padding-bottom:4px}
   .group-btn{min-height:32px}
@@ -684,7 +670,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 
       <div class="map-viewport" id="mapViewport">
         <svg id="svgMap" xmlns="http://www.w3.org/2000/svg"
-             aria-label="Реальна географічна карта світу з кліматичними поясами" role="img">
+             aria-label="Реальна географічна карта світу" role="img">
           <defs>
             <radialGradient id="oceanGrad" cx="50%" cy="45%" r="75%">
               <stop offset="0%" stop-color="#0d3f6b"/>
@@ -700,8 +686,8 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
           <g id="mapRoot"></g>
         </svg>
 
-        <canvas id="drawCanvas" data-tool="brush" aria-label="Полотно для малювання на карті">
-          Ваш браузер не підтримує полотно для малювання.
+        <canvas id="drawCanvas" data-tool="idle" aria-label="Полотно для малювання">
+          Ваш браузер не підтримує полотно.
         </canvas>
 
         <div id="stickersLayer"></div>
@@ -709,7 +695,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 
       <div class="first-hint" id="firstHint" hidden>
         <span aria-hidden="true">👆</span>
-        <span>Торкнись поясу, щоб дізнатися більше</span>
+        <span>Торкнись поясу або країни. Натисни ✏️, щоб малювати</span>
       </div>
 
       <div class="zoom-controls" role="group" aria-label="Масштаб карти">
@@ -719,23 +705,23 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
       </div>
 
       <div class="mobile-fabs" role="group" aria-label="Мобільні панелі">
-        <button class="fab" id="fabIcons" type="button" aria-pressed="false" aria-label="Показати іконки погоди">🎨</button>
-        <button class="fab" id="fabLayers" type="button" aria-pressed="false" aria-label="Керування шарами">⚙️</button>
+        <button class="fab" id="fabIcons" type="button" aria-pressed="false" aria-label="Іконки погоди">🎨</button>
+        <button class="fab" id="fabLayers" type="button" aria-pressed="false" aria-label="Шари карти">⚙️</button>
         <button class="fab" id="fabLegend" type="button" aria-pressed="false" aria-label="Легенда поясів">📋</button>
       </div>
 
-      <div class="layers" id="layers" role="group" aria-label="Керування шарами карти">
+      <div class="layers" id="layers" role="group" aria-label="Шари карти">
         <button class="layer-toggle" id="zonesToggle" type="button"
-                aria-pressed="true" aria-label="Зафарбування поясів">
+                aria-pressed="false" aria-label="Зафарбування поясів">
           <span class="layer-toggle__dot" aria-hidden="true"></span>
           <span>Зафарбування</span>
         </button>
         <button class="layer-toggle" id="labelsToggle" type="button"
-                aria-pressed="true" aria-label="Підписи поясів">
+                aria-pressed="false" aria-label="Підписи поясів">
           <span aria-hidden="true">🔤</span><span>Підписи</span>
         </button>
         <button class="layer-toggle" id="bordersToggle" type="button"
-                aria-pressed="true" aria-label="Жирні межі між поясами">
+                aria-pressed="false" aria-label="Межі поясів">
           <span aria-hidden="true">━━</span><span>Межі</span>
         </button>
       </div>
@@ -748,11 +734,11 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
       </aside>
 
       <button class="info-reopen" id="infoReopen" type="button" hidden
-              aria-label="Показати інформаційну картку">ℹ️</button>
+              aria-label="Показати картку">ℹ️</button>
 
       <div class="zone-info" id="zoneInfo">
         <button class="zone-info__close" type="button" id="zoneInfoClose"
-                aria-label="Закрити підказку">✕</button>
+                aria-label="Закрити">✕</button>
         <h2 id="zoneInfoTitle">🧠 1. Гіпотеза</h2>
         <p id="zoneInfoDesc">Запишіть припущення та план дослідження.</p>
         <div class="zone-info__meta" id="zoneInfoMeta"></div>
@@ -764,9 +750,12 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
     </div>
   </main>
 
-  <footer class="toolbar" aria-label="Інструменти малювання">
+  <footer class="toolbar" aria-label="Інструменти">
     <div class="tool-group" role="group" aria-label="Інструмент">
-      <button class="tool-btn" type="button" data-tool="brush" aria-pressed="true">
+      <button class="tool-btn" type="button" data-tool="idle" aria-pressed="true">
+        <span aria-hidden="true">✋</span><span class="btn-label">Огляд</span>
+      </button>
+      <button class="tool-btn" type="button" data-tool="brush" aria-pressed="false">
         <span aria-hidden="true">✏️</span><span class="btn-label">Пензель</span>
       </button>
       <button class="tool-btn" type="button" data-tool="fill" aria-pressed="false">
@@ -787,7 +776,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
     </div>
 
     <div class="tool-group">
-      <label class="sr-only" for="brushSize">Розмір пензля</label>
+      <label class="sr-only" for="brushSize">Розмір</label>
       <input type="range" id="brushSize" min="1" max="60" value="5" step="1"
              aria-valuemin="1" aria-valuemax="60" aria-valuenow="5">
       <span class="size-label" id="sizeLabel" aria-hidden="true">5</span>
@@ -806,13 +795,13 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 
 <noscript>
   <p style="padding:24px;color:#eaf4fb;font-family:sans-serif">
-    Для роботи «Кліматичної лабораторії» потрібно увімкнути JavaScript.
+    Для роботи потрібно увімкнути JavaScript.
   </p>
 </noscript>
 
 <script>
 /* ============================================================
-   0. FIREBASE + утиліти
+   0. FIREBASE
    ============================================================ */
 const DEBUG = /[?&]debug=1/.test(location.search);
 const log = (...a) => { if (DEBUG) console.log(...a); };
@@ -842,7 +831,7 @@ function initFirebase(){
 }
 
 /* ============================================================
-   1. ДАНІ — 11 кліматичних поясів
+   1. ДАНІ
    ============================================================ */
 const ZONE_BASE_OPACITY = 0.13;
 const ZONE_USER_OPACITY = 0.68;
@@ -944,7 +933,7 @@ const COUNTRY_CLIMATE = {
 
 const ZONES = [
   { id:'hypothesis',     title:'🧠 1. Гіпотеза',     desc:'Запишіть припущення та план дослідження.' },
-  { id:'classification', title:'🗺 2. Класифікація', desc:'Наведи на пояс або торкнись його — побачиш характеристики.' },
+  { id:'classification', title:'🗺 2. Класифікація', desc:'Увімкни шари та досліджуй кліматичні пояси.' },
   { id:'comfort',        title:'🏖 3. Комфорт',      desc:'Позначте 3 найкомфортніші пояси для життя.' },
   { id:'changes',        title:'🌡 4. Зміни',        desc:'Причини та наслідки глобальних змін клімату.' },
   { id:'history',        title:'🏛 5. Цивілізації',  desc:'Давні цивілізації та їхній кліматичний пояс.' }
@@ -964,7 +953,8 @@ const TOTAL_TIMER_SECONDS = 30 * 60;
 
 const state = {
   group: 1, zone: ZONES[0].id,
-  tool: 'brush', color: '#ffb703', size: 5,
+  tool: 'idle',
+  color: '#ffb703', size: 5,
   data: emptyData(),
   refDrawing: null, refBoard: null,
   handlerDrawing: null, handlerBoard: null,
@@ -972,7 +962,7 @@ const state = {
   lastLocalCanvas: null, isDrawing: false, pendingCanvas: undefined,
   timerSeconds: 0, timerRunning: true,
   mapReady: false, countriesGeo: null,
-  showZones: true, showLabels: true, showBorders: true,
+  showZones: false, showLabels: false, showBorders: false,
   listenersActive: false, syncInProgress: false,
   lastInfo: null,
   zoom: 1
@@ -1027,13 +1017,11 @@ function hexToRgba(hex, alpha){
 function setStatus(msg, variant){ statusEl.textContent = msg; statusEl.dataset.state = variant || 'ok'; }
 let statusTimer = null, statusHideTimer = null;
 function flashStatus(msg, variant, revertMs = 2600){
-  clearTimeout(statusTimer);
-  clearTimeout(statusHideTimer);
+  clearTimeout(statusTimer); clearTimeout(statusHideTimer);
   statusEl.dataset.hide = 'false';
   setStatus(msg, variant);
   statusTimer = setTimeout(() => {
     setStatus(isOnline ? '🟢 Синхронізовано' : '🔴 Офлайн', isOnline ? 'ok' : 'warn');
-    // Авто-приховування статусу
     if (window.innerWidth < 900){
       statusHideTimer = setTimeout(() => { statusEl.dataset.hide = 'true'; }, 2500);
     }
@@ -1059,6 +1047,114 @@ function syncInfoReopenBtn(){
 }
 
 /* ============================================================
+   ★★★ УНІВЕРСАЛЬНИЙ DRAG — Touch + Mouse + Zoom-aware ★★★
+   ============================================================ */
+function attachDragHandlers(el, id, findFn){
+  let drag = null;
+
+  // Отримати точку в координатах stickersLayer (враховуючи CSS zoom)
+  function getLayoutPoint(clientX, clientY){
+    const rect = stickersLayer.getBoundingClientRect();
+    const scale = state.zoom || 1;
+    return {
+      x: (clientX - rect.left) / scale,
+      y: (clientY - rect.top)  / scale
+    };
+  }
+
+  function layoutBounds(){
+    const rect = stickersLayer.getBoundingClientRect();
+    const scale = state.zoom || 1;
+    return {
+      w: rect.width  / scale,
+      h: rect.height / scale
+    };
+  }
+
+  function startDrag(clientX, clientY, pointerId){
+    const data = findFn(id);
+    if (!data) return false;
+    const p = getLayoutPoint(clientX, clientY);
+    drag = {
+      pointerId,
+      offsetX: p.x - data.x,
+      offsetY: p.y - data.y
+    };
+    el.classList.add('dragging');
+    return true;
+  }
+
+  function moveDrag(clientX, clientY){
+    if (!drag) return;
+    const data = findFn(id);
+    if (!data) return;
+    const p = getLayoutPoint(clientX, clientY);
+    const b = layoutBounds();
+    data.x = Math.max(-20, Math.min(b.w - 40, p.x - drag.offsetX));
+    data.y = Math.max(-10, Math.min(b.h - 30, p.y - drag.offsetY));
+    el.style.left = data.x + 'px';
+    el.style.top  = data.y + 'px';
+  }
+
+  function endDrag(){
+    if (!drag) return;
+    drag = null;
+    el.classList.remove('dragging');
+    state.dirtyBoard = true;
+    scheduleSave('board');
+  }
+
+  /* ───── TOUCH ───── */
+  el.addEventListener('touchstart', e => {
+    if (e.target.closest('textarea, button.sticker__del')) return;
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    if (startDrag(t.clientX, t.clientY, t.identifier)){
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  el.addEventListener('touchmove', e => {
+    if (!drag) return;
+    const t = Array.from(e.touches).find(x => x.identifier === drag.pointerId);
+    if (!t) return;
+    e.preventDefault();
+    moveDrag(t.clientX, t.clientY);
+  }, { passive: false });
+
+  const touchEnd = () => {
+    if (!drag) return;
+    endDrag();
+  };
+  el.addEventListener('touchend', touchEnd);
+  el.addEventListener('touchcancel', touchEnd);
+
+  /* ───── MOUSE ───── */
+  el.addEventListener('mousedown', e => {
+    if (e.target.closest('textarea, button.sticker__del')) return;
+    if (e.button !== 0) return;
+    if (startDrag(e.clientX, e.clientY, 'mouse')){
+      e.preventDefault();
+      // Слухаємо рух на document, щоб не втратити при швидкому переміщенні
+      document.addEventListener('mousemove', onDocMouseMove);
+      document.addEventListener('mouseup', onDocMouseUp);
+    }
+  });
+
+  function onDocMouseMove(e){
+    if (!drag || drag.pointerId !== 'mouse') return;
+    e.preventDefault();
+    moveDrag(e.clientX, e.clientY);
+  }
+  function onDocMouseUp(){
+    if (!drag || drag.pointerId !== 'mouse') return;
+    document.removeEventListener('mousemove', onDocMouseMove);
+    document.removeEventListener('mouseup', onDocMouseUp);
+    endDrag();
+  }
+}
+
+/* ============================================================
    5. ІНТЕРФЕЙС
    ============================================================ */
 function buildIconGallery(){
@@ -1069,7 +1165,6 @@ function buildIconGallery(){
     btn.setAttribute('aria-label', `Додати: ${l}`);
     btn.addEventListener('click', () => {
       addIcon(e);
-      // На мобільному закриваємо панель після вибору
       if (window.innerWidth < 900) toggleIconsPanel(false);
     });
     frag.appendChild(btn);
@@ -1106,7 +1201,6 @@ function buildLegend(){
     li.append(sw, txt);
     const activate = () => {
       showClimateInfo(band);
-      // На мобільному закриваємо легенду після вибору
       if (window.innerWidth < 900) toggleLegend(false);
     };
     li.addEventListener('click', activate);
@@ -1125,13 +1219,8 @@ function positionViewport(){
   if (cont.width < 1 || cont.height < 1) return;
   const ratio = 2;
   let vw, vh;
-  if (cont.width / cont.height > ratio){
-    vh = cont.height;
-    vw = vh * ratio;
-  } else {
-    vw = cont.width;
-    vh = vw / ratio;
-  }
+  if (cont.width / cont.height > ratio){ vh = cont.height; vw = vh * ratio; }
+  else { vw = cont.width; vh = vw / ratio; }
   mapViewport.style.width  = vw + 'px';
   mapViewport.style.height = vh + 'px';
   mapViewport.style.left   = ((cont.width  - vw) / 2) + 'px';
@@ -1279,7 +1368,7 @@ const COUNTRY_CLIMATE_BY_KEY = new Map(
 );
 
 /* ============================================================
-   7. ШАРИ / ЗАФАРБУВАННЯ
+   7. ШАРИ
    ============================================================ */
 function applyLayerVisibility(){
   const svg = d3.select('#svgMap');
@@ -1394,9 +1483,10 @@ function reopenInfoCard(){
 
 function updateZoneHint(){
   const hints = {
-    brush:  '✏️ Малюй пальцем. Короткий тап — про пояс.',
+    idle:   '✋ Торкнись поясу або країни. Натисни ✏️ щоб малювати.',
+    brush:  '✏️ Малюй пальцем. Натисни ✏️ знову, щоб вимкнути.',
     eraser: '🧽 Проведи по лінії, щоб стерти.',
-    fill:   '🎨 Торкнись поясу, щоб зафарбувати.'
+    fill:   '🎨 Торкнись поясу, щоб зафарбувати його.'
   };
   zoneInfoHint.textContent = hints[state.tool] || '';
 }
@@ -1405,11 +1495,9 @@ function updateZoneHint(){
    8. ПОЛОТНО
    ============================================================ */
 function resizeCanvasBacking(){
-  const rect = canvas.getBoundingClientRect();
-  if (rect.width < 1 || rect.height < 1) return;
-  // Use offsetWidth — untransformed layout width
-  const layoutW = canvas.offsetWidth || rect.width;
-  const layoutH = canvas.offsetHeight || rect.height;
+  const layoutW = canvas.offsetWidth;
+  const layoutH = canvas.offsetHeight;
+  if (layoutW < 1 || layoutH < 1) return;
   dpr = Math.min(window.devicePixelRatio || 1, 2);
   const w = Math.round(layoutW * dpr);
   const h = Math.round(layoutH * dpr);
@@ -1448,6 +1536,7 @@ function encodeCanvas(){
 let lastX = 0, lastY = 0;
 
 function beginStrokeAt(x, y){
+  if (state.tool === 'idle' || state.tool === 'fill') return;
   state.isDrawing = true;
   lastX = x; lastY = y;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1497,29 +1586,6 @@ function endStroke(){
   }
 }
 
-function handleQuickTap(x, y){
-  const r = canvas.getBoundingClientRect();
-  // Correct for CSS zoom scale
-  const layoutW = canvas.offsetWidth || r.width;
-  const layoutH = canvas.offsetHeight || r.height;
-  const scaleX = layoutW / r.width;
-  const scaleY = layoutH / r.height;
-  const clientX = r.left + x / scaleX;
-  const clientY = r.top  + y / scaleY;
-  const els = document.elementsFromPoint(clientX, clientY);
-  for (const el of els){
-    if (el.classList?.contains('climate-zone')){
-      const band = CLIMATE_BANDS.find(b => b.id === el.dataset.zone);
-      if (band) showClimateInfo(band);
-      return;
-    }
-    if (el.classList?.contains('country')){
-      showCountryInfo(el.dataset.country);
-      return;
-    }
-  }
-}
-
 function attachCanvasEvents(){
   function getPoint(e){
     const r = canvas.getBoundingClientRect();
@@ -1527,7 +1593,6 @@ function attachCanvasEvents(){
     if (e.touches && e.touches.length > 0){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
     else if (e.changedTouches && e.changedTouches.length > 0){ cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY; }
     else { cx = e.clientX; cy = e.clientY; }
-    // Correct for CSS zoom on viewport
     const layoutW = canvas.offsetWidth || r.width;
     const layoutH = canvas.offsetHeight || r.height;
     const scaleX = layoutW / r.width;
@@ -1536,14 +1601,12 @@ function attachCanvasEvents(){
   }
 
   let touching = false;
-  let tapInfo = null;
-
   canvas.addEventListener('touchstart', e => {
+    if (state.tool === 'idle' || state.tool === 'fill') return;
     if (e.touches.length !== 1) return;
     e.preventDefault();
     touching = true;
     const p = getPoint(e);
-    tapInfo = { x: p.x, y: p.y, t: Date.now(), moved: false };
     beginStrokeAt(p.x, p.y);
   }, { passive: false });
 
@@ -1551,7 +1614,6 @@ function attachCanvasEvents(){
     if (!touching || !state.isDrawing) return;
     e.preventDefault();
     const p = getPoint(e);
-    if (tapInfo && (Math.abs(p.x - tapInfo.x) > 8 || Math.abs(p.y - tapInfo.y) > 8)) tapInfo.moved = true;
     moveStrokeTo(p.x, p.y);
   }, { passive: false });
 
@@ -1559,43 +1621,33 @@ function attachCanvasEvents(){
     if (!touching) return;
     touching = false;
     endStroke();
-    if (tapInfo && !tapInfo.moved && Date.now() - tapInfo.t < 320){
-      handleQuickTap(tapInfo.x, tapInfo.y);
-    }
-    tapInfo = null;
   };
   canvas.addEventListener('touchend', endTouch, { passive: false });
   canvas.addEventListener('touchcancel', endTouch, { passive: false });
 
-  let mouseTap = null;
   canvas.addEventListener('mousedown', e => {
+    if (state.tool === 'idle' || state.tool === 'fill') return;
     if (e.button !== 0) return;
     e.preventDefault();
     const p = getPoint(e);
-    mouseTap = { x: p.x, y: p.y, t: Date.now(), moved: false };
     beginStrokeAt(p.x, p.y);
   });
   canvas.addEventListener('mousemove', e => {
     if (!state.isDrawing) return;
     const p = getPoint(e);
-    if (mouseTap && (Math.abs(p.x - mouseTap.x) > 5 || Math.abs(p.y - mouseTap.y) > 5)) mouseTap.moved = true;
     moveStrokeTo(p.x, p.y);
   });
-  canvas.addEventListener('mouseup', () => {
-    if (!state.isDrawing) return;
-    endStroke();
-    if (mouseTap && !mouseTap.moved && Date.now() - mouseTap.t < 320){
-      handleQuickTap(mouseTap.x, mouseTap.y);
-    }
-    mouseTap = null;
-  });
-  canvas.addEventListener('mouseleave', () => { if (state.isDrawing) endStroke(); mouseTap = null; });
+  canvas.addEventListener('mouseup', () => { if (state.isDrawing) endStroke(); });
+  canvas.addEventListener('mouseleave', () => { if (state.isDrawing) endStroke(); });
 }
 
 /* ============================================================
    9. ІНСТРУМЕНТИ
    ============================================================ */
 function setTool(tool){
+  if (state.tool === tool && tool !== 'idle'){
+    tool = 'idle';
+  }
   state.tool = tool;
   canvas.dataset.tool = tool;
   $$('.tool-btn[data-tool]').forEach(b => {
@@ -1614,7 +1666,7 @@ function setColor(color, sourceEl){
 }
 
 /* ============================================================
-   10. СТІКЕРИ
+   10. СТІКЕРИ — НОВА СТРУКТУРА З СМУЖКОЮ-ТРИМАЧЕМ
    ============================================================ */
 const findSticker = id => state.data.stickers.find(s => s.id === id);
 const findIcon    = id => state.data.icons.find(i => i.id === id);
@@ -1627,63 +1679,59 @@ function createStickerEl(s){
   el.style.top  = s.y + 'px';
   el.style.background = s.color;
 
-  const del = document.createElement('button');
-  del.type = 'button'; del.className = 'sticker__del';
-  del.setAttribute('aria-label', 'Видалити'); del.textContent = '✕';
+  // Верхня смужка з тримачем і кнопкою видалення
+  const bar = document.createElement('div');
+  bar.className = 'sticker__bar';
 
+  const grip = document.createElement('span');
+  grip.className = 'sticker__grip';
+  grip.textContent = '⋮⋮';
+  grip.setAttribute('aria-hidden', 'true');
+
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'sticker__del';
+  del.setAttribute('aria-label', 'Видалити стікер');
+  del.textContent = '✕';
+
+  bar.append(grip, del);
+
+  // Поле тексту
   const ta = document.createElement('textarea');
   ta.value = s.text || '';
   ta.placeholder = 'Пишіть…';
-  ta.setAttribute('aria-label', 'Текст');
+  ta.setAttribute('aria-label', 'Текст стікера');
   ta.rows = 2;
 
-  const autosize = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 200) + 'px'; };
+  const autosize = () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 200) + 'px';
+  };
   ta.addEventListener('input', () => {
     const t = findSticker(s.id);
     if (t) t.text = ta.value;
     autosize();
-    state.dirtyBoard = true; scheduleSave('board');
+    state.dirtyBoard = true;
+    scheduleSave('board');
   });
   ta.addEventListener('keydown', e => e.stopPropagation());
 
   del.addEventListener('click', e => {
     e.stopPropagation();
+    e.preventDefault();
     state.data.stickers = state.data.stickers.filter(x => x.id !== s.id);
     stickerEls.get(s.id)?.remove();
     stickerEls.delete(s.id);
-    state.dirtyBoard = true; scheduleSave('board');
+    state.dirtyBoard = true;
+    scheduleSave('board');
   });
 
-  let drag = null;
-  el.addEventListener('pointerdown', e => {
-    if (e.target.closest('textarea, button')) return;
-    const rect = stickersLayer.getBoundingClientRect();
-    const t = findSticker(s.id);
-    if (!t) return;
-    drag = { pointerId:e.pointerId, dx:e.clientX - rect.left - t.x, dy:e.clientY - rect.top - t.y };
-    el.setPointerCapture?.(e.pointerId);
-    e.preventDefault();
-  });
-  el.addEventListener('pointermove', e => {
-    if (!drag || e.pointerId !== drag.pointerId) return;
-    const rect = stickersLayer.getBoundingClientRect();
-    const t = findSticker(s.id);
-    if (!t) return;
-    t.x = Math.max(-20, Math.min(rect.width  - 40, e.clientX - rect.left - drag.dx));
-    t.y = Math.max(-10, Math.min(rect.height - 30, e.clientY - rect.top  - drag.dy));
-    el.style.left = t.x + 'px'; el.style.top = t.y + 'px';
-  });
-  const stopDrag = e => {
-    if (!drag || (e && e.pointerId !== drag.pointerId)) return;
-    drag = null;
-    state.dirtyBoard = true; scheduleSave('board');
-  };
-  el.addEventListener('pointerup', stopDrag);
-  el.addEventListener('pointercancel', stopDrag);
-  el.addEventListener('lostpointercapture', stopDrag);
-
-  el.append(del, ta);
+  el.append(bar, ta);
   requestAnimationFrame(autosize);
+
+  // ★ Навішуємо універсальний drag (touch + mouse)
+  attachDragHandlers(el, s.id, findSticker);
+
   return el;
 }
 
@@ -1697,7 +1745,8 @@ function renderStickers(list){
       stickerEls.set(s.id, el);
       stickersLayer.appendChild(el);
     } else {
-      el.style.left = s.x + 'px'; el.style.top = s.y + 'px';
+      el.style.left = s.x + 'px';
+      el.style.top  = s.y + 'px';
       el.style.background = s.color;
       const ta = el.querySelector('textarea');
       if (ta && document.activeElement !== ta && ta.value !== (s.text || '')) ta.value = s.text || '';
@@ -1707,19 +1756,25 @@ function renderStickers(list){
 }
 
 function addSticker(){
-  const rect = mapViewport.getBoundingClientRect();
+  const rect = stickersLayer.getBoundingClientRect();
+  const scale = state.zoom || 1;
+  const w = rect.width / scale;
+  const h = rect.height / scale;
   const n = state.data.stickers.length;
   const s = {
     id: uid(),
-    x: Math.max(10, Math.round(rect.width  / 2 - 85 + (n % 4) * 16)),
-    y: Math.max(10, Math.round(rect.height / 2 - 32 + (n % 4) * 16)),
+    x: Math.max(10, Math.round(w / 2 - 90 + (n % 4) * 16)),
+    y: Math.max(10, Math.round(h / 2 - 35 + (n % 4) * 16)),
     text: '',
     color: STICKER_COLORS[n % STICKER_COLORS.length]
   };
   state.data.stickers.push(s);
   renderStickers(state.data.stickers);
-  state.dirtyBoard = true; scheduleSave('board');
-  stickerEls.get(s.id)?.querySelector('textarea')?.focus();
+  state.dirtyBoard = true;
+  scheduleSave('board');
+  setTimeout(() => {
+    stickerEls.get(s.id)?.querySelector('textarea')?.focus();
+  }, 80);
 }
 
 /* ============================================================
@@ -1730,42 +1785,23 @@ function createIconEl(icon){
   el.className = 'placed-icon';
   el.dataset.id = icon.id;
   el.textContent = icon.icon;
-  el.style.left = icon.x + 'px'; el.style.top = icon.y + 'px';
+  el.style.left = icon.x + 'px';
+  el.style.top  = icon.y + 'px';
   el.tabIndex = 0;
   el.setAttribute('role', 'img');
 
-  let drag = null;
-  el.addEventListener('pointerdown', e => {
-    const rect = stickersLayer.getBoundingClientRect();
-    const t = findIcon(icon.id);
-    if (!t) return;
-    drag = { pointerId:e.pointerId, dx:e.clientX - rect.left - t.x, dy:e.clientY - rect.top - t.y };
-    el.setPointerCapture?.(e.pointerId);
-    e.preventDefault();
-  });
-  el.addEventListener('pointermove', e => {
-    if (!drag || e.pointerId !== drag.pointerId) return;
-    const rect = stickersLayer.getBoundingClientRect();
-    const t = findIcon(icon.id);
-    if (!t) return;
-    t.x = Math.max(-10, Math.min(rect.width  - 20, e.clientX - rect.left - drag.dx));
-    t.y = Math.max(-10, Math.min(rect.height - 20, e.clientY - rect.top  - drag.dy));
-    el.style.left = t.x + 'px'; el.style.top = t.y + 'px';
-  });
-  const stopDrag = e => {
-    if (!drag || (e && e.pointerId !== drag.pointerId)) return;
-    drag = null;
-    state.dirtyBoard = true; scheduleSave('board');
-  };
-  el.addEventListener('pointerup', stopDrag);
-  el.addEventListener('pointercancel', stopDrag);
-  el.addEventListener('lostpointercapture', stopDrag);
+  // ★ Той самий drag-хелпер
+  attachDragHandlers(el, icon.id, findIcon);
 
+  // Подвійний клік — видалити
   el.addEventListener('dblclick', () => {
     state.data.icons = state.data.icons.filter(i => i.id !== icon.id);
-    el.remove(); iconEls.delete(icon.id);
-    state.dirtyBoard = true; scheduleSave('board');
+    el.remove();
+    iconEls.delete(icon.id);
+    state.dirtyBoard = true;
+    scheduleSave('board');
   });
+
   return el;
 }
 
@@ -1779,28 +1815,30 @@ function renderIcons(list){
       iconEls.set(icon.id, el);
       stickersLayer.appendChild(el);
     } else {
-      el.style.left = icon.x + 'px'; el.style.top = icon.y + 'px';
+      el.style.left = icon.x + 'px';
+      el.style.top  = icon.y + 'px';
     }
   });
   iconEls.forEach((el, id) => { if (!seen.has(id)){ el.remove(); iconEls.delete(id); } });
 }
 
 function addIcon(emoji){
-  const rect = mapViewport.getBoundingClientRect();
+  const rect = stickersLayer.getBoundingClientRect();
+  const scale = state.zoom || 1;
+  const w = rect.width / scale;
+  const h = rect.height / scale;
   const n = state.data.icons.length;
   const icon = {
     id: uid(), icon: emoji,
-    x: Math.max(10, Math.round(rect.width  / 2 - 20 + (n % 6) * 18)),
-    y: Math.max(10, Math.round(rect.height / 2 - 20 + (n % 6) * 18))
+    x: Math.max(10, Math.round(w / 2 - 20 + (n % 6) * 18)),
+    y: Math.max(10, Math.round(h / 2 - 20 + (n % 6) * 18))
   };
   state.data.icons.push(icon);
   renderIcons(state.data.icons);
-  state.dirtyBoard = true; scheduleSave('board');
+  state.dirtyBoard = true;
+  scheduleSave('board');
 }
 
-/* ============================================================
-   12. РЕНДЕР
-   ============================================================ */
 function renderBoard(){
   renderStickers(state.data.stickers);
   renderIcons(state.data.icons);
@@ -1808,7 +1846,7 @@ function renderBoard(){
 }
 
 /* ============================================================
-   13. FIREBASE
+   12. FIREBASE
    ============================================================ */
 const refsFor = (g, z) => {
   const base = `groups/group${g}/zones/${z}`;
@@ -1925,7 +1963,7 @@ function forceSyncNow(){
 }
 
 /* ============================================================
-   14. ПЕРЕМИКАННЯ
+   13. ПЕРЕМИКАННЯ
    ============================================================ */
 function openBoard(group, zone){
   flushSave();
@@ -1973,7 +2011,7 @@ function switchZone(zoneId){
 }
 
 /* ============================================================
-   15. ТАЙМЕР
+   14. ТАЙМЕР
    ============================================================ */
 let timerInterval = null;
 function updateTimerDisplay(){
@@ -2003,7 +2041,7 @@ function toggleTimer(){
 }
 
 /* ============================================================
-   16. ЗУМ
+   15. ЗУМ
    ============================================================ */
 function applyZoom(newZoom){
   state.zoom = Math.max(0.5, Math.min(4, newZoom));
@@ -2014,11 +2052,11 @@ function zoomOut(){ applyZoom(state.zoom / 1.35); }
 function zoomFit(){ applyZoom(1); }
 
 /* ============================================================
-   17. ЕКСПОРТ PNG — обрізаємо точно по карті!
+   16. ЕКСПОРТ PNG
    ============================================================ */
 async function exportPNG(){
-  if (typeof html2canvas !== 'function'){ flashStatus('❌ Модуль експорту не завантажено', 'error'); return; }
-  flashStatus('📸 Створюємо знімок…', 'busy', 8000);
+  if (typeof html2canvas !== 'function'){ flashStatus('❌ Модуль не завантажено', 'error'); return; }
+  flashStatus('📸 Знімок…', 'busy', 8000);
 
   const groupName = `Група ${state.group}`;
   const zoneObj = ZONES.find(z => z.id === state.zone);
@@ -2028,12 +2066,10 @@ async function exportPNG(){
   const dateStr = now.toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' });
   const timeStr = now.toLocaleTimeString('uk-UA', { hour:'2-digit', minute:'2-digit' });
 
-  // Скидаємо зум для експорту
   const savedZoom = state.zoom;
   applyZoom(1);
   await new Promise(r => requestAnimationFrame(r));
 
-  // Створюємо штамп всередині viewport
   const stamp = document.createElement('div');
   stamp.className = 'export-stamp';
   stamp.innerHTML = `
@@ -2050,9 +2086,7 @@ async function exportPNG(){
     const shot = await html2canvas(mapViewport, {
       backgroundColor: '#04182e',
       scale: Math.min(2.5, Math.max(1.5, window.devicePixelRatio || 1)),
-      useCORS: true,
-      logging: false,
-      removeContainer: true
+      useCORS: true, logging: false, removeContainer: true
     });
 
     stamp.remove();
@@ -2079,12 +2113,12 @@ async function exportPNG(){
     mapContainer.classList.remove('is-exporting');
     applyZoom(savedZoom);
     console.warn('[Export]', err);
-    flashStatus('❌ Не вдалося зберегти', 'error', 4000);
+    flashStatus('❌ Помилка', 'error', 4000);
   }
 }
 
 /* ============================================================
-   18. ОЧИЩЕННЯ
+   17. ОЧИЩЕННЯ
    ============================================================ */
 function clearCurrent(){
   const zoneName = (ZONES.find(z => z.id === state.zone) || {}).title || '';
@@ -2102,7 +2136,7 @@ function clearCurrent(){
 }
 
 /* ============================================================
-   19. МЕРЕЖА
+   18. МЕРЕЖА
    ============================================================ */
 function bindConnection(){
   window.addEventListener('online', () => {
@@ -2124,8 +2158,7 @@ function bindConnection(){
       if (conn) setNetIndicator(true, 'Онлайн');
       else setNetIndicator(false, 'З’єднання…');
       if (!statusTimer){
-        setStatus(conn ? '🟢 Синхронізовано' : '🟠 Офлайн',
-                  conn ? 'ok' : 'warn');
+        setStatus(conn ? '🟢 Синхронізовано' : '🟠 Офлайн', conn ? 'ok' : 'warn');
         if (window.innerWidth < 900){
           clearTimeout(statusHideTimer);
           statusHideTimer = setTimeout(() => { statusEl.dataset.hide = 'true'; }, 2500);
@@ -2138,7 +2171,7 @@ function bindConnection(){
 }
 
 /* ============================================================
-   20. МОБІЛЬНІ ПАНЕЛІ
+   19. МОБІЛЬНІ ПАНЕЛІ
    ============================================================ */
 const fabIcons  = $('#fabIcons');
 const fabLayers = $('#fabLayers');
@@ -2179,7 +2212,7 @@ function toggleLegend(force){
 }
 
 /* ============================================================
-   21. UI
+   20. UI
    ============================================================ */
 function bindUI(){
   $$('.tool-btn[data-tool]').forEach(btn => {
@@ -2212,20 +2245,16 @@ function bindUI(){
   });
   infoReopenBtn.addEventListener('click', reopenInfoCard);
 
-  // Зум
   $('#zoomIn').addEventListener('click', zoomIn);
   $('#zoomOut').addEventListener('click', zoomOut);
   $('#zoomFit').addEventListener('click', zoomFit);
 
-  // Мобільні FAB
   fabIcons.addEventListener('click', () => toggleIconsPanel());
   fabLayers.addEventListener('click', () => toggleLayers());
   fabLegend.addEventListener('click', () => toggleLegend());
 
-  // Клік по фону закриває мобільні панелі
   mapContainer.addEventListener('click', e => {
     if (window.innerWidth >= 900) return;
-    // Закрити панелі, якщо клік не по панелі і не по FAB
     if (!e.target.closest('.icon-gallery, .legend, .layers, .mobile-fabs')){
       iconGallery.classList.remove('open');
       legendEl.classList.remove('open');
@@ -2241,19 +2270,21 @@ function bindUI(){
     state.showZones = !state.showZones;
     zonesToggle.setAttribute('aria-pressed', state.showZones ? 'true' : 'false');
     applyLayerVisibility();
-    showToast(state.showZones ? '🎨 Зафарбування увімкнено' : '🎨 Вимкнено');
+    showToast(state.showZones ? '🎨 Зафарбування увімкнено' : '🎨 Зафарбування вимкнено');
   });
   const labelsToggle = $('#labelsToggle');
   labelsToggle.addEventListener('click', () => {
     state.showLabels = !state.showLabels;
     labelsToggle.setAttribute('aria-pressed', state.showLabels ? 'true' : 'false');
     applyLayerVisibility();
+    showToast(state.showLabels ? '🔤 Підписи увімкнено' : '🔤 Підписи вимкнено');
   });
   const bordersToggle = $('#bordersToggle');
   bordersToggle.addEventListener('click', () => {
     state.showBorders = !state.showBorders;
     bordersToggle.setAttribute('aria-pressed', state.showBorders ? 'true' : 'false');
     applyLayerVisibility();
+    showToast(state.showBorders ? '━━ Межі увімкнено' : '━━ Межі вимкнено');
   });
 
   const legendToggle = $('#legendToggle');
@@ -2270,6 +2301,7 @@ function bindUI(){
     if (e.key === 'b' || e.key === 'B') setTool('brush');
     else if (e.key === 'e' || e.key === 'E') setTool('eraser');
     else if (e.key === 'f' || e.key === 'F') setTool('fill');
+    else if (e.key === 'Escape') setTool('idle');
     else if (e.key === 'n' || e.key === 'N') addSticker();
     else if (e.key === '+' || e.key === '=') zoomIn();
     else if (e.key === '-') zoomOut();
@@ -2317,15 +2349,15 @@ function bindResize(){
 }
 
 /* ============================================================
-   22. ІНІЦІАЛІЗАЦІЯ
+   21. ІНІЦІАЛІЗАЦІЯ
    ============================================================ */
 function showFirstHintIfNeeded(){
   try {
-    if (localStorage.getItem('climateLab_hintShown_v2') === '1') return;
-    localStorage.setItem('climateLab_hintShown_v2', '1');
+    if (localStorage.getItem('climateLab_hintShown_v3') === '1') return;
+    localStorage.setItem('climateLab_hintShown_v3', '1');
   } catch(_){}
   firstHint.hidden = false;
-  setTimeout(() => { firstHint.hidden = true; }, 4500);
+  setTimeout(() => { firstHint.hidden = true; }, 5500);
   const hide = () => { firstHint.hidden = true; };
   firstHint.addEventListener('click', hide);
   mapContainer.addEventListener('pointerdown', hide, { once: true });
@@ -2343,10 +2375,13 @@ function init(){
   attachMapEvents();
   bindResize();
 
-  setTool('brush');
+  setTool('idle');
   setColor('#ffb703');
 
-  // Перший борд
+  $$('#zonesToggle, #labelsToggle, #bordersToggle').forEach(b => {
+    b.setAttribute('aria-pressed', 'false');
+  });
+
   positionViewport();
   openBoard(1, ZONES[0].id);
 
@@ -2368,7 +2403,7 @@ function init(){
     renderMap();
     resizeCanvasBacking();
     renderCanvas(state.data.canvas);
-    // Приховуємо статус на мобільному через 2.5с
+    applyLayerVisibility();
     if (window.innerWidth < 900){
       setTimeout(() => { statusEl.dataset.hide = 'true'; }, 2500);
     }
