@@ -116,6 +116,65 @@ input,textarea{font:inherit;color:inherit}
 .student-tile__name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ═══════════════════════════════════════════════════
+   ПОВНОЕКРАННИЙ РЕДАКТОР НОТАТОК
+   ═══════════════════════════════════════════════════ */
+.note-editor{
+  position:fixed;inset:0;z-index:3000;
+  background:linear-gradient(135deg,#03121f 0%,#0a2540 100%);
+  display:flex;flex-direction:column;
+  padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
+  animation:noteEditorIn .22s var(--ease);
+}
+.note-editor[hidden]{display:none}
+@keyframes noteEditorIn{
+  from{opacity:0;transform:translateY(30px)}
+  to{opacity:1;transform:none}
+}
+.note-editor__header{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;margin-bottom:12px;flex:0 0 auto;
+}
+.note-editor__title{
+  font-size:15px;font-weight:800;
+  color:var(--sun-soft);margin:0;flex:1;text-align:center;
+}
+.note-editor__btn{
+  min-height:42px;padding:0 16px;border-radius:10px;
+  font-size:14px;font-weight:700;
+  border:1px solid var(--line-strong);
+  background:rgba(15,58,95,.7);color:var(--text);
+  display:inline-flex;align-items:center;gap:6px;
+  white-space:nowrap;cursor:pointer;
+  transition:all var(--dur) var(--ease);
+}
+.note-editor__btn:hover{background:rgba(31,110,166,.85);border-color:var(--rain)}
+.note-editor__btn--save{
+  background:linear-gradient(135deg,var(--sun),#ff9500);
+  color:#25180a;border-color:transparent;
+}
+.note-editor__btn--save:hover{filter:brightness(1.06)}
+.note-editor__textarea{
+  flex:1;width:100%;padding:16px;
+  border-radius:14px;
+  border:2px solid var(--line-strong);
+  background:rgba(6,26,43,.85);
+  color:var(--text);
+  font-size:17px;line-height:1.5;
+  font-family:var(--font);
+  resize:none;outline:none;
+  -webkit-user-select:text;user-select:text;
+}
+.note-editor__textarea:focus{
+  border-color:var(--rain);
+  box-shadow:0 0 0 3px rgba(76,201,240,.2);
+}
+.note-editor__textarea::placeholder{color:var(--text-mute)}
+.note-editor__hint{
+  margin-top:10px;font-size:12.5px;
+  color:var(--text-mute);text-align:center;flex:0 0 auto;
+}
+
+/* ═══════════════════════════════════════════════════
    ШАПКА
    ═══════════════════════════════════════════════════ */
 .app-header{display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -173,12 +232,11 @@ input,textarea{font:inherit;color:inherit}
    ═══════════════════════════════════════════════════ */
 .student-bar{
   display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:7px 12px;
+  padding:6px 12px;
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
   background:linear-gradient(90deg, rgba(76,201,240,.14), rgba(46,196,182,.08));
-  border-bottom:1px solid var(--line);
-  z-index:15;
+  border-bottom:1px solid var(--line);z-index:15;
 }
 .student-bar__info{
   display:flex;align-items:center;gap:9px;
@@ -186,25 +244,25 @@ input,textarea{font:inherit;color:inherit}
   min-width:0;flex:1;
 }
 .student-bar__avatar{
-  width:34px;height:34px;border-radius:50%;
+  width:32px;height:32px;border-radius:50%;
   background:linear-gradient(135deg,var(--rain),#1f9ec9);
   display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex:0 0 auto;color:#03121f;font-weight:800;
+  font-size:15px;flex:0 0 auto;color:#03121f;font-weight:800;
 }
 .student-bar__text{display:flex;flex-direction:column;min-width:0}
-.student-bar__label{font-size:10.5px;text-transform:uppercase;
+.student-bar__label{font-size:10px;text-transform:uppercase;
   letter-spacing:.06em;color:var(--text-mute);font-weight:700;line-height:1.1}
-.student-bar__name{font-size:14.5px;font-weight:800;color:var(--text);
+.student-bar__name{font-size:14px;font-weight:800;color:var(--text);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
 .student-bar__change{
-  flex:0 0 auto;padding:7px 12px;border-radius:999px;
+  flex:0 0 auto;padding:6px 11px;border-radius:999px;
   font-size:12px;font-weight:700;
   background:rgba(6,26,43,.7);border:1px solid var(--line-strong);
   color:var(--text-dim);display:inline-flex;align-items:center;gap:5px;
 }
 .student-bar__change:hover{background:rgba(31,110,166,.7);color:#fff}
 @media (max-width:400px){
-  .student-bar__change{padding:7px 10px;font-size:11px}
+  .student-bar__change{padding:6px 9px;font-size:11px}
 }
 
 /* ═══════════════════════════════════════════════════
@@ -227,12 +285,12 @@ input,textarea{font:inherit;color:inherit}
 .icon-item:active{transform:scale(.92)}
 
 .map-container{position:relative;flex:1 1 auto;min-height:200px;overflow:hidden;
-  background:#020a14;touch-action:manipulation;}
+  background:#020a14;touch-action:none;}
 .map-viewport{position:absolute;
   background:radial-gradient(120% 90% at 50% 45%, #0a3d68 0%, #062a4a 42%, #04182e 78%, #020a14 100%);
   overflow:hidden;transform-origin:center center;
-  transition:transform .18s var(--ease);
-  box-shadow:0 0 40px rgba(0,0,0,.5);border-radius:4px;}
+  box-shadow:0 0 40px rgba(0,0,0,.5);border-radius:4px;
+  will-change:transform;}
 #svgMap{position:absolute;inset:0;width:100%;height:100%;display:block;}
 
 .ocean-sphere{fill:url(#oceanGrad)}
@@ -306,6 +364,17 @@ input,textarea{font:inherit;color:inherit}
   padding:4px 10px 10px;
   touch-action:manipulation;-webkit-user-select:text;user-select:text;}
 .sticker textarea::placeholder{color:rgba(27,39,51,.42)}
+/* На мобільному — тап на стікер відкриває повноекранний редактор */
+@media (max-width:899px){
+  .sticker{cursor:pointer}
+  .sticker textarea{pointer-events:none}
+  .sticker::after{
+    content:"👆 тапни, щоб редагувати";
+    position:absolute;bottom:2px;right:8px;
+    font-size:9px;font-weight:700;
+    color:rgba(27,39,51,.42);pointer-events:none;
+  }
+}
 
 .placed-icon{position:absolute;font-size:34px;line-height:1;padding:6px;
   cursor:grab;pointer-events:auto;touch-action:none;
@@ -315,15 +384,18 @@ input,textarea{font:inherit;color:inherit}
 .placed-icon:active,.placed-icon.dragging{cursor:grabbing;transform:scale(1.15);
   background:rgba(76,201,240,.25);}
 
+/* ІНФО-КАРТКА */
 .zone-info{position:absolute;top:10px;left:10px;z-index:6;
   max-width:min(340px, calc(100% - 20px));padding:10px 38px 10px 12px;
   border-radius:var(--r-md);border:1px solid var(--line-strong);
   border-left:4px solid var(--sun);background:rgba(6,26,43,.94);
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  box-shadow:var(--shadow-1);font-size:12.5px;animation:fadeIn .25s var(--ease);
-  max-height:calc(100% - 20px);overflow:auto;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  box-shadow:var(--shadow-1);font-size:12.5px;
+  max-height:calc(100% - 20px);overflow:auto;
+  transition:transform .25s var(--ease),opacity .25s var(--ease);}
 .zone-info[hidden]{display:none}
+.zone-info--hide{opacity:0;transform:translateY(10px);pointer-events:none;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .zone-info h2{margin:0 0 3px;font-size:13.5px;font-weight:700;
   color:var(--sun-soft);letter-spacing:-.01em;}
 .zone-info p{margin:0;color:var(--text-dim);line-height:1.4}
@@ -344,6 +416,17 @@ input,textarea{font:inherit;color:inherit}
   font-size:13px;color:var(--text-mute);}
 .zone-info__close:hover{background:rgba(76,201,240,.16);color:#fff}
 
+.zone-info__addnote{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  width:100%;margin-top:10px;padding:10px 12px;
+  border-radius:10px;font-size:13px;font-weight:800;
+  background:linear-gradient(135deg,var(--sun),#ff9500);
+  color:#25180a;border:0;cursor:pointer;
+  touch-action:manipulation;
+}
+.zone-info__addnote:hover{filter:brightness(1.06)}
+.zone-info__addnote[hidden]{display:none}
+
 .info-reopen{position:absolute;top:10px;left:10px;z-index:6;
   width:42px;height:42px;border-radius:50%;
   background:rgba(6,26,43,.94);border:1px solid var(--line-strong);
@@ -362,13 +445,14 @@ input,textarea{font:inherit;color:inherit}
   box-shadow:0 10px 40px rgba(0,0,0,.55);
   display:flex;align-items:center;gap:8px;
   animation:hintPulse 1.6s ease-in-out infinite;
-  pointer-events:none;white-space:nowrap;max-width:90%;}
+  pointer-events:none;white-space:nowrap;max-width:90%;
+  text-align:center;}
 .first-hint[hidden]{display:none}
 @keyframes hintPulse{
   0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1}
   50%{transform:translate(-50%,-50%) scale(1.06);opacity:.92}}
 @media (max-width:500px){.first-hint{font-size:12px;padding:10px 14px;
-  white-space:normal;text-align:center;max-width:80%}}
+  white-space:normal;max-width:80%}}
 
 .legend{position:absolute;top:10px;right:10px;z-index:6;
   max-width:230px;padding:9px 11px;border-radius:var(--r-md);
@@ -457,9 +541,9 @@ input,textarea{font:inherit;color:inherit}
 
 .zoom-controls{position:absolute;bottom:10px;left:10px;z-index:6;
   display:flex;flex-direction:column;gap:4px;}
-.zoom-btn{width:36px;height:36px;border-radius:9px;
+.zoom-btn{width:34px;height:34px;border-radius:9px;
   background:rgba(6,26,43,.94);border:1px solid var(--line-strong);
-  color:var(--text);font-size:17px;font-weight:700;
+  color:var(--text);font-size:16px;font-weight:700;
   display:flex;align-items:center;justify-content:center;
   box-shadow:var(--shadow-1);cursor:pointer;
   transition:all var(--dur) var(--ease);}
@@ -467,10 +551,10 @@ input,textarea{font:inherit;color:inherit}
 .zoom-btn:active{transform:scale(.92)}
 
 .mobile-fabs{display:none;position:absolute;right:10px;bottom:10px;
-  z-index:20;flex-direction:column;gap:8px;}
-.fab{width:48px;height:48px;border-radius:50%;
+  z-index:20;flex-direction:column;gap:6px;}
+.fab{width:42px;height:42px;border-radius:50%;
   background:rgba(6,26,43,.96);border:1px solid var(--line-strong);
-  color:var(--sun-soft);font-size:22px;
+  color:var(--sun-soft);font-size:19px;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 6px 24px rgba(0,0,0,.55);cursor:pointer;
   transition:all var(--dur) var(--ease);}
@@ -572,33 +656,35 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .mobile-fabs{display:flex}
 
   .zone-info{top:auto;left:10px;right:10px;bottom:118px;
-    max-width:calc(100% - 20px);max-height:44vh;
+    max-width:calc(100% - 20px);max-height:40vh;
     padding:10px 38px 10px 12px;font-size:12.5px;
     border-left-width:4px;z-index:15;}
   .zone-info h2{font-size:13.5px}
   .zone-info__chip{font-size:10.5px;padding:2px 7px}
   .zone-info__hint{font-size:10.5px}
+  .zone-info__addnote{font-size:12.5px;padding:9px 10px}
 
   .info-reopen{top:auto;bottom:118px;left:10px;
     width:40px;height:40px;font-size:18px;z-index:16;}
 
   .status{top:8px;right:8px;bottom:auto;font-size:10.5px;padding:5px 10px;z-index:16;}
   .zoom-controls{bottom:auto;top:50%;left:8px;transform:translateY(-50%);z-index:14;}
-  .zoom-btn{width:38px;height:38px;font-size:18px}
+  .zoom-btn{width:36px;height:36px;font-size:17px}
   .toast{bottom:auto;top:50%;}
 
   .sticker{width:160px}
-  .sticker__bar{min-height:36px}
-  .sticker__del{width:40px;height:40px;font-size:16px}
+  .sticker__bar{min-height:32px}
+  .sticker__del{width:36px;height:36px;font-size:15px}
 }
 
 @media (max-width:400px){
   .app-title__text{display:none}
   .btn-label{display:none}
   .btn{padding:0 10px}
-  .zoom-btn{width:34px;height:34px;font-size:16px}
-  .fab{width:44px;height:44px;font-size:20px}
+  .zoom-btn{width:34px;height:34px;font-size:15px}
+  .fab{width:40px;height:40px;font-size:18px}
   .zone-info{font-size:12px}
+  .note-editor__textarea{font-size:16px}
 }
 @media (orientation:landscape) and (max-height:520px){
   .student-bar{padding-top:4px;padding-bottom:4px}
@@ -611,9 +697,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════
-     ЕКРАН ВИБОРУ УЧНЯ
-     ═══════════════════════════════════════════════════ -->
+<!-- ═══════════ ЕКРАН ВИБОРУ УЧНЯ ═══════════ -->
 <div class="student-picker" id="studentPicker" hidden>
   <div class="student-picker__header">
     <span class="student-picker__icon">🌍</span>
@@ -623,9 +707,23 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   <div class="student-grid" id="studentGrid"></div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     ОСНОВНИЙ ЗАСТОСУНОК
-     ═══════════════════════════════════════════════════ -->
+<!-- ═══════════ ПОВНОЕКРАННИЙ РЕДАКТОР НОТАТКИ ═══════════ -->
+<div class="note-editor" id="noteEditor" hidden>
+  <div class="note-editor__header">
+    <button class="note-editor__btn" id="noteEditorClose" type="button">
+      <span aria-hidden="true">✕</span> Скасувати
+    </button>
+    <h3 class="note-editor__title">✏️ Нотатка</h3>
+    <button class="note-editor__btn note-editor__btn--save" id="noteEditorSave" type="button">
+      <span aria-hidden="true">✓</span> Готово
+    </button>
+  </div>
+  <textarea class="note-editor__textarea" id="noteEditorText"
+            placeholder="Пиши тут…&#10;&#10;Наприклад:&#10;— Який клімат?&#10;— Що цікавого?&#10;— Що запам'ятав?"></textarea>
+  <div class="note-editor__hint" id="noteEditorHint"></div>
+</div>
+
+<!-- ═══════════ ОСНОВНИЙ ЗАСТОСУНОК ═══════════ -->
 <div class="app" id="app" hidden>
   <header class="app-header">
     <h1 class="app-title">
@@ -647,7 +745,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
         <span aria-hidden="true">🔄</span>
       </button>
       <button class="btn btn--ghost" id="resetAllBtn" type="button"
-              aria-label="Очистити всі дошки (для вчителя)" title="Очистити ВСІ дошки всіх учнів">
+              aria-label="Очистити всі дошки" title="Очистити ВСІ дошки всіх учнів">
         <span aria-hidden="true">♻️</span>
       </button>
       <button class="btn btn--primary" id="exportBtn" type="button" aria-label="Зберегти PNG">
@@ -702,7 +800,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 
       <div class="first-hint" id="firstHint" hidden>
         <span aria-hidden="true">👆</span>
-        <span>Торкнись поясу або країни. Натисни ✏️, щоб малювати</span>
+        <span>Потягни карту пальцем. Торкнись поясу або країни — побачиш клімат.</span>
       </div>
 
       <div class="zoom-controls" role="group" aria-label="Масштаб">
@@ -733,9 +831,9 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
         </button>
       </div>
 
-      <aside class="legend" id="legend" aria-label="Легенда кліматичних поясів">
+      <aside class="legend" id="legend" data-collapsed="true" aria-label="Легенда кліматичних поясів">
         <button class="legend__toggle" id="legendToggle" type="button"
-                aria-label="Згорнути легенду" aria-expanded="true">−</button>
+                aria-label="Розгорнути легенду" aria-expanded="false">+</button>
         <h4>Кліматичні пояси</h4>
         <ul id="legendList"></ul>
       </aside>
@@ -747,9 +845,12 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
         <button class="zone-info__close" type="button" id="zoneInfoClose"
                 aria-label="Закрити">✕</button>
         <h2 id="zoneInfoTitle">🌍 Вітаю!</h2>
-        <p id="zoneInfoDesc">Натисни на будь-який кліматичний пояс або країну, щоб дізнатися про його клімат.</p>
+        <p id="zoneInfoDesc">Торкнись будь-якого поясу або країни — побачиш інформацію про клімат.</p>
         <div class="zone-info__meta" id="zoneInfoMeta"></div>
         <span class="zone-info__hint" id="zoneInfoHint"></span>
+        <button class="zone-info__addnote" id="addNoteFromCard" type="button" hidden>
+          <span aria-hidden="true">📝</span> Додати нотатку
+        </button>
       </div>
 
       <div class="status" id="status" role="status" aria-live="polite">🟢 Синхронізовано</div>
@@ -808,7 +909,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
 
 <script>
 /* ============================================================
-   ⚙️ НАЛАШТУВАННЯ — ВІДРЕДАГУЙТЕ СПИСОК УЧНІВ
+   ⚙️ НАЛАШТУВАННЯ
    ============================================================ */
 const STUDENT_NAMES = [
   'Учень 1',  'Учень 2',  'Учень 3',  'Учень 4',  'Учень 5',
@@ -817,15 +918,12 @@ const STUDENT_NAMES = [
   'Учень 16', 'Учень 17', 'Учень 18', 'Учень 19', 'Учень 20',
   'Учень 21', 'Учень 22', 'Учень 23', 'Учень 24', 'Учень 25'
 ];
-
 const TIMER_MINUTES = 20;
+const INFO_CARD_AUTOHIDE_MS = 10000;   // ← картка зникає через 10 с
 
 /* ============================================================
    FIREBASE
    ============================================================ */
-const DEBUG = /[?&]debug=1/.test(location.search);
-const log = (...a) => { if (DEBUG) console.log(...a); };
-
 const firebaseConfig = {
   apiKey: "AIzaSyAIqa_MF4sevTfg7Za8Fly3EK97dVYm_Q8",
   authDomain: "realtime-6af79.firebaseapp.com",
@@ -835,19 +933,14 @@ const firebaseConfig = {
   messagingSenderId: "154142013253",
   appId: "1:154142013253:web:2b3bfde1a8ecea5565f02c"
 };
-let db = null, fbError = null;
+let db = null;
 function initFirebase(){
   try {
     if (typeof firebase === 'undefined') throw new Error('Firebase SDK не завантажено');
     if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(firebaseConfig);
     db = firebase.database();
-    log('[Firebase] OK');
     return true;
-  } catch (err){
-    fbError = err;
-    console.warn('[Firebase]', err);
-    return false;
-  }
+  } catch (err){ console.warn('[Firebase]', err); return false; }
 }
 
 /* ============================================================
@@ -981,7 +1074,9 @@ const state = {
   showZones: false, showLabels: false, showBorders: false,
   listenersActive: false, syncInProgress: false,
   lastInfo: null,
-  zoom: 1
+  zoom: 1,
+  panX: 0,
+  panY: 0
 };
 function emptyData(){ return { canvas:null, stickers:[], icons:[], zoneFills:{} }; }
 
@@ -996,6 +1091,10 @@ const studentGrid   = $('#studentGrid');
 const appRoot       = $('#app');
 const studentAvatar = $('#studentAvatar');
 const studentNameEl = $('#studentName');
+
+const noteEditor     = $('#noteEditor');
+const noteEditorText = $('#noteEditorText');
+const noteEditorHint = $('#noteEditorHint');
 
 const canvas        = $('#drawCanvas');
 const ctx           = canvas.getContext('2d', { alpha:true });
@@ -1012,6 +1111,7 @@ const zoneInfoTitle = $('#zoneInfoTitle');
 const zoneInfoDesc  = $('#zoneInfoDesc');
 const zoneInfoMeta  = $('#zoneInfoMeta');
 const zoneInfoHint  = $('#zoneInfoHint');
+const addNoteBtn    = $('#addNoteFromCard');
 const infoReopenBtn = $('#infoReopen');
 const firstHint     = $('#firstHint');
 const toastEl       = $('#toast');
@@ -1023,6 +1123,9 @@ const stickerEls = new Map();
 const iconEls    = new Map();
 
 let dpr = 1, canvasRenderToken = 0, resizeRaf = null;
+let infoHideTimer = null;
+let editingStickerId = null;
+let editingPrefillForNew = null;   // якщо створюємо нову нотатку — зберігаємо prefill
 
 /* ============================================================
    УТИЛІТИ
@@ -1064,9 +1167,32 @@ function setNetIndicator(online, text){
 function syncInfoReopenBtn(){ infoReopenBtn.hidden = !zoneInfoEl.hidden; }
 
 /* ============================================================
-   УНІВЕРСАЛЬНИЙ DRAG
+   ІНФО-КАРТКА З АВТО-ПРИХОВУВАННЯМ
    ============================================================ */
-function attachDragHandlers(el, id, findFn){
+function scheduleInfoHide(){
+  clearTimeout(infoHideTimer);
+  if (window.innerWidth >= 900) return; // на десктопі не ховаємо
+  infoHideTimer = setTimeout(() => {
+    // Не ховаємо, якщо відкрито редактор нотатки
+    if (!noteEditor.hidden) return;
+    // Ховаємо картку
+    zoneInfoEl.classList.add('zone-info--hide');
+    setTimeout(() => {
+      zoneInfoEl.hidden = true;
+      zoneInfoEl.classList.remove('zone-info--hide');
+      syncInfoReopenBtn();
+    }, 260);
+  }, INFO_CARD_AUTOHIDE_MS);
+}
+function cancelInfoHide(){
+  clearTimeout(infoHideTimer);
+  zoneInfoEl.classList.remove('zone-info--hide');
+}
+
+/* ============================================================
+   УНІВЕРСАЛЬНИЙ DRAG + TAP
+   ============================================================ */
+function attachDragHandlers(el, id, findFn, onTap){
   let drag = null;
   function getLayoutPoint(clientX, clientY){
     const rect = stickersLayer.getBoundingClientRect();
@@ -1082,12 +1208,22 @@ function attachDragHandlers(el, id, findFn){
     const data = findFn(id);
     if (!data) return false;
     const p = getLayoutPoint(clientX, clientY);
-    drag = { pointerId, offsetX: p.x - data.x, offsetY: p.y - data.y };
+    drag = {
+      pointerId,
+      startX: clientX, startY: clientY,
+      offsetX: p.x - data.x,
+      offsetY: p.y - data.y,
+      moved: false
+    };
     el.classList.add('dragging');
     return true;
   }
   function moveDrag(clientX, clientY){
     if (!drag) return;
+    const dx = clientX - drag.startX;
+    const dy = clientY - drag.startY;
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) drag.moved = true;
+    if (!drag.moved) return;
     const data = findFn(id);
     if (!data) return;
     const p = getLayoutPoint(clientX, clientY);
@@ -1099,10 +1235,15 @@ function attachDragHandlers(el, id, findFn){
   }
   function endDrag(){
     if (!drag) return;
+    const wasMoved = drag.moved;
     drag = null;
     el.classList.remove('dragging');
-    state.dirtyBoard = true;
-    scheduleSave('board');
+    if (wasMoved){
+      state.dirtyBoard = true;
+      scheduleSave('board');
+    } else if (onTap){
+      onTap();
+    }
   }
   el.addEventListener('touchstart', e => {
     if (e.target.closest('textarea, button.sticker__del')) return;
@@ -1154,10 +1295,8 @@ function buildStudentPicker(){
     btn.type = 'button';
     btn.className = 'student-tile';
     btn.setAttribute('aria-label', `Обрати ${name}`);
-    btn.innerHTML = `
-      <span class="student-tile__num">${id}</span>
-      <span class="student-tile__name">${name}</span>
-    `;
+    btn.innerHTML = `<span class="student-tile__num">${id}</span>
+                     <span class="student-tile__name">${name}</span>`;
     btn.addEventListener('click', () => selectStudent(id, name));
     studentGrid.appendChild(btn);
   });
@@ -1184,8 +1323,68 @@ function selectStudent(id, name){
   hideStudentPicker();
   openStudentBoard(id);
   flashStatus(`👋 Вітаю, ${name}!`, 'busy', 2000);
-  // Показати підказку першого запуску для цього учня
   showFirstHintIfNeeded(id);
+}
+
+/* ============================================================
+   ПОВНОЕКРАННИЙ РЕДАКТОР НОТАТОК
+   ============================================================ */
+function openNoteEditor(stickerId){
+  const s = findSticker(stickerId);
+  if (!s) return;
+  cancelInfoHide();
+  editingStickerId = stickerId;
+  editingPrefillForNew = null;
+  noteEditorText.value = s.text || '';
+  noteEditorHint.textContent = 'Напиши свої думки про клімат. Все збережеться автоматично.';
+  noteEditor.hidden = false;
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    noteEditorText.focus();
+    // Курсор у кінець
+    try {
+      noteEditorText.setSelectionRange(noteEditorText.value.length, noteEditorText.value.length);
+    } catch(_){}
+  }, 100);
+}
+function openNoteEditorForNew(prefillText){
+  cancelInfoHide();
+  editingStickerId = null;
+  editingPrefillForNew = prefillText || '';
+  noteEditorText.value = prefillText || '';
+  noteEditorHint.textContent = 'Це нова нотатка на карті. Допиши або зміни текст.';
+  noteEditor.hidden = false;
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => {
+    noteEditorText.focus();
+    try {
+      noteEditorText.setSelectionRange(noteEditorText.value.length, noteEditorText.value.length);
+    } catch(_){}
+  }, 100);
+}
+function closeNoteEditor(save){
+  if (!noteEditor.hidden === false){ /* noop */ }
+  if (save){
+    const text = noteEditorText.value;
+    if (editingStickerId){
+      const s = findSticker(editingStickerId);
+      if (s){
+        s.text = text;
+        const el = stickerEls.get(editingStickerId);
+        const ta = el?.querySelector('textarea');
+        if (ta) ta.value = text;
+      }
+    } else if (editingPrefillForNew !== null){
+      // Створюємо новий стікер
+      addStickerWithText(text);
+    }
+    state.dirtyBoard = true;
+    scheduleSave('board');
+  }
+  editingStickerId = null;
+  editingPrefillForNew = null;
+  noteEditor.hidden = true;
+  document.body.style.overflow = '';
 }
 
 /* ============================================================
@@ -1245,10 +1444,18 @@ function positionViewport(){
   mapViewport.style.height = vh + 'px';
   mapViewport.style.left   = ((cont.width  - vw) / 2) + 'px';
   mapViewport.style.top    = ((cont.height - vh) / 2) + 'px';
+  applyViewportTransform();
+}
+function applyViewportTransform(){
+  const s = state.zoom;
+  const tx = state.panX;
+  const ty = state.panY;
+  mapViewport.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
 }
 function getMapSize(){
   const r = mapViewport.getBoundingClientRect();
-  return { w: Math.max(320, Math.round(r.width)), h: Math.max(160, Math.round(r.height)) };
+  const s = state.zoom || 1;
+  return { w: Math.max(320, Math.round(r.width / s)), h: Math.max(160, Math.round(r.height / s)) };
 }
 
 function renderMap(){
@@ -1451,7 +1658,9 @@ function attachMapEvents(){
 
 function showClimateInfo(band){
   state.lastInfo = { type:'zone', band };
+  cancelInfoHide();
   zoneInfoEl.hidden = false;
+  zoneInfoEl.classList.remove('zone-info--hide');
   syncInfoReopenBtn();
   zoneInfoTitle.textContent = band.name + ' пояс';
   zoneInfoDesc.textContent  = band.desc;
@@ -1462,11 +1671,15 @@ function showClimateInfo(band){
     <span class="zone-info__chip">≈${span.toFixed(1)}°</span>
     ${userColor ? `<span class="zone-info__chip zone-info__chip--fill" style="background:${userColor}">● Ваш</span>` : ''}
   `;
+  addNoteBtn.hidden = true; // для поясу кнопки "додати нотатку" немає
   updateZoneHint();
+  scheduleInfoHide();
 }
 function showCountryInfo(rawName){
   state.lastInfo = { type:'country', rawName };
+  cancelInfoHide();
   zoneInfoEl.hidden = false;
+  zoneInfoEl.classList.remove('zone-info--hide');
   syncInfoReopenBtn();
   const key = normalizeName(rawName);
   const data = COUNTRY_CLIMATE_BY_KEY.get(key);
@@ -1478,27 +1691,33 @@ function showCountryInfo(rawName){
       <span class="zone-info__chip zone-info__chip--cool">💧 ${data.rain}</span>
       <span class="zone-info__chip zone-info__chip--warm">${data.zone}</span>
     `;
+    addNoteBtn.hidden = false;   // показуємо кнопку «Додати нотатку»
   } else {
     zoneInfoTitle.textContent = `🌍 ${rawName || 'Країна'}`;
     zoneInfoDesc.textContent  = 'Дані для цієї країни не внесені до довідника.';
     zoneInfoMeta.innerHTML = '';
+    addNoteBtn.hidden = true;
   }
   updateZoneHint();
+  scheduleInfoHide();
 }
 function reopenInfoCard(){
   const info = state.lastInfo;
   if (info && info.type === 'zone'){ showClimateInfo(info.band); return; }
   if (info && info.type === 'country'){ showCountryInfo(info.rawName); return; }
+  cancelInfoHide();
   zoneInfoEl.hidden = false;
+  zoneInfoEl.classList.remove('zone-info--hide');
   zoneInfoTitle.textContent = '🌍 Вітаю!';
-  zoneInfoDesc.textContent  = 'Натисни на будь-який кліматичний пояс або країну.';
+  zoneInfoDesc.textContent  = 'Торкнись будь-якого поясу або країни — побачиш інформацію про клімат.';
   zoneInfoMeta.innerHTML = '';
+  addNoteBtn.hidden = true;
   updateZoneHint();
   syncInfoReopenBtn();
 }
 function updateZoneHint(){
   const hints = {
-    idle:   '✋ Торкнись поясу або країни. Натисни ✏️ щоб малювати.',
+    idle:   '✋ Потягни карту пальцем. Торкнись поясу або країни.',
     brush:  '✏️ Малюй пальцем. Натисни ✏️ знову, щоб вимкнути.',
     eraser: '🧽 Проведи по лінії, щоб стерти.',
     fill:   '🎨 Торкнись поясу, щоб зафарбувати його.'
@@ -1649,6 +1868,72 @@ function attachCanvasEvents(){
 }
 
 /* ============================================================
+   ПЕРЕМІЩЕННЯ КАРТИ (PAN)
+   ============================================================ */
+let panState = null;
+function startPan(clientX, clientY, pointerId){
+  panState = {
+    pointerId,
+    startX: clientX,
+    startY: clientY,
+    startPanX: state.panX,
+    startPanY: state.panY,
+    moved: false
+  };
+}
+function movePan(clientX, clientY){
+  if (!panState) return;
+  const dx = clientX - panState.startX;
+  const dy = clientY - panState.startY;
+  if (Math.abs(dx) > 5 || Math.abs(dy) > 5) panState.moved = true;
+  if (!panState.moved) return;
+  state.panX = panState.startPanX + dx;
+  state.panY = panState.startPanY + dy;
+  applyViewportTransform();
+}
+function endPan(){ panState = null; }
+
+function attachPanHandlers(){
+  const isInteractive = el =>
+    el.closest('.sticker, .placed-icon, .zone-info, .legend, .layers, .mobile-fabs, .zoom-controls, .icon-gallery, .note-editor');
+
+  mapContainer.addEventListener('touchstart', e => {
+    if (state.tool !== 'idle') return;
+    if (e.touches.length !== 1) return;
+    if (isInteractive(e.target)) return;
+    const t = e.touches[0];
+    startPan(t.clientX, t.clientY, t.identifier);
+  }, { passive: true });
+
+  mapContainer.addEventListener('touchmove', e => {
+    if (!panState) return;
+    const t = Array.from(e.touches).find(x => x.identifier === panState.pointerId);
+    if (!t) return;
+    if (panState.moved || Math.abs(t.clientX - panState.startX) > 5 || Math.abs(t.clientY - panState.startY) > 5){
+      e.preventDefault();
+    }
+    movePan(t.clientX, t.clientY);
+  }, { passive: false });
+
+  mapContainer.addEventListener('touchend', endPan);
+  mapContainer.addEventListener('touchcancel', endPan);
+
+  mapContainer.addEventListener('mousedown', e => {
+    if (state.tool !== 'idle') return;
+    if (e.button !== 0) return;
+    if (isInteractive(e.target)) return;
+    startPan(e.clientX, e.clientY, 'mouse');
+  });
+  document.addEventListener('mousemove', e => {
+    if (!panState || panState.pointerId !== 'mouse') return;
+    movePan(e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseup', () => {
+    if (panState && panState.pointerId === 'mouse') endPan();
+  });
+}
+
+/* ============================================================
    ІНСТРУМЕНТИ
    ============================================================ */
 function setTool(tool){
@@ -1700,7 +1985,7 @@ function createStickerEl(s){
   const ta = document.createElement('textarea');
   ta.value = s.text || '';
   ta.placeholder = 'Пишіть…';
-  ta.setAttribute('aria-label', 'Текст');
+  ta.setAttribute('aria-label', 'Текст нотатки');
   ta.rows = 2;
 
   const autosize = () => {
@@ -1729,7 +2014,13 @@ function createStickerEl(s){
   el.append(bar, ta);
   requestAnimationFrame(autosize);
 
-  attachDragHandlers(el, s.id, findSticker);
+  // На мобільному — тап відкриває повноекранний редактор
+  // На десктопі — нічого (працює textarea inline)
+  const onTap = () => {
+    if (window.innerWidth < 900) openNoteEditor(s.id);
+  };
+
+  attachDragHandlers(el, s.id, findSticker, onTap);
   return el;
 }
 
@@ -1753,26 +2044,36 @@ function renderStickers(list){
   stickerEls.forEach((el, id) => { if (!seen.has(id)){ el.remove(); stickerEls.delete(id); } });
 }
 
-function addSticker(){
-  const rect = stickersLayer.getBoundingClientRect();
-  const scale = state.zoom || 1;
-  const w = rect.width / scale;
-  const h = rect.height / scale;
+function getVisibleCenter(){
+  const contRect = mapContainer.getBoundingClientRect();
+  const layerRect = stickersLayer.getBoundingClientRect();
+  const s = state.zoom || 1;
+  return {
+    x: (contRect.left + contRect.width / 2 - layerRect.left) / s,
+    y: (contRect.top + contRect.height / 2 - layerRect.top) / s
+  };
+}
+
+function addStickerWithText(text){
+  const c = getVisibleCenter();
   const n = state.data.stickers.length;
   const s = {
     id: uid(),
-    x: Math.max(10, Math.round(w / 2 - 90 + (n % 4) * 16)),
-    y: Math.max(10, Math.round(h / 2 - 35 + (n % 4) * 16)),
-    text: '',
+    x: Math.max(10, Math.round(c.x - 90 + (n % 4) * 16)),
+    y: Math.max(10, Math.round(c.y - 35 + (n % 4) * 16)),
+    text: text || '',
     color: STICKER_COLORS[n % STICKER_COLORS.length]
   };
   state.data.stickers.push(s);
   renderStickers(state.data.stickers);
   state.dirtyBoard = true;
   scheduleSave('board');
-  setTimeout(() => {
-    stickerEls.get(s.id)?.querySelector('textarea')?.focus();
-  }, 80);
+  return s;
+}
+
+function addSticker(){
+  // Пуста нотатка — відкриваємо редактор одразу
+  openNoteEditorForNew('');
 }
 
 /* ============================================================
@@ -1788,7 +2089,7 @@ function createIconEl(icon){
   el.tabIndex = 0;
   el.setAttribute('role', 'img');
 
-  attachDragHandlers(el, icon.id, findIcon);
+  attachDragHandlers(el, icon.id, findIcon, null);
 
   el.addEventListener('dblclick', () => {
     state.data.icons = state.data.icons.filter(i => i.id !== icon.id);
@@ -1797,7 +2098,6 @@ function createIconEl(icon){
     state.dirtyBoard = true;
     scheduleSave('board');
   });
-
   return el;
 }
 function renderIcons(list){
@@ -1817,15 +2117,12 @@ function renderIcons(list){
   iconEls.forEach((el, id) => { if (!seen.has(id)){ el.remove(); iconEls.delete(id); } });
 }
 function addIcon(emoji){
-  const rect = stickersLayer.getBoundingClientRect();
-  const scale = state.zoom || 1;
-  const w = rect.width / scale;
-  const h = rect.height / scale;
+  const c = getVisibleCenter();
   const n = state.data.icons.length;
   const icon = {
     id: uid(), icon: emoji,
-    x: Math.max(10, Math.round(w / 2 - 20 + (n % 6) * 18)),
-    y: Math.max(10, Math.round(h / 2 - 20 + (n % 6) * 18))
+    x: Math.max(10, Math.round(c.x - 20 + (n % 6) * 18)),
+    y: Math.max(10, Math.round(c.y - 20 + (n % 6) * 18))
   };
   state.data.icons.push(icon);
   renderIcons(state.data.icons);
@@ -1839,13 +2136,12 @@ function renderBoard(){
 }
 
 /* ============================================================
-   FIREBASE — ПЕРСОНАЛЬНА ДОШКА УЧНЯ
+   FIREBASE — ПЕРСОНАЛЬНА ДОШКА
    ============================================================ */
 const refsFor = (studentId) => {
   const base = `students/student${studentId}`;
   return { drawing: db.ref(base + '/drawing'), board: db.ref(base + '/board') };
 };
-
 function detachListeners(){
   if (state.refDrawing && state.handlerDrawing) state.refDrawing.off('value', state.handlerDrawing);
   if (state.refBoard && state.handlerBoard) state.refBoard.off('value', state.handlerBoard);
@@ -1853,14 +2149,11 @@ function detachListeners(){
   state.handlerDrawing = state.handlerBoard = null;
   state.listenersActive = false;
 }
-
 function attachListeners(){
-  if (!db){ setNetIndicator(false, 'Firebase немає'); return; }
-  if (!state.studentId){ return; }
+  if (!db || !state.studentId) return;
   const r = refsFor(state.studentId);
   state.refDrawing = r.drawing;
   state.refBoard   = r.board;
-
   state.handlerDrawing = r.drawing.on('value', snap => {
     const url = snap.val() || null;
     if (url === state.lastLocalCanvas) return;
@@ -1868,7 +2161,6 @@ function attachListeners(){
     state.data.canvas = url;
     renderCanvas(url);
   }, err => { console.warn('[Sync]', err); setNetIndicator(false, 'Помилка'); });
-
   state.handlerBoard = r.board.on('value', snap => {
     const data = snap.val();
     if (!data) return;
@@ -1878,20 +2170,16 @@ function attachListeners(){
     state.data.zoneFills = data.zoneFills || {};
     renderBoard();
   }, err => console.warn('[Sync]', err));
-
   state.listenersActive = true;
 }
-
 function scheduleSave(kind){
   clearTimeout(state.saveTimer[kind]);
   const delay = kind === 'drawing' ? 250 : 200;
   state.saveTimer[kind] = setTimeout(() => flushSave(kind), delay);
 }
-
 function flushSave(kind, opts = {}){
   if (!db || !state.studentId) return;
   const kinds = kind ? [kind] : ['drawing', 'board'];
-
   if (kinds.includes('drawing') && (state.dirtyDrawing || opts.force)){
     if (!state.refDrawing){ setTimeout(() => flushSave('drawing', opts), 300); return; }
     const toSave = state.data.canvas || null;
@@ -1900,11 +2188,9 @@ function flushSave(kind, opts = {}){
       .then(() => { state.dirtyDrawing = false; })
       .catch(err => {
         console.warn('[Save]', err);
-        flashStatus('⚠️ Не вдалося зберегти', 'error', 3500);
         setTimeout(() => { state.dirtyDrawing = true; flushSave('drawing'); }, 1000);
       });
   }
-
   if (kinds.includes('board') && (state.dirtyBoard || opts.force)){
     if (!state.refBoard){ setTimeout(() => flushSave('board', opts), 300); return; }
     state.refBoard.set({
@@ -1916,22 +2202,17 @@ function flushSave(kind, opts = {}){
     }).then(() => { state.dirtyBoard = false; })
       .catch(err => {
         console.warn('[Save]', err);
-        flashStatus('⚠️ Не вдалося зберегти', 'error', 3500);
         setTimeout(() => { state.dirtyBoard = true; flushSave('board'); }, 1000);
       });
   }
 }
-
 function forceSyncNow(){
-  if (!db){ showToast('❌ Firebase недоступний'); return; }
-  if (!state.studentId){ showToast('❌ Спочатку обери учня'); return; }
+  if (!db || !state.studentId){ showToast('❌ Синхронізація недоступна'); return; }
   if (state.syncInProgress) return;
   state.syncInProgress = true;
   flashStatus('🔄 Синхронізація…', 'busy', 3000);
-
   state.dirtyDrawing = true; state.dirtyBoard = true;
   flushSave(null, { force: true });
-
   setTimeout(() => {
     const r = refsFor(state.studentId);
     r.drawing.once('value').then(snap => {
@@ -1940,7 +2221,6 @@ function forceSyncNow(){
         state.data.canvas = url; state.lastLocalCanvas = url; renderCanvas(url);
       }
     }).catch(()=>{});
-
     r.board.once('value').then(snap => {
       const data = snap.val();
       if (data){
@@ -1950,7 +2230,6 @@ function forceSyncNow(){
         renderBoard();
       }
     }).catch(()=>{});
-
     state.syncInProgress = false;
     showToast('✅ Синхронізовано');
     flashStatus('✅ Готово', 'ok', 1800);
@@ -1968,6 +2247,7 @@ function openStudentBoard(studentId){
   state.dirtyDrawing = state.dirtyBoard = false;
   state.lastLocalCanvas = null;
   state.pendingCanvas = undefined;
+  state.panX = 0; state.panY = 0; state.zoom = 1;
 
   stickerEls.forEach(el => el.remove()); stickerEls.clear();
   iconEls.forEach(el => el.remove());    iconEls.clear();
@@ -1975,7 +2255,6 @@ function openStudentBoard(studentId){
   renderBoard();
   attachListeners();
 
-  // Скидаємо інтерфейс у "чистий" стан
   setTool('idle');
   state.showZones = false;
   state.showLabels = false;
@@ -1984,13 +2263,15 @@ function openStudentBoard(studentId){
     b.setAttribute('aria-pressed', 'false');
   });
   applyLayerVisibility();
-  applyZoom(1);
+  applyViewportTransform();
 
-  // Інфо-картка
+  cancelInfoHide();
   zoneInfoEl.hidden = false;
+  zoneInfoEl.classList.remove('zone-info--hide');
   zoneInfoTitle.textContent = `🌍 Привіт, ${state.studentName}!`;
-  zoneInfoDesc.textContent  = 'Це твоя особиста карта кліматичних поясів. Торкайся поясів, став іконки, пиши у стікерах.';
+  zoneInfoDesc.textContent  = 'Потягни карту пальцем. Торкнись поясу або країни — побачиш клімат.';
   zoneInfoMeta.innerHTML = '';
+  addNoteBtn.hidden = true;
   updateZoneHint();
   syncInfoReopenBtn();
 }
@@ -2029,12 +2310,23 @@ function toggleTimer(){
    ЗУМ
    ============================================================ */
 function applyZoom(newZoom){
+  const old = state.zoom;
   state.zoom = Math.max(0.5, Math.min(4, newZoom));
-  mapViewport.style.transform = state.zoom === 1 ? '' : `scale(${state.zoom})`;
+  // Коригуємо pan, щоб зберегти центр екрана
+  if (old !== 0){
+    state.panX *= state.zoom / old;
+    state.panY *= state.zoom / old;
+  }
+  applyViewportTransform();
 }
 function zoomIn(){ applyZoom(state.zoom * 1.35); }
 function zoomOut(){ applyZoom(state.zoom / 1.35); }
-function zoomFit(){ applyZoom(1); }
+function zoomFit(){
+  state.zoom = 1;
+  state.panX = 0;
+  state.panY = 0;
+  applyViewportTransform();
+}
 
 /* ============================================================
    ЕКСПОРТ PNG
@@ -2045,13 +2337,15 @@ async function exportPNG(){
   flashStatus('📸 Знімок…', 'busy', 8000);
 
   const name = state.studentName || `Учень ${state.studentId}`;
-
   const now = new Date();
   const dateStr = now.toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' });
   const timeStr = now.toLocaleTimeString('uk-UA', { hour:'2-digit', minute:'2-digit' });
 
   const savedZoom = state.zoom;
-  applyZoom(1);
+  const savedPanX = state.panX;
+  const savedPanY = state.panY;
+  state.zoom = 1; state.panX = 0; state.panY = 0;
+  applyViewportTransform();
   await new Promise(r => requestAnimationFrame(r));
 
   const stamp = document.createElement('div');
@@ -2071,10 +2365,10 @@ async function exportPNG(){
       scale: Math.min(2.5, Math.max(1.5, window.devicePixelRatio || 1)),
       useCORS: true, logging: false, removeContainer: true
     });
-
     stamp.remove();
     mapContainer.classList.remove('is-exporting');
-    applyZoom(savedZoom);
+    state.zoom = savedZoom; state.panX = savedPanX; state.panY = savedPanY;
+    applyViewportTransform();
 
     const safeName = name
       .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F000}-\u{1F0FF}]/gu, '')
@@ -2089,12 +2383,12 @@ async function exportPNG(){
     link.download = fname;
     link.href = shot.toDataURL('image/png');
     document.body.appendChild(link); link.click(); link.remove();
-
     flashStatus('✅ PNG збережено', 'ok', 3000);
   } catch (err){
     stamp.remove();
     mapContainer.classList.remove('is-exporting');
-    applyZoom(savedZoom);
+    state.zoom = savedZoom; state.panX = savedPanX; state.panY = savedPanY;
+    applyViewportTransform();
     console.warn('[Export]', err);
     flashStatus('❌ Помилка', 'error', 4000);
   }
@@ -2107,7 +2401,6 @@ function clearCurrent(){
   if (!state.studentId){ return; }
   const name = state.studentName || `Учень ${state.studentId}`;
   if (!window.confirm(`Очистити дошку «${name}»?\n\nВсі малюнки, стікери та іконки буде видалено.`)) return;
-
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   state.data = emptyData();
@@ -2119,23 +2412,18 @@ function clearCurrent(){
   flushSave(null, { force: true });
   flashStatus('🗑 Дошку очищено', 'warn', 2400);
 }
-
 async function resetAllBoards(){
   if (!db){ showToast('❌ Firebase недоступний'); return; }
   const ok = window.confirm(
-    '⚠️ УВАГА! ЦЕ ДЛЯ ВЧИТЕЛЯ!\n\n' +
-    'Видалити ВСІ дошки ВСІХ 25 учнів?\n' +
-    'Цю дію неможливо скасувати.\n\n' +
-    'Продовжити?'
+    '⚠️ УВАГА! ЦЕ ДЛЯ ВЧИТЕЛЯ!\n\nВидалити ВСІ дошки ВСІХ 25 учнів?\n' +
+    'Цю дію неможливо скасувати.\n\nПродовжити?'
   );
   if (!ok) return;
-
   flashStatus('♻️ Очищаємо всі дошки…', 'busy', 8000);
   try {
     await db.ref('students').remove();
     showToast('✅ Усі дошки очищено!');
     flashStatus('✅ Готово для нового класу', 'ok', 3000);
-    // Скинути поточну дошку
     state.data = emptyData();
     state.lastLocalCanvas = null;
     stickerEls.forEach(el => el.remove()); stickerEls.clear();
@@ -2161,10 +2449,8 @@ function bindConnection(){
     setNetIndicator(false, 'Офлайн');
     setStatus('🔴 Офлайн', 'warn');
   });
-
   if (navigator.onLine) setNetIndicator(true, 'Онлайн');
   else setNetIndicator(false, 'Офлайн');
-
   if (db){
     db.ref('.info/connected').on('value', snap => {
       const conn = !!snap.val();
@@ -2189,7 +2475,6 @@ function bindConnection(){
 const fabIcons  = $('#fabIcons');
 const fabLayers = $('#fabLayers');
 const fabLegend = $('#fabLegend');
-
 function toggleIconsPanel(force){
   const open = force !== undefined ? force : !iconGallery.classList.contains('open');
   iconGallery.classList.toggle('open', open);
@@ -2256,10 +2541,34 @@ function bindUI(){
   });
 
   $('#zoneInfoClose').addEventListener('click', () => {
+    cancelInfoHide();
     zoneInfoEl.hidden = true;
     syncInfoReopenBtn();
   });
   infoReopenBtn.addEventListener('click', reopenInfoCard);
+
+  // Кнопка «Додати нотатку» з картки країни
+  addNoteBtn.addEventListener('click', () => {
+    const info = state.lastInfo;
+    if (!info || info.type !== 'country') return;
+    const data = COUNTRY_CLIMATE_BY_KEY.get(normalizeName(info.rawName));
+    if (!data) return;
+    const prefill =
+`🌍 ${data.uk}
+Клімат: ${data.zone}
+🌡 ${data.t}   💧 ${data.rain}
+
+Що цікавого:`;
+    // Ховаємо картку
+    zoneInfoEl.hidden = true;
+    syncInfoReopenBtn();
+    // Відкриваємо редактор нової нотатки
+    openNoteEditorForNew(prefill);
+  });
+
+  // Редактор нотатки
+  $('#noteEditorClose').addEventListener('click', () => closeNoteEditor(false));
+  $('#noteEditorSave').addEventListener('click', () => closeNoteEditor(true));
 
   $('#zoomIn').addEventListener('click', zoomIn);
   $('#zoomOut').addEventListener('click', zoomOut);
@@ -2268,6 +2577,10 @@ function bindUI(){
   fabIcons.addEventListener('click', () => toggleIconsPanel());
   fabLayers.addEventListener('click', () => toggleLayers());
   fabLegend.addEventListener('click', () => toggleLegend());
+
+  // Тап на картку — скасовуємо авто-приховування
+  zoneInfoEl.addEventListener('pointerdown', cancelInfoHide);
+  zoneInfoEl.addEventListener('click', cancelInfoHide);
 
   mapContainer.addEventListener('click', e => {
     if (window.innerWidth >= 900) return;
@@ -2308,6 +2621,7 @@ function bindUI(){
     const collapsed = legendEl.dataset.collapsed === 'true';
     legendEl.dataset.collapsed = collapsed ? 'false' : 'true';
     legendToggle.textContent = collapsed ? '−' : '+';
+    legendToggle.setAttribute('aria-label', collapsed ? 'Згорнути легенду' : 'Розгорнути легенду');
   });
 
   document.addEventListener('keydown', e => {
@@ -2317,7 +2631,10 @@ function bindUI(){
     if (e.key === 'b' || e.key === 'B') setTool('brush');
     else if (e.key === 'e' || e.key === 'E') setTool('eraser');
     else if (e.key === 'f' || e.key === 'F') setTool('fill');
-    else if (e.key === 'Escape') setTool('idle');
+    else if (e.key === 'Escape'){
+      if (!noteEditor.hidden) closeNoteEditor(false);
+      else setTool('idle');
+    }
     else if (e.key === 'n' || e.key === 'N') addSticker();
     else if (e.key === '+' || e.key === '=') zoomIn();
     else if (e.key === '-') zoomOut();
@@ -2368,13 +2685,13 @@ function bindResize(){
    ПІДКАЗКА
    ============================================================ */
 function showFirstHintIfNeeded(studentId){
-  const key = 'climateLab_hint_v4_s' + studentId;
+  const key = 'climateLab_hint_v5_s' + studentId;
   try {
     if (localStorage.getItem(key) === '1') return;
     localStorage.setItem(key, '1');
   } catch(_){}
   firstHint.hidden = false;
-  setTimeout(() => { firstHint.hidden = true; }, 5000);
+  setTimeout(() => { firstHint.hidden = true; }, 5500);
   const hide = () => { firstHint.hidden = true; };
   firstHint.addEventListener('click', hide);
   mapContainer.addEventListener('pointerdown', hide, { once: true });
@@ -2392,6 +2709,7 @@ function init(){
   bindUI();
   bindConnection();
   attachCanvasEvents();
+  attachPanHandlers();
   attachMapEvents();
   bindResize();
 
@@ -2404,19 +2722,14 @@ function init(){
 
   positionViewport();
 
-  // Перевіряємо, чи вже був обраний учень раніше
   let savedId = null;
   try { savedId = Number(localStorage.getItem('climateLab_studentId')); } catch(_){}
   if (savedId && savedId >= 1 && savedId <= STUDENT_NAMES.length){
-    // Питаємо, чи це та сама дитина
     setTimeout(() => {
       const name = STUDENT_NAMES[savedId - 1];
       const same = window.confirm(`Продовжити як ${name}?\n\n"OK" — так, "Скасувати" — обрати іншого.`);
-      if (same){
-        selectStudent(savedId, name);
-      } else {
-        showStudentPicker();
-      }
+      if (same){ selectStudent(savedId, name); }
+      else { showStudentPicker(); }
     }, 100);
   } else {
     showStudentPicker();
