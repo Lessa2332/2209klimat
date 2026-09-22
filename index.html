@@ -59,7 +59,9 @@ input,textarea{font:inherit;color:inherit}
 .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
   overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 
-.app{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;
+/* ═══ GRID — 5 рядків: header / author-line / student-bar / workspace / toolbar ═══ */
+.app{display:grid;
+  grid-template-rows:auto auto auto minmax(0,1fr) auto;
   height:100vh;height:100dvh;width:100%;}
 
 /* ЕКРАН ВИБОРУ УЧНЯ */
@@ -154,11 +156,12 @@ input,textarea{font:inherit;color:inherit}
 .teacher-panel[hidden]{display:none}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .teacher-panel__content{
-  max-width:400px;width:100%;padding:24px;
+  max-width:420px;width:100%;padding:24px;
   border-radius:16px;
   background:linear-gradient(135deg, #0a2540 0%, #061a2b 100%);
   border:2px solid var(--sun);
   box-shadow:0 30px 80px rgba(0,0,0,.7);
+  max-height:90vh;overflow-y:auto;
 }
 .teacher-panel__title{
   margin:0 0 4px;font-size:20px;font-weight:800;
@@ -168,11 +171,9 @@ input,textarea{font:inherit;color:inherit}
   margin:0 0 20px;font-size:13px;color:var(--text-dim);
   text-align:center;font-style:italic;
 }
-.teacher-panel__actions{
-  display:flex;flex-direction:column;gap:10px;
-}
+.teacher-panel__actions{display:flex;flex-direction:column;gap:10px;}
 .teacher-btn{
-  min-height:50px;padding:12px 18px;border-radius:12px;
+  min-height:56px;padding:12px 18px;border-radius:12px;
   font-size:14.5px;font-weight:700;
   display:flex;align-items:center;gap:10px;
   background:rgba(15,58,95,.7);
@@ -198,26 +199,22 @@ input,textarea{font:inherit;color:inherit}
 .teacher-btn__text{flex:1;display:flex;flex-direction:column;gap:2px}
 .teacher-btn__label{font-weight:800}
 .teacher-btn__desc{font-size:11.5px;font-weight:500;color:var(--text-mute)}
-
 .teacher-progress{
   margin-top:16px;padding:12px;border-radius:10px;
   background:rgba(76,201,240,.1);
   border:1px solid var(--rain);
   font-size:13px;font-weight:700;color:var(--rain-soft);
-  text-align:center;
-  display:none;
+  text-align:center;display:none;
 }
 .teacher-progress[data-show="true"]{display:block}
 .teacher-progress__bar{
-  height:6px;border-radius:999px;
-  background:rgba(255,255,255,.15);
+  height:6px;border-radius:999px;background:rgba(255,255,255,.15);
   margin-top:8px;overflow:hidden;
 }
 .teacher-progress__fill{
   height:100%;border-radius:999px;
   background:linear-gradient(90deg,var(--rain),var(--sun));
-  width:0%;
-  transition:width .3s var(--ease);
+  width:0%;transition:width .3s var(--ease);
 }
 
 /* ШАПКА */
@@ -270,6 +267,38 @@ input,textarea{font:inherit;color:inherit}
 .btn--ghost{background:transparent;border-color:transparent}
 .btn--ghost:hover{background:rgba(76,201,240,.12)}
 @media (max-width:400px){.btn-label{display:none}.btn{padding:0 10px}}
+
+/* ═════════════ РЯДОК З АВТОРОМ ═════════════ */
+.author-line{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:3px 12px;
+  padding-left:max(12px, env(safe-area-inset-left));
+  padding-right:max(12px, env(safe-area-inset-right));
+  background:linear-gradient(180deg, rgba(15,58,95,.4), rgba(8,33,54,.25));
+  border-bottom:1px solid var(--line);
+  z-index:19;
+}
+.author-credit{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:10.5px;font-weight:500;letter-spacing:.04em;
+  color:rgba(255,255,255,.45);
+  padding:3px 10px;border-radius:6px;
+  cursor:pointer;
+  user-select:none;-webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:color .2s var(--ease), background .2s var(--ease);
+  white-space:nowrap;
+}
+.author-credit:hover{
+  color:rgba(255,255,255,.85);
+  background:rgba(76,201,240,.1);
+}
+.author-credit:active{
+  color:var(--sun);
+  background:rgba(255,183,3,.18);
+}
 
 /* ПАНЕЛЬ УЧНЯ */
 .student-bar{
@@ -382,7 +411,6 @@ input,textarea{font:inherit;color:inherit}
 #drawCanvas[data-tool="fill"]{pointer-events:none;cursor:pointer}
 #stickersLayer{position:absolute;inset:0;z-index:3;pointer-events:none;}
 
-/* СТІКЕРИ */
 .sticker{
   position:absolute;width:180px;min-height:70px;max-height:180px;
   border-radius:var(--r-md);box-shadow:var(--shadow-2);
@@ -438,7 +466,6 @@ input,textarea{font:inherit;color:inherit}
 .placed-icon:active,.placed-icon.dragging{cursor:grabbing;transform:scale(1.15);
   background:rgba(76,201,240,.25);}
 
-/* DATA LABELS */
 .data-label{
   position:absolute;
   display:inline-flex;align-items:center;gap:5px;
@@ -461,7 +488,6 @@ input,textarea{font:inherit;color:inherit}
   box-shadow:0 8px 24px rgba(0,0,0,.7);
 }
 
-/* ІНФО-КАРТКА */
 .zone-info{position:absolute;top:10px;left:10px;z-index:6;
   max-width:min(340px, calc(100% - 20px));padding:10px 38px 10px 12px;
   border-radius:var(--r-md);border:1px solid var(--line-strong);
@@ -492,9 +518,7 @@ input,textarea{font:inherit;color:inherit}
   font-size:13px;color:var(--text-mute);}
 .zone-info__close:hover{background:rgba(76,201,240,.16);color:#fff}
 
-.zone-info__actions{
-  display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;
-}
+.zone-info__actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
 .zone-info__act{
   flex:1 1 calc(50% - 3px);
   display:inline-flex;align-items:center;justify-content:center;gap:6px;
@@ -655,7 +679,6 @@ input,textarea{font:inherit;color:inherit}
   color:#03121f;border-color:transparent;
   box-shadow:0 6px 24px rgba(76,201,240,.55);}
 
-/* ТУЛБАР */
 .toolbar{display:flex;align-items:center;gap:5px;padding:7px 10px;
   padding-bottom:calc(7px + env(safe-area-inset-bottom));
   padding-left:max(10px, env(safe-area-inset-left));
@@ -714,23 +737,6 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   background:#fff;border:2px solid var(--sky-800);}
 .size-label{font-size:12px;font-variant-numeric:tabular-nums;
   color:var(--text-mute);min-width:18px;text-align:center;font-weight:700;}
-
-/* СЕКРЕТНИЙ ПІДПИС АВТОРА */
-.author-credit{
-  display:inline-flex;align-items:center;
-  font-size:10px;font-weight:500;
-  color:rgba(255,255,255,.18);
-  padding:4px 6px;
-  border-radius:5px;
-  cursor:default;
-  user-select:none;-webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  transition:color .2s var(--ease);
-  white-space:nowrap;
-  margin-left:auto;
-}
-.author-credit:hover{color:rgba(255,255,255,.4)}
-.author-credit:active{color:rgba(255,183,3,.6)}
 
 @media (min-width:900px){
   .workspace{flex-direction:row}
@@ -796,7 +802,6 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .sticker{width:160px;max-height:160px}
   .sticker__bar{min-height:32px}
   .sticker__del{width:36px;height:36px;font-size:15px}
-  .author-credit{font-size:9px}
 }
 
 @media (max-width:400px){
@@ -807,7 +812,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .fab{width:40px;height:40px;font-size:18px}
   .zone-info{font-size:12px}
   .note-editor__textarea{font-size:16px}
-  .author-credit{display:none}   /* На дуже малих екранах не показуємо */
+  .author-credit{font-size:10px;padding:2px 8px}
 }
 @media (orientation:landscape) and (max-height:520px){
   .student-bar{padding-top:4px;padding-bottom:4px}
@@ -815,7 +820,8 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   .toolbar{padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom))}
   .tool-btn{min-height:36px;padding:0 10px;font-size:12px}
   .zone-info{max-height:50vh;bottom:100px}
-  .author-credit{display:none}
+  .author-line{padding:2px 8px}
+  .author-credit{font-size:9.5px}
 }
 </style>
 </head>
@@ -847,7 +853,7 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
   <div class="note-editor__hint" id="noteEditorHint"></div>
 </div>
 
-<!-- ПАНЕЛЬ ВЧИТЕЛЯ (секретна) -->
+<!-- ПАНЕЛЬ ВЧИТЕЛЯ -->
 <div class="teacher-panel" id="teacherPanel" hidden>
   <div class="teacher-panel__content">
     <h2 class="teacher-panel__title">🔐 Панель вчителя</h2>
@@ -913,6 +919,13 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
       </button>
     </div>
   </header>
+
+  <!-- ═══════════ ПІДПИС АВТОРА — завжди видно, тап → панель вчителя ═══════════ -->
+  <div class="author-line">
+    <span class="author-credit" id="authorCredit" role="presentation">
+      © Авторка Олеся Бохонок
+    </span>
+  </div>
 
   <div class="student-bar">
     <div class="student-bar__avatar" id="studentAvatar">1</div>
@@ -1065,10 +1078,6 @@ input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
         <span aria-hidden="true">🗑</span><span class="btn-label">Очистити</span>
       </button>
     </div>
-
-    <!-- СЕКРЕТНИЙ ПІДПИС АВТОРА — тап відкриває панель вчителя -->
-    <span class="author-credit" id="authorCredit" role="presentation"
-          title="">Авторка Олеся Бохонок</span>
   </footer>
 </div>
 
@@ -1349,7 +1358,6 @@ function setNetIndicator(online, text){
   netLabel.textContent = text;
 }
 function syncInfoReopenBtn(){ infoReopenBtn.hidden = !zoneInfoEl.hidden; }
-
 function setTeacherProgress(text, percent){
   if (text === null){ teacherProgress.dataset.show = 'false'; return; }
   teacherProgress.dataset.show = 'true';
@@ -1816,7 +1824,6 @@ function applyZoneFills(){
     el.attr('fill', userColor || (band ? band.color : '#fff'));
   });
 }
-
 function attachMapEvents(){
   svgMap.addEventListener('click', e => {
     const zoneEl = e.target.closest?.('.climate-zone');
@@ -2653,7 +2660,7 @@ function clearCurrent(){
 }
 
 /* ============================================================
-   ПАНЕЛЬ ВЧИТЕЛЯ — секретні функції
+   ПАНЕЛЬ ВЧИТЕЛЯ
    ============================================================ */
 function openTeacherPanel(){
   if (state.teacherBusy) return;
@@ -2664,63 +2671,39 @@ function closeTeacherPanel(){
   if (state.teacherBusy) return;
   teacherPanel.hidden = true;
 }
-
-/* Показати стан шарів без анімацій */
 function forceLayersVisible(){
   state.showZones   = true;
   state.showLabels  = true;
   state.showBorders = true;
   applyLayerVisibility();
 }
-
-/* 1) Синхронізувати всіх — перечитати дані всіх 25 учнів з Firebase */
 async function teacherSyncAll(){
   if (state.teacherBusy) return;
   if (!db){ showToast('❌ Firebase недоступний'); return; }
   state.teacherBusy = true;
   const btn = $('#teacherSyncAll'); btn.disabled = true;
-
   try {
-    // Зберігаємо поточний стан
     const currentId = state.studentId;
-    const currentName = state.studentName;
-
     setTeacherProgress('🔄 Перечитуємо всі дошки…', 0);
     let ok = 0, empty = 0, errors = 0;
-
     for (let i = 1; i <= STUDENT_NAMES.length; i++){
       setTeacherProgress(`🔄 Учень ${i} / 25 — перевіряємо…`, (i - 1) / 25 * 100);
       try {
         const r = refsFor(i);
         const [drawingSnap, boardSnap] = await Promise.all([
-          r.drawing.once('value'),
-          r.board.once('value')
+          r.drawing.once('value'), r.board.once('value')
         ]);
         const hasData = drawingSnap.exists() || boardSnap.exists();
         if (hasData) ok++; else empty++;
-      } catch (e){
-        errors++;
-        console.warn('[Teacher sync]', i, e);
-      }
+      } catch (e){ errors++; console.warn('[Teacher sync]', i, e); }
     }
-
     setTeacherProgress(
-      `✅ Синхронізовано: ${ok} робіт, ${empty} порожніх${errors ? `, ${errors} помилок` : ''}`,
-      100
-    );
-    // Відкриваємо дошку поточного учня назад — це перечитає його дані
-    if (currentId){
-      openStudentBoard(currentId);
-    }
+      `✅ Синхронізовано: ${ok} робіт, ${empty} порожніх${errors ? `, ${errors} помилок` : ''}`, 100);
+    if (currentId){ openStudentBoard(currentId); }
     await new Promise(r => setTimeout(r, 2000));
     setTeacherProgress(null);
-  } finally {
-    state.teacherBusy = false;
-    btn.disabled = false;
-  }
+  } finally { state.teacherBusy = false; btn.disabled = false; }
 }
-
-/* 2) Зберегти PNG усіх — проходить по всіх 25 учнях, генерує знімки */
 async function teacherSaveAllPNG(){
   if (state.teacherBusy) return;
   if (!db){ showToast('❌ Firebase недоступний'); return; }
@@ -2731,51 +2714,33 @@ async function teacherSaveAllPNG(){
     'Продовжити?'
   );
   if (!okConfirm) return;
-
   state.teacherBusy = true;
   const btn = $('#teacherSaveAll'); btn.disabled = true;
-
-  // Зберігаємо поточний стан
   const currentId = state.studentId;
   const currentName = state.studentName;
   const currentData = JSON.parse(JSON.stringify(state.data));
-  const currentLayers = {
-    zones: state.showZones, labels: state.showLabels, borders: state.showBorders
-  };
+  const currentLayers = { zones: state.showZones, labels: state.showLabels, borders: state.showBorders };
   const currentPan = { zoom: state.zoom, panX: state.panX, panY: state.panY };
-
-  // Тимчасово відключаємо слухачі, щоб не заважали
   detachListeners();
   state.dirtyBoard = false;
   state.dirtyDrawing = false;
-
   const dateStr = new Date().toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' });
   const safeDate = dateStr.replace(/\./g, '-');
-
   try {
-    // Скидаємо зум і показуємо всі шари
     state.zoom = 1; state.panX = 0; state.panY = 0;
     applyViewportTransform();
     forceLayersVisible();
-
     let saved = 0, empty = 0, errors = 0;
-    const errorsList = [];
-
     for (let i = 1; i <= STUDENT_NAMES.length; i++){
       const name = STUDENT_NAMES[i - 1];
       setTeacherProgress(`📸 Учень ${i} / 25 — ${name}…`, (i - 1) / 25 * 100);
-
       try {
-        // Читаємо дані з Firebase
         const r = refsFor(i);
         const [drawingSnap, boardSnap] = await Promise.all([
-          r.drawing.once('value'),
-          r.board.once('value')
+          r.drawing.once('value'), r.board.once('value')
         ]);
         const drawingUrl = drawingSnap.val() || null;
         const boardData = boardSnap.val();
-
-        // Чи є щось? Якщо нічого — пропускаємо
         const hasDrawing = !!drawingUrl;
         const hasBoard = boardData && (
           (boardData.stickers && boardData.stickers.length) ||
@@ -2784,8 +2749,6 @@ async function teacherSaveAllPNG(){
           (boardData.zoneFills && Object.keys(boardData.zoneFills).length)
         );
         if (!hasDrawing && !hasBoard){ empty++; continue; }
-
-        // Застосовуємо дані
         state.studentId = i;
         state.studentName = name;
         state.data = {
@@ -2796,19 +2759,12 @@ async function teacherSaveAllPNG(){
           zoneFills: boardData?.zoneFills || {},
           authorName: boardData?.authorName || ''
         };
-        // Показуємо всі шари (щоб у знімку було видно все)
         state.showZones = true; state.showLabels = true; state.showBorders = true;
         applyLayerVisibility();
-
-        // Рендеримо
         renderCanvas(drawingUrl);
         renderBoard();
-
-        // Чекаємо, поки DOM оновиться + карта підвантажиться
         await new Promise(r => setTimeout(r, 350));
         await new Promise(r => requestAnimationFrame(r));
-
-        // Створюємо штамп
         const stamp = document.createElement('div');
         stamp.className = 'export-stamp';
         const author = (state.data.authorName || '').trim();
@@ -2820,18 +2776,13 @@ async function teacherSaveAllPNG(){
         `;
         mapViewport.appendChild(stamp);
         mapContainer.classList.add('is-exporting');
-
-        // Знімок
         const shot = await html2canvas(mapViewport, {
           backgroundColor: '#04182e',
           scale: Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)),
           useCORS: true, logging: false, removeContainer: true
         });
-
         stamp.remove();
         mapContainer.classList.remove('is-exporting');
-
-        // Завантажуємо
         const safeName = (author || name)
           .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F000}-\u{1F0FF}]/gu, '')
           .replace(/[^\w\u0400-\u04FF]+/g, '-')
@@ -2841,27 +2792,18 @@ async function teacherSaveAllPNG(){
         link.download = fname;
         link.href = shot.toDataURL('image/png');
         document.body.appendChild(link); link.click(); link.remove();
-
         saved++;
-        // Пауза, щоб браузер не заблокував завантаження
         await new Promise(r => setTimeout(r, 500));
       } catch (e){
         errors++;
-        errorsList.push(name);
         console.warn('[Teacher save]', i, e);
-        // Прибираємо штамп якщо залишився
         const stamps = mapViewport.querySelectorAll('.export-stamp');
         stamps.forEach(s => s.remove());
         mapContainer.classList.remove('is-exporting');
       }
     }
-
     setTeacherProgress(
-      `✅ Готово! Збережено ${saved}, порожніх ${empty}${errors ? `, помилок ${errors}` : ''}`,
-      100
-    );
-
-    // Відновлюємо стан
+      `✅ Готово! Збережено ${saved}, порожніх ${empty}${errors ? `, помилок ${errors}` : ''}`, 100);
     await new Promise(r => setTimeout(r, 1500));
     state.studentId = currentId;
     state.studentName = currentName;
@@ -2878,7 +2820,6 @@ async function teacherSaveAllPNG(){
     renderBoard();
     if (authorInput) authorInput.value = currentData.authorName || '';
     attachListeners();
-
     await new Promise(r => setTimeout(r, 1000));
     setTeacherProgress(null);
     showToast(`📸 Збережено ${saved} файлів`);
@@ -2887,13 +2828,8 @@ async function teacherSaveAllPNG(){
     setTeacherProgress('❌ Помилка. Дивись консоль.');
     await new Promise(r => setTimeout(r, 3000));
     setTeacherProgress(null);
-  } finally {
-    state.teacherBusy = false;
-    btn.disabled = false;
-  }
+  } finally { state.teacherBusy = false; btn.disabled = false; }
 }
-
-/* 3) Очистити всі дошки */
 async function teacherClearAll(){
   if (state.teacherBusy) return;
   if (!db){ showToast('❌ Firebase недоступний'); return; }
@@ -2905,20 +2841,14 @@ async function teacherClearAll(){
     'Точно продовжити?'
   );
   if (!ok) return;
-  const ok2 = window.confirm(
-    '⚠️ Останнє підтвердження!\n\n' +
-    'Точно видалити ВСЕ?'
-  );
+  const ok2 = window.confirm('⚠️ Останнє підтвердження!\n\nТочно видалити ВСЕ?');
   if (!ok2) return;
-
   state.teacherBusy = true;
   const btn = $('#teacherClearAll'); btn.disabled = true;
-
   try {
     setTeacherProgress('♻️ Очищаємо всі дошки…', 30);
     await db.ref('students').remove();
     setTeacherProgress('✅ Всі дошки очищено!', 100);
-    // Скидаємо локальний стан
     const author = state.data.authorName;
     state.data = emptyData();
     state.data.authorName = author;
@@ -2938,10 +2868,7 @@ async function teacherClearAll(){
     setTeacherProgress('❌ Не вдалося очистити');
     await new Promise(r => setTimeout(r, 3000));
     setTeacherProgress(null);
-  } finally {
-    state.teacherBusy = false;
-    btn.disabled = false;
-  }
+  } finally { state.teacherBusy = false; btn.disabled = false; }
 }
 
 /* ============================================================
@@ -3019,7 +2946,6 @@ function bindUI(){
     $('#sizeLabel').textContent = state.size;
     sizeInput.setAttribute('aria-valuenow', state.size);
   });
-
   authorInput.addEventListener('input', () => {
     state.data.authorName = authorInput.value;
     state.dirtyBoard = true;
@@ -3136,23 +3062,11 @@ function bindUI(){
 
   /* ─── СЕКРЕТНИЙ ПІДПИС АВТОРА → ПАНЕЛЬ ВЧИТЕЛЯ ─── */
   const authorCredit = $('#authorCredit');
-  let creditClickCount = 0;
-  let creditClickTimer = null;
-  // Простий клік — 1 раз
   authorCredit.addEventListener('click', () => {
-    creditClickCount++;
-    clearTimeout(creditClickTimer);
-    if (creditClickCount >= 1){
-      // Один клік відкриває панель (діти не знають)
-      openTeacherPanel();
-      creditClickCount = 0;
-    }
+    openTeacherPanel();
   });
-  // Запобігаємо виділенню тексту
   authorCredit.addEventListener('mousedown', e => e.preventDefault());
-  authorCredit.addEventListener('touchstart', e => { /* дозволяємо тап */ }, { passive: true });
 
-  // Кнопки панелі вчителя
   $('#teacherClose').addEventListener('click', closeTeacherPanel);
   $('#teacherSyncAll').addEventListener('click', teacherSyncAll);
   $('#teacherSaveAll').addEventListener('click', teacherSaveAllPNG);
@@ -3225,7 +3139,7 @@ function bindResize(){
    ПІДКАЗКА
    ============================================================ */
 function showFirstHintIfNeeded(studentId){
-  const key = 'climateLab_hint_v7_s' + studentId;
+  const key = 'climateLab_hint_v8_s' + studentId;
   try {
     if (localStorage.getItem(key) === '1') return;
     localStorage.setItem(key, '1');
