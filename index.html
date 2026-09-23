@@ -3,1108 +3,775 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#03121f">
-<meta name="color-scheme" content="dark">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>🌍 Кліматична лабораторія</title>
-
+<meta name="theme-color" content="#0f2418">
+<meta name="color-scheme" content="light">
+<title>🌿 Записник природи</title>
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="dns-prefetch" href="https://realtime-6af79-default-rtdb.europe-west1.firebasedatabase.app">
-
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script defer src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
-
 <style>
 :root{
-  --sky-950:#03121f; --sky-900:#061a2b; --sky-800:#0a2540;
-  --sky-700:#0f3a5f; --sky-600:#15507f;
-  --rain:#4cc9f0; --rain-soft:#8fdcf5;
+  --leaf-900:#0f2418; --leaf-800:#1a3a26; --leaf-700:#245233;
+  --leaf-600:#2f6b42; --leaf-500:#3d8b57; --leaf-400:#5cab72;
+  --leaf-300:#8fd3a4; --leaf-200:#c8ebd3; --leaf-100:#eefaf1;
   --sun:#ffb703; --sun-soft:#ffd166;
-  --warm:#ff6b35; --danger:#ff5470;
-  --land:#1e4d78; --land-hi:#2b6ea6; --land-stroke:#4a8cb8;
-  --text:#eaf4fb; --text-dim:#a8c4d8; --text-mute:#7d9bb3;
-  --line:rgba(111,198,234,.20); --line-strong:rgba(111,198,234,.38);
-  --r-md:12px; --r-sm:9px;
-  --shadow-1:0 2px 10px rgba(0,0,0,.35);
-  --shadow-2:0 10px 34px rgba(0,0,0,.5);
+  --water:#4cc9f0; --water-soft:#a8e6ff;
+  --earth:#a8763e;
+  --paper:#fdfcf8; --paper-line:#dde7f0; --paper-grid:#e4eef7;
+  --ink:#1f2a24; --ink-dim:#5c6b62; --ink-mute:#8a9a90;
+  --danger:#e63946;
+  --line:rgba(15,36,24,.12);
+  --line-strong:rgba(15,36,24,.24);
+  --shadow-1:0 2px 8px rgba(15,36,24,.08);
+  --shadow-2:0 10px 28px rgba(15,36,24,.14);
+  --shadow-3:0 20px 60px rgba(15,36,24,.22);
   --dur:.18s; --ease:cubic-bezier(.4,0,.2,1);
-  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",
-         "Noto Sans",Arial,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Nunito",
+         "Noto Sans",Arial,"Apple Color Emoji","Segoe UI Emoji",sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box}
-html,body{margin:0;padding:0}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{font-family:var(--font);font-size:16px;line-height:1.45;color:var(--text);
-  background-color:var(--sky-950);
-  background-image:
-    radial-gradient(1200px 620px at 12% -12%, rgba(76,201,240,.16), transparent 62%),
-    radial-gradient(900px 520px at 92% -6%, rgba(255,183,3,.10), transparent 60%),
-    linear-gradient(180deg,#03121f 0%,#061a2b 46%,#0a2540 100%);
-  background-attachment:fixed;overflow:hidden;overscroll-behavior:none;
-  height:100vh;height:100dvh;-webkit-font-smoothing:antialiased;
-  -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--font);font-size:16px;line-height:1.45;
+  color:var(--ink);background:var(--leaf-100);overflow:hidden;
+  overscroll-behavior:none;height:100vh;height:100dvh;
+  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
+}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,textarea{font:inherit;color:inherit}
 :focus{outline:none}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:6px}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{
-  animation-duration:.001ms !important;transition-duration:.001ms !important;}}
-.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;
-  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 
-/* ═══ GRID — 5 рядків: header / author-line / student-bar / workspace / toolbar ═══ */
-.app{display:grid;
-  grid-template-rows:auto auto auto minmax(0,1fr) auto;
-  height:100vh;height:100dvh;width:100%;}
+.app{
+  display:grid;height:100vh;height:100dvh;width:100%;
+  grid-template-columns:320px 1fr;
+  grid-template-rows:auto 1fr;
+  transition:grid-template-columns .25s var(--ease);
+}
+.app.drawer-collapsed{grid-template-columns:0 1fr}
 
-/* ЕКРАН ВИБОРУ УЧНЯ */
-.student-picker{
-  position:fixed;inset:0;z-index:1000;
-  background:linear-gradient(135deg,#03121f 0%,#0a2540 100%);
-  display:flex;flex-direction:column;
-  padding:calc(16px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
-  overflow-y:auto;-webkit-overflow-scrolling:touch;
-}
-.student-picker[hidden]{display:none}
-.student-picker__header{
-  text-align:center;margin-bottom:18px;
-  max-width:900px;width:100%;margin-left:auto;margin-right:auto;
-}
-.student-picker__icon{font-size:44px;margin-bottom:4px;display:block;line-height:1}
-.student-picker__title{
-  font-size:clamp(20px,5vw,26px);font-weight:800;
-  color:var(--sun-soft);margin:0 0 5px;letter-spacing:-.01em;
-}
-.student-picker__subtitle{font-size:13.5px;color:var(--text-dim);margin:0}
-.student-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-  gap:9px;max-width:900px;margin:0 auto;width:100%;
-}
-@media (max-width:420px){.student-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
-.student-tile{
-  padding:10px 12px;border-radius:12px;
-  background:rgba(15,58,95,.7);border:2px solid var(--line-strong);
-  color:var(--text);font-weight:700;font-size:14px;
-  display:flex;align-items:center;gap:9px;
-  transition:all .15s var(--ease);
-  min-height:54px;text-align:left;cursor:pointer;
-}
-.student-tile:hover{background:rgba(31,110,166,.9);border-color:var(--rain);
-  transform:translateY(-2px);box-shadow:0 6px 20px rgba(76,201,240,.3)}
-.student-tile:active{transform:scale(.98)}
-.student-tile__num{
-  width:30px;height:30px;border-radius:50%;
-  background:rgba(76,201,240,.15);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:800;font-size:13.5px;color:var(--rain-soft);flex:0 0 auto;
-}
-.student-tile__name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* РЕДАКТОР НОТАТОК */
-.note-editor{
-  position:fixed;inset:0;z-index:3000;
-  background:linear-gradient(135deg,#03121f 0%,#0a2540 100%);
-  display:flex;flex-direction:column;
-  padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
-  animation:noteEditorIn .22s var(--ease);
-}
-.note-editor[hidden]{display:none}
-@keyframes noteEditorIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
-.note-editor__header{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:8px;margin-bottom:12px;flex:0 0 auto;
-}
-.note-editor__title{font-size:15px;font-weight:800;color:var(--sun-soft);
-  margin:0;flex:1;text-align:center;}
-.note-editor__btn{
-  min-height:42px;padding:0 16px;border-radius:10px;
-  font-size:14px;font-weight:700;border:1px solid var(--line-strong);
-  background:rgba(15,58,95,.7);color:var(--text);
-  display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
-  cursor:pointer;transition:all var(--dur) var(--ease);
-}
-.note-editor__btn:hover{background:rgba(31,110,166,.85);border-color:var(--rain)}
-.note-editor__btn--save{background:linear-gradient(135deg,var(--sun),#ff9500);
-  color:#25180a;border-color:transparent;}
-.note-editor__textarea{
-  flex:1;width:100%;padding:16px;border-radius:14px;
-  border:2px solid var(--line-strong);background:rgba(6,26,43,.85);
-  color:var(--text);font-size:17px;line-height:1.5;font-family:var(--font);
-  resize:none;outline:none;-webkit-user-select:text;user-select:text;
-}
-.note-editor__textarea:focus{border-color:var(--rain);box-shadow:0 0 0 3px rgba(76,201,240,.2)}
-.note-editor__textarea::placeholder{color:var(--text-mute)}
-.note-editor__hint{margin-top:10px;font-size:12.5px;color:var(--text-mute);
-  text-align:center;flex:0 0 auto}
-
-/* ПАНЕЛЬ ВЧИТЕЛЯ */
-.teacher-panel{
-  position:fixed;inset:0;z-index:4000;
-  background:rgba(3,18,31,.85);
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
-  display:flex;align-items:center;justify-content:center;
-  padding:20px;
-  animation:fadeIn .2s var(--ease);
-}
-.teacher-panel[hidden]{display:none}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.teacher-panel__content{
-  max-width:420px;width:100%;padding:24px;
-  border-radius:16px;
-  background:linear-gradient(135deg, #0a2540 0%, #061a2b 100%);
-  border:2px solid var(--sun);
-  box-shadow:0 30px 80px rgba(0,0,0,.7);
-  max-height:90vh;overflow-y:auto;
-}
-.teacher-panel__title{
-  margin:0 0 4px;font-size:20px;font-weight:800;
-  color:var(--sun-soft);text-align:center;
-}
-.teacher-panel__sub{
-  margin:0 0 20px;font-size:13px;color:var(--text-dim);
-  text-align:center;font-style:italic;
-}
-.teacher-panel__actions{display:flex;flex-direction:column;gap:10px;}
-.teacher-btn{
-  min-height:56px;padding:12px 18px;border-radius:12px;
-  font-size:14.5px;font-weight:700;
-  display:flex;align-items:center;gap:10px;
-  background:rgba(15,58,95,.7);
-  border:1.5px solid var(--line-strong);
-  color:var(--text);
-  transition:all var(--dur) var(--ease);
-  text-align:left;cursor:pointer;
-}
-.teacher-btn:hover{background:rgba(31,110,166,.9);border-color:var(--rain)}
-.teacher-btn:active{transform:scale(.98)}
-.teacher-btn[disabled]{opacity:.5;cursor:wait}
-.teacher-btn--sync{border-color:var(--rain);color:var(--rain-soft)}
-.teacher-btn--save{border-color:var(--sun);color:var(--sun-soft)}
-.teacher-btn--clear{border-color:var(--danger);color:#ffb1c2}
-.teacher-btn--clear:hover{background:rgba(255,84,112,.3);border-color:var(--danger)}
-.teacher-btn--close{
-  background:transparent;border-color:transparent;
-  color:var(--text-mute);justify-content:center;
-  min-height:40px;font-size:13px;
-}
-.teacher-btn--close:hover{background:rgba(255,255,255,.05);color:var(--text)}
-.teacher-btn__emoji{font-size:20px;flex:0 0 auto;line-height:1}
-.teacher-btn__text{flex:1;display:flex;flex-direction:column;gap:2px}
-.teacher-btn__label{font-weight:800}
-.teacher-btn__desc{font-size:11.5px;font-weight:500;color:var(--text-mute)}
-.teacher-progress{
-  margin-top:16px;padding:12px;border-radius:10px;
-  background:rgba(76,201,240,.1);
-  border:1px solid var(--rain);
-  font-size:13px;font-weight:700;color:var(--rain-soft);
-  text-align:center;display:none;
-}
-.teacher-progress[data-show="true"]{display:block}
-.teacher-progress__bar{
-  height:6px;border-radius:999px;background:rgba(255,255,255,.15);
-  margin-top:8px;overflow:hidden;
-}
-.teacher-progress__fill{
-  height:100%;border-radius:999px;
-  background:linear-gradient(90deg,var(--rain),var(--sun));
-  width:0%;transition:width .3s var(--ease);
-}
-
-/* ШАПКА */
-.app-header{display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top));
-  padding-left:max(10px, env(safe-area-inset-left));
-  padding-right:max(10px, env(safe-area-inset-right));
-  background:linear-gradient(180deg, rgba(15,58,95,.95), rgba(8,33,54,.88));
-  border-bottom:1px solid var(--line);backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);z-index:20;}
-.app-title{display:flex;align-items:center;gap:6px;
-  font-size:clamp(13px,3.2vw,17px);font-weight:700;letter-spacing:-.01em;margin:0;min-width:0;}
-.app-title__text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.app-title__icon{font-size:1.15em;line-height:1}
-.header-controls{display:flex;align-items:center;gap:6px;flex:0 0 auto}
-@media (max-width:600px){.app-title__text{display:none}}
-
-.net-indicator{display:inline-flex;align-items:center;gap:5px;
-  padding:5px 9px;border-radius:999px;font-size:10.5px;font-weight:700;
-  background:rgba(46,196,182,.2);color:#8ef0e2;border:1px solid rgba(46,196,182,.4);
-  min-height:32px;}
-.net-indicator[data-online="false"]{background:rgba(255,84,112,.2);color:#ffb1c2;
-  border-color:rgba(255,84,112,.4);}
-.net-indicator[data-online="unknown"]{background:rgba(255,183,3,.2);color:#ffdf8a;
-  border-color:rgba(255,183,3,.4);}
-.net-indicator__dot{width:6px;height:6px;border-radius:50%;background:currentColor;
-  box-shadow:0 0 6px currentColor;}
-@media (max-width:700px){.net-indicator span:not(.net-indicator__dot){display:none}
-  .net-indicator{padding:5px 7px}}
-
-.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:14px;
-  padding:6px 12px;border-radius:999px;
-  background:linear-gradient(135deg,var(--sun),#ff9500);color:#25180a;
-  box-shadow:0 2px 12px rgba(255,183,3,.28);min-width:64px;text-align:center;
-  min-height:32px;display:inline-flex;align-items:center;justify-content:center;}
-.timer[data-low="true"]{background:linear-gradient(135deg,var(--danger),#c9184a);
-  color:#fff;animation:pulse 1.4s ease-in-out infinite;}
-@keyframes pulse{50%{opacity:.68}}
-
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;
-  min-height:36px;min-width:36px;padding:0 10px;border-radius:var(--r-md);
-  font-size:13px;font-weight:600;border:1px solid var(--line-strong);
-  background:rgba(15,58,95,.7);color:var(--text);
-  transition:background var(--dur) var(--ease),transform var(--dur) var(--ease);
-  white-space:nowrap;}
-.btn:hover{background:rgba(31,110,166,.75);border-color:var(--rain)}
-.btn:active{transform:scale(.96)}
-.btn--primary{background:linear-gradient(135deg,var(--sun),#ff9500);
-  border-color:transparent;color:#25180a;font-weight:700;}
-.btn--ghost{background:transparent;border-color:transparent}
-.btn--ghost:hover{background:rgba(76,201,240,.12)}
-@media (max-width:400px){.btn-label{display:none}.btn{padding:0 10px}}
-
-/* ═════════════ РЯДОК З АВТОРОМ ═════════════ */
-.author-line{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:3px 12px;
+/* ─── HEADER ─── */
+.header{
+  grid-column:1/-1;
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;
+  padding-top:calc(8px + env(safe-area-inset-top));
   padding-left:max(12px, env(safe-area-inset-left));
   padding-right:max(12px, env(safe-area-inset-right));
-  background:linear-gradient(180deg, rgba(15,58,95,.4), rgba(8,33,54,.25));
-  border-bottom:1px solid var(--line);
-  z-index:19;
+  background:linear-gradient(180deg,#2f6b42,#1a3a26);
+  color:#fff;z-index:30;box-shadow:var(--shadow-1);
+  position:relative;
+}
+.menu-btn{
+  width:42px;height:42px;flex:0 0 auto;border-radius:12px;
+  background:rgba(255,255,255,.15);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;transition:background var(--dur);
+}
+.menu-btn:hover{background:rgba(255,255,255,.25)}
+.menu-btn:active{transform:scale(.94)}
+.header__title{
+  display:flex;align-items:center;gap:8px;
+  font-size:clamp(14px,3.4vw,18px);font-weight:800;letter-spacing:-.01em;
+  margin:0;flex:0 1 auto;min-width:0;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+}
+.header__title-icon{font-size:1.2em}
+.header__name{
+  flex:1 1 auto;min-width:0;
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.14);border-radius:10px;
+  padding:4px 10px;
+}
+.header__name label{font-size:11px;text-transform:uppercase;opacity:.75;letter-spacing:.05em;font-weight:700}
+.header__name input{
+  flex:1;min-width:0;background:transparent;border:0;color:#fff;
+  font-weight:700;font-size:14.5px;padding:4px 2px;outline:none;
+}
+.header__name input::placeholder{color:rgba(255,255,255,.55)}
+.header__controls{display:flex;gap:6px;flex:0 0 auto}
+.hbtn{
+  width:42px;height:42px;border-radius:12px;
+  background:rgba(255,255,255,.15);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;transition:all var(--dur);
+}
+.hbtn:hover{background:rgba(255,255,255,.28)}
+.hbtn:active{transform:scale(.94)}
+.hbtn--primary{background:linear-gradient(135deg,var(--sun),#ff9500);color:#25180a;font-weight:700}
+.hbtn-wrap{position:relative;display:inline-flex}
+.net-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:#7ee2a8;box-shadow:0 0 8px #7ee2a8;
+  position:absolute;top:5px;right:5px;pointer-events:none;
+  border:1.5px solid #1a3a26;
+}
+.net-dot[data-online="false"]{background:#ff8a8a;box-shadow:0 0 8px #ff8a8a}
+.net-dot[data-online="unknown"]{background:#ffd166;box-shadow:0 0 8px #ffd166}
+
+@media (max-width:640px){
+  .header__title-text{display:none}
+  .header__name label{display:none}
+  .header__name{padding:4px 8px}
+  .hbtn,.menu-btn{width:38px;height:38px;font-size:16px}
+}
+
+/* ─── DRAWER ─── */
+.drawer{
+  grid-column:1;grid-row:2;
+  background:#fff;border-right:1px solid var(--line);
+  overflow-y:auto;overflow-x:hidden;
+  display:flex;flex-direction:column;
+  min-width:0;transition:transform .25s var(--ease);
+  z-index:25;box-shadow:var(--shadow-2);
+}
+.app.drawer-collapsed .drawer{transform:translateX(-100%);pointer-events:none}
+
+.drawer__inner{padding:14px;display:flex;flex-direction:column;gap:16px;min-width:320px}
+.dsection{display:flex;flex-direction:column;gap:8px}
+.dsection__title{
+  font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--leaf-700);display:flex;align-items:center;gap:6px;
+  padding-bottom:6px;border-bottom:1.5px solid var(--leaf-200);
+}
+.dsection__title-icon{font-size:14px}
+
+.icon-tabs{
+  display:flex;gap:4px;padding:3px;border-radius:10px;
+  background:var(--leaf-100);overflow-x:auto;scrollbar-width:none;
+  flex-wrap:nowrap;
+}
+.icon-tabs::-webkit-scrollbar{display:none}
+.icon-tab{
+  flex:1 0 auto;padding:7px 10px;border-radius:7px;
+  font-size:11.5px;font-weight:800;color:var(--leaf-700);
+  white-space:nowrap;transition:all var(--dur);
+}
+.icon-tab:hover{background:var(--leaf-200)}
+.icon-tab.on{background:var(--leaf-600);color:#fff;box-shadow:0 2px 6px rgba(47,107,66,.35)}
+
+.icon-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.icon-pick{
+  aspect-ratio:1;border-radius:10px;font-size:24px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--leaf-100);border:1.5px solid transparent;
+  cursor:pointer;transition:all var(--dur);user-select:none;
+}
+.icon-pick:hover{background:var(--leaf-200);border-color:var(--leaf-400);transform:translateY(-2px)}
+.icon-pick:active{transform:scale(.92)}
+
+.tool-row{display:flex;gap:6px;flex-wrap:wrap}
+.tool-chip{
+  flex:1 1 0;min-width:0;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  padding:9px 8px;border-radius:10px;
+  font-size:12px;font-weight:800;
+  background:var(--leaf-100);color:var(--leaf-700);
+  border:1.5px solid transparent;transition:all var(--dur);
+}
+.tool-chip:hover{background:var(--leaf-200)}
+.tool-chip[aria-pressed="true"]{
+  background:linear-gradient(135deg,var(--leaf-500),var(--leaf-700));
+  color:#fff;border-color:transparent;
+  box-shadow:0 3px 10px rgba(47,107,66,.3);
+}
+.tool-chip__icon{font-size:15px}
+
+.color-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.color-swatches{display:flex;gap:4px;flex-wrap:wrap}
+.color-sw{
+  width:28px;height:28px;border-radius:50%;
+  border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2);
+  cursor:pointer;transition:transform var(--dur);flex:0 0 auto;
+}
+.color-sw:hover{transform:scale(1.1)}
+.color-sw.on{outline:3px solid var(--leaf-600);outline-offset:2px}
+.color-custom{
+  width:28px;height:28px;border-radius:50%;padding:0;border:2.5px solid #fff;
+  -webkit-appearance:none;appearance:none;cursor:pointer;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.color-custom::-webkit-color-swatch-wrapper{padding:0}
+.color-custom::-webkit-color-swatch{border:0;border-radius:50%}
+
+.size-row{display:flex;align-items:center;gap:10px}
+.size-row input[type="range"]{
+  flex:1;-webkit-appearance:none;appearance:none;height:28px;background:transparent;
+}
+.size-row input[type="range"]::-webkit-slider-runnable-track{
+  height:6px;border-radius:999px;
+  background:linear-gradient(90deg,var(--leaf-300),var(--leaf-700));
+}
+.size-row input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+  margin-top:-8px;background:#fff;border:3px solid var(--leaf-600);
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+.size-row input[type="range"]::-moz-range-track{height:6px;border-radius:999px;background:var(--leaf-400)}
+.size-row input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
+  background:#fff;border:3px solid var(--leaf-600)}
+.size-val{min-width:28px;text-align:center;font-weight:800;color:var(--leaf-700);font-size:13px}
+
+.action-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:11px 14px;border-radius:12px;
+  font-size:13.5px;font-weight:800;
+  background:var(--leaf-100);color:var(--leaf-700);
+  border:1.5px solid transparent;width:100%;text-align:left;
+  transition:all var(--dur);
+}
+.action-btn:hover{background:var(--leaf-200);border-color:var(--leaf-400)}
+.action-btn:active{transform:scale(.98)}
+.action-btn__icon{font-size:17px;flex:0 0 auto}
+.action-btn--primary{
+  background:linear-gradient(135deg,var(--sun),#ff9500);
+  color:#25180a;box-shadow:0 3px 10px rgba(255,183,3,.3);
+}
+.action-btn--primary:hover{filter:brightness(1.06);background:linear-gradient(135deg,var(--sun),#ff9500)}
+.action-btn--danger{color:var(--danger);background:#fdeaea}
+.action-btn--danger:hover{background:#fbd5d5}
+
+.bg-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.bg-opt{
+  padding:10px 8px;border-radius:10px;font-size:12px;font-weight:800;
+  background:var(--leaf-100);color:var(--leaf-700);
+  border:1.5px solid transparent;transition:all var(--dur);
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.bg-opt__swatch{
+  width:100%;height:32px;border-radius:6px;
+  border:1px solid var(--line-strong);background:var(--paper);
+}
+.bg-opt__swatch--line{
+  background:repeating-linear-gradient(180deg,transparent 0 7px,var(--paper-line) 7px 8px),var(--paper);
+}
+.bg-opt__swatch--grid{
+  background:
+    repeating-linear-gradient(0deg,transparent 0 7px,var(--paper-grid) 7px 8px),
+    repeating-linear-gradient(90deg,transparent 0 7px,var(--paper-grid) 7px 8px),
+    var(--paper);
+}
+.bg-opt__swatch--white{background:#fff}
+.bg-opt__swatch--sky{background:linear-gradient(180deg,#c8e8ff,#eef8ff)}
+.bg-opt__swatch--forest{background:linear-gradient(180deg,#d4ecd9,#f2faf4)}
+.bg-opt.on{background:linear-gradient(135deg,var(--leaf-500),var(--leaf-700));color:#fff;border-color:transparent}
+.bg-opt.on .bg-opt__swatch{border-color:rgba(255,255,255,.6)}
+
+/* ─── WORKSPACE ─── */
+.workspace{
+  grid-column:2;grid-row:2;
+  position:relative;overflow:hidden;
+  background:var(--paper);
+  display:flex;flex-direction:column;min-width:0;min-height:0;
+}
+.board-wrap{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none}
+.board{position:absolute;inset:0;transition:background .25s var(--ease)}
+.board[data-bg="line"]{
+  background:var(--paper);
+  background-image:repeating-linear-gradient(180deg,transparent 0 27px,var(--paper-line) 27px 28px);
+}
+.board[data-bg="grid"]{
+  background:var(--paper);
+  background-image:
+    repeating-linear-gradient(0deg,transparent 0 27px,var(--paper-grid) 27px 28px),
+    repeating-linear-gradient(90deg,transparent 0 27px,var(--paper-grid) 27px 28px);
+}
+.board[data-bg="white"]{background:#fff}
+.board[data-bg="sky"]{background:linear-gradient(180deg,#c8e8ff 0%,#eef8ff 100%)}
+.board[data-bg="forest"]{background:linear-gradient(180deg,#d4ecd9 0%,#f2faf4 100%)}
+
+#drawCanvas{
+  position:absolute;inset:0;width:100%;height:100%;
+  touch-action:none;z-index:2;display:block;
+  -webkit-user-select:none;user-select:none;cursor:crosshair;
+}
+#drawCanvas[data-tool="idle"]{pointer-events:none;cursor:default}
+#drawCanvas[data-tool="eraser"]{cursor:cell}
+
+#objectsLayer{
+  position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;
+}
+
+/* ─── ОБ'ЄКТИ ─── */
+.obj{
+  position:absolute;pointer-events:auto;
+  user-select:none;-webkit-user-select:none;touch-action:none;
+  transition:box-shadow .15s;
+}
+.obj.dragging{z-index:1000 !important;filter:drop-shadow(0 12px 24px rgba(0,0,0,.28))}
+.obj.selected{outline:2px dashed var(--leaf-500);outline-offset:4px;border-radius:6px}
+
+/* Іконка */
+.obj-icon{
+  display:flex;align-items:center;justify-content:center;
+  line-height:1;padding:4px;cursor:grab;font-size:48px;
+}
+.obj-icon:active{cursor:grabbing}
+
+/* ─── ТЕКСТ (нова структура з textarea) ─── */
+.obj-text{
+  min-width:80px;max-width:90%;
+  position:relative;
+  display:flex;flex-direction:column;
+  border-radius:10px;
+}
+.obj-text__input{
+  width:100%;
+  padding:8px 12px;
+  border:2px solid transparent;border-radius:10px;
+  background:transparent;
+  color:inherit;font-family:inherit;font-size:inherit;font-weight:700;
+  line-height:1.25;outline:none;resize:none;overflow:hidden;
+  min-height:1.6em;
+  -webkit-user-select:text;user-select:text;
+  touch-action:manipulation;
+  transition:border-color .15s, background .15s;
+  caret-color:var(--leaf-700);
+}
+.obj-text__input::placeholder{color:rgba(15,36,24,.35);font-weight:600}
+.obj-text.selected .obj-text__input{
+  border-color:var(--leaf-300);background:rgba(255,255,255,.7);
+}
+.obj-text__input:focus{
+  border-color:var(--sun) !important;
+  background:rgba(255,255,255,.95) !important;
+  box-shadow:0 0 0 3px rgba(255,183,3,.2);
+}
+.obj-text__drag,
+.obj-text__resize{
+  position:absolute;width:32px;height:32px;
+  border-radius:50%;
+  background:#fff;border:2.5px solid var(--leaf-600);
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+  display:none;align-items:center;justify-content:center;
+  touch-action:none;z-index:5;
+  font-size:13px;font-weight:900;color:var(--leaf-700);
+  user-select:none;
+}
+.obj-text.selected .obj-text__drag,
+.obj-text.selected .obj-text__resize{display:flex}
+.obj-text__drag{top:-16px;left:-16px;cursor:grab}
+.obj-text__drag:active{cursor:grabbing}
+.obj-text__drag::before{content:'✥'}
+.obj-text__resize{bottom:-16px;right:-16px;cursor:nwse-resize}
+.obj-text__resize::before{content:'⤡'}
+
+/* ─── СТІКЕР ─── */
+.obj-sticker{
+  border-radius:12px;padding:0;overflow:hidden;
+  display:flex;flex-direction:column;
+  min-width:120px;
+  box-shadow:var(--shadow-2);
+  cursor:grab;color:#1b2733;width:180px;
+  position:relative;
+}
+.obj-sticker__bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:2px 4px 2px 8px;min-height:26px;
+  background:rgba(0,0,0,.08);cursor:grab;
+}
+.obj-sticker__grip{
+  font-size:14px;font-weight:900;color:rgba(27,39,51,.4);
+  letter-spacing:-2px;pointer-events:none;
+}
+.obj-sticker__del{
+  width:26px;height:26px;border-radius:6px;
+  color:rgba(27,39,51,.55);font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.obj-sticker__del:hover{background:rgba(230,57,70,.9);color:#fff}
+.obj-sticker__text{
+  flex:1;padding:6px 10px 10px;
+  font-size:13px;font-weight:600;line-height:1.4;
+  background:transparent;border:0;outline:none;resize:none;
+  font-family:var(--font);color:inherit;
+  overflow:hidden;display:block;width:100%;
+  -webkit-user-select:text;user-select:text;
+  touch-action:manipulation;
+}
+.obj-sticker__text::placeholder{color:rgba(27,39,51,.4)}
+.obj-sticker__resize{
+  position:absolute;width:22px;height:22px;
+  background:#fff;border:2.5px solid var(--leaf-600);
+  border-radius:50%;right:-10px;bottom:-10px;
+  cursor:nwse-resize;touch-action:none;z-index:5;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+  opacity:0;transition:opacity var(--dur);
+}
+.obj-sticker.selected .obj-sticker__resize{opacity:1}
+.obj-icon__resize{
+  position:absolute;width:22px;height:22px;
+  background:#fff;border:2.5px solid var(--leaf-600);
+  border-radius:50%;right:-10px;bottom:-10px;
+  cursor:nwse-resize;touch-action:none;z-index:5;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+  opacity:0;transition:opacity var(--dur);
+}
+.obj-icon.selected .obj-icon__resize{opacity:1}
+
+/* ─── QUICK BAR ─── */
+.quick-bar{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  display:none;gap:4px;padding:6px;
+  background:rgba(255,255,255,.96);
+  border:1px solid var(--line-strong);border-radius:16px;
+  box-shadow:var(--shadow-3);
+  z-index:20;backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  max-width:calc(100% - 24px);
+}
+.quick-btn{
+  width:46px;height:46px;border-radius:12px;
+  font-size:20px;display:flex;align-items:center;justify-content:center;
+  color:var(--leaf-700);background:transparent;
+  transition:all var(--dur);flex:0 0 auto;
+}
+.quick-btn:hover{background:var(--leaf-100)}
+.quick-btn[aria-pressed="true"]{
+  background:linear-gradient(135deg,var(--leaf-500),var(--leaf-700));
+  color:#fff;
+}
+
+/* ─── МОБІЛЬНА ВЕРСІЯ — критично важлива частина ─── */
+@media (max-width:1024px){
+  .quick-bar{display:flex}
+
+  /* Drawer як overlay */
+  .drawer{
+    position:fixed !important;
+    top:0 !important;left:0 !important;bottom:0 !important;
+    width:320px !important;max-width:88vw !important;
+    height:100vh !important;height:100dvh !important;
+    transform:translateX(-100%) !important;
+    transition:transform .25s var(--ease), visibility .25s !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+    z-index:9998 !important;
+    grid-column:unset !important;grid-row:unset !important;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+    box-shadow:4px 0 30px rgba(0,0,0,.4);
+    overflow-y:auto !important;
+  }
+  .app.drawer-open .drawer{
+    transform:translateX(0) !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+  }
+  .app.drawer-collapsed .drawer{
+    transform:translateX(-100%) !important;
+    visibility:hidden !important;
+    pointer-events:none !important;
+  }
+
+  .app{grid-template-columns:1fr}
+  .app.drawer-collapsed{grid-template-columns:1fr}
+  .workspace{grid-column:1;grid-row:2}
+
+  /* Backdrop */
+  .drawer-backdrop{
+    position:fixed;inset:0;background:rgba(15,36,24,.55);
+    z-index:9997 !important;
+    opacity:0;pointer-events:none;
+    transition:opacity .25s var(--ease);
+  }
+  .app.drawer-open .drawer-backdrop{opacity:1;pointer-events:auto}
+}
+
+@media (min-width:1025px){
+  .drawer-backdrop{display:none}
+  .quick-bar{display:none}
+}
+
+@media (max-width:640px){
+  .obj-text{max-width:92%}
+  .obj-sticker{width:150px}
+  .obj-icon{font-size:40px}
+}
+
+/* ─── AUTHOR ─── */
+.author-line{
+  position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+  z-index:10;
 }
 .author-credit{
   display:inline-flex;align-items:center;gap:4px;
-  font-size:10.5px;font-weight:500;letter-spacing:.04em;
-  color:rgba(255,255,255,.45);
   padding:3px 10px;border-radius:6px;
-  cursor:pointer;
-  user-select:none;-webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  transition:color .2s var(--ease), background .2s var(--ease);
-  white-space:nowrap;
+  font-size:10px;font-weight:600;letter-spacing:.04em;
+  color:rgba(15,36,24,.4);cursor:pointer;
+  transition:all .2s;user-select:none;
+  background:rgba(255,255,255,.6);backdrop-filter:blur(6px);
 }
-.author-credit:hover{
-  color:rgba(255,255,255,.85);
-  background:rgba(76,201,240,.1);
-}
-.author-credit:active{
-  color:var(--sun);
-  background:rgba(255,183,3,.18);
-}
+.author-credit:hover{color:var(--leaf-700);background:#fff}
 
-/* ПАНЕЛЬ УЧНЯ */
-.student-bar{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 12px;
-  padding-left:max(12px, env(safe-area-inset-left));
-  padding-right:max(12px, env(safe-area-inset-right));
-  background:linear-gradient(90deg, rgba(76,201,240,.14), rgba(46,196,182,.08));
-  border-bottom:1px solid var(--line);z-index:15;
-}
-.student-bar__avatar{
-  width:34px;height:34px;border-radius:50%;
-  background:linear-gradient(135deg,var(--rain),#1f9ec9);
+/* ─── МОДАЛКА ─── */
+.modal-back{
+  position:fixed;inset:0;z-index:10000;
+  background:rgba(15,36,24,.55);backdrop-filter:blur(6px);
   display:flex;align-items:center;justify-content:center;
-  font-size:16px;flex:0 0 auto;color:#03121f;font-weight:800;
+  padding:20px;animation:fade .2s;
 }
-.student-bar__field{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.student-bar__label{
-  font-size:10px;text-transform:uppercase;letter-spacing:.06em;
-  color:var(--text-mute);font-weight:700;line-height:1;padding-left:2px;
+.modal-back[hidden]{display:none}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{
+  max-width:420px;width:100%;padding:24px;border-radius:20px;
+  background:#fff;box-shadow:var(--shadow-3);
+  max-height:90vh;overflow-y:auto;
+  animation:pop .22s var(--ease);
 }
-.student-bar__input{
-  width:100%;padding:6px 10px;border-radius:8px;
-  background:rgba(6,26,43,.7);
-  border:1.5px solid var(--line-strong);
-  color:var(--text);font-size:14.5px;font-weight:700;
-  font-family:var(--font);outline:none;
-  transition:border-color var(--dur) var(--ease), background var(--dur) var(--ease);
+@keyframes pop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.modal h2{margin:0 0 4px;font-size:20px;color:var(--leaf-800);text-align:center}
+.modal .sub{margin:0 0 20px;font-size:13px;color:var(--ink-dim);text-align:center;font-style:italic}
+.modal__actions{display:flex;flex-direction:column;gap:10px}
+.modal-btn{
+  min-height:54px;padding:12px 18px;border-radius:14px;
+  display:flex;align-items:center;gap:12px;
+  background:var(--leaf-100);border:1.5px solid transparent;
+  text-align:left;font-weight:700;transition:all var(--dur);
+  color:var(--leaf-800);
 }
-.student-bar__input:focus{border-color:var(--rain);background:rgba(6,26,43,.95);
-  box-shadow:0 0 0 2px rgba(76,201,240,.2);}
-.student-bar__input::placeholder{color:var(--text-mute);font-weight:500}
-.student-bar__change{
-  flex:0 0 auto;padding:8px 12px;border-radius:10px;
-  font-size:12px;font-weight:700;
-  background:rgba(6,26,43,.7);border:1px solid var(--line-strong);
-  color:var(--text-dim);display:inline-flex;align-items:center;gap:5px;
-  min-height:42px;
+.modal-btn:hover{background:var(--leaf-200);border-color:var(--leaf-400)}
+.modal-btn__emoji{font-size:22px;flex:0 0 auto}
+.modal-btn__text{flex:1;display:flex;flex-direction:column;gap:2px}
+.modal-btn__label{font-weight:800;font-size:14.5px}
+.modal-btn__desc{font-size:11.5px;color:var(--ink-mute);font-weight:500}
+.modal-btn--danger{color:var(--danger);background:#fdeaea}
+.modal-btn--danger:hover{background:#fbd5d5}
+.modal-btn--primary{background:linear-gradient(135deg,var(--sun),#ff9500);color:#25180a}
+.modal-btn--primary:hover{filter:brightness(1.06);background:linear-gradient(135deg,var(--sun),#ff9500)}
+.modal-btn--close{
+  background:transparent;color:var(--ink-mute);justify-content:center;
+  min-height:40px;font-size:13px;
 }
-.student-bar__change:hover{background:rgba(31,110,166,.7);color:#fff}
-@media (max-width:400px){
-  .student-bar__change{padding:8px 9px;font-size:11px}
-  .student-bar__change span:not([aria-hidden]){display:none}
+.modal-btn--close:hover{background:var(--leaf-100);color:var(--leaf-800)}
+.progress{
+  margin-top:14px;padding:10px;border-radius:10px;
+  background:var(--leaf-100);border:1px solid var(--leaf-300);
+  font-size:12.5px;font-weight:700;color:var(--leaf-700);
+  text-align:center;display:none;
 }
+.progress[data-show="true"]{display:block}
+.progress__bar{height:6px;border-radius:999px;background:rgba(15,36,24,.1);margin-top:8px;overflow:hidden}
+.progress__fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--leaf-400),var(--sun));width:0%;transition:width .3s}
 
-/* РОБОЧА ОБЛАСТЬ */
-.workspace{display:flex;flex-direction:column;min-height:0;min-width:0;position:relative;}
-
-.icon-gallery{display:flex;gap:8px;padding:8px 12px;
-  padding-left:max(12px, env(safe-area-inset-left));
-  padding-right:max(12px, env(safe-area-inset-right));
-  background:rgba(6,26,43,.85);border-bottom:1px solid var(--line);
-  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;flex:0 0 auto;z-index:10;}
-.icon-gallery::-webkit-scrollbar{display:none}
-.icon-item{flex:0 0 auto;width:42px;height:42px;
-  display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;
-  border-radius:var(--r-md);background:rgba(15,58,95,.72);border:1px solid transparent;
-  transition:transform var(--dur) var(--ease),background var(--dur) var(--ease);}
-.icon-item:hover{background:rgba(31,110,166,.8);border-color:var(--rain);transform:translateY(-2px)}
-.icon-item:active{transform:scale(.92)}
-
-.map-container{position:relative;flex:1 1 auto;min-height:200px;overflow:hidden;
-  background:#020a14;touch-action:none;}
-.map-viewport{position:absolute;
-  background:radial-gradient(120% 90% at 50% 45%, #0a3d68 0%, #062a4a 42%, #04182e 78%, #020a14 100%);
-  overflow:hidden;transform-origin:center center;
-  box-shadow:0 0 40px rgba(0,0,0,.5);border-radius:4px;
-  will-change:transform;}
-#svgMap{position:absolute;inset:0;width:100%;height:100%;display:block;}
-
-.ocean-sphere{fill:url(#oceanGrad)}
-.ocean-glow{fill:url(#oceanGlow);pointer-events:none}
-.graticule{fill:none;stroke:rgba(120,190,230,.13);stroke-width:.5;
-  vector-effect:non-scaling-stroke;pointer-events:none;}
-.graticule--major{stroke:rgba(120,190,230,.24);stroke-width:.7}
-
-.climate-zone{stroke:rgba(255,255,255,.05);stroke-width:.5;cursor:pointer;
-  transition:fill-opacity .25s var(--ease), stroke .25s var(--ease);}
-.climate-zone:hover{stroke:rgba(255,255,255,.95);stroke-width:1.6;}
-
-.zone-boundary{fill:none;stroke:rgba(255,255,255,.78);stroke-width:1.8;
-  stroke-dasharray:8 4;stroke-linecap:round;vector-effect:non-scaling-stroke;
-  pointer-events:none;}
-.zone-boundary--equator{stroke:#ffffff;stroke-width:2.6;stroke-dasharray:none;}
-.zone-boundary--tropic{stroke:#ffe066;stroke-width:2;stroke-dasharray:9 4;}
-
-.country{fill:var(--land);stroke:var(--land-stroke);stroke-width:.6;
-  vector-effect:non-scaling-stroke;
-  transition:fill var(--dur) var(--ease),stroke var(--dur) var(--ease);cursor:pointer;}
-.country:hover{fill:var(--land-hi);stroke:var(--sun);stroke-width:1.2;}
-.country-dot{fill:var(--sun);stroke:#03121f;stroke-width:.9;pointer-events:none;opacity:.9;}
-
-.climate-zone__label{font-size:10px;font-weight:800;letter-spacing:.05em;
-  paint-order:stroke;stroke:#04121c;stroke-width:3.2px;stroke-linejoin:round;
-  pointer-events:none;text-anchor:middle;font-family:var(--font);
-  text-transform:uppercase;opacity:.98;}
-.climate-zone__label--small{font-size:8px;letter-spacing:.02em}
-
-.lat-label{fill:#fff;font-size:9px;font-weight:800;
-  paint-order:stroke;stroke:#04121c;stroke-width:3.2px;stroke-linejoin:round;
-  pointer-events:none;font-family:var(--font);letter-spacing:.02em;}
-.lat-label--equator{fill:#ffe066}
-
-#drawCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;
-  touch-action:none;-webkit-user-select:none;user-select:none;
-  cursor:crosshair;display:block;}
-#drawCanvas[data-tool="idle"]{pointer-events:none;cursor:default}
-#drawCanvas[data-tool="eraser"]{cursor:cell}
-#drawCanvas[data-tool="fill"]{pointer-events:none;cursor:pointer}
-#stickersLayer{position:absolute;inset:0;z-index:3;pointer-events:none;}
-
-.sticker{
-  position:absolute;width:180px;min-height:70px;max-height:180px;
-  border-radius:var(--r-md);box-shadow:var(--shadow-2);
-  pointer-events:auto;color:#1b2733;
-  user-select:none;-webkit-user-select:none;
-  touch-action:none;overflow:hidden;
-  display:flex;flex-direction:column;
-  transition:box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease);}
-.sticker.dragging{box-shadow:0 20px 60px rgba(0,0,0,.7);
-  transform:scale(1.04);z-index:100;}
-.sticker__bar{display:flex;align-items:center;justify-content:space-between;
-  padding:2px 4px 2px 6px;cursor:grab;touch-action:none;
-  background:linear-gradient(180deg, rgba(0,0,0,.14), rgba(0,0,0,.04));
-  flex:0 0 auto;min-height:32px;}
-.sticker__bar:active{cursor:grabbing}
-.sticker__grip{font-size:16px;letter-spacing:-2px;font-weight:900;
-  color:rgba(27,39,51,.5);line-height:1;padding:0 6px;pointer-events:none;}
-.sticker__del{width:36px;height:36px;
-  display:flex;align-items:center;justify-content:center;
-  border-radius:8px;font-size:15px;font-weight:700;
-  color:rgba(27,39,51,.55);flex:0 0 auto;touch-action:manipulation;}
-.sticker__del:hover,.sticker__del:active{background:rgba(255,84,112,.9);color:#fff}
-.sticker textarea{width:100%;flex:1;border:0;
-  background:transparent;resize:none;outline:none;
-  font-size:13px;line-height:1.4;color:#1b2733;
-  font-family:var(--font);overflow:hidden;display:block;
-  padding:4px 10px 10px;
-  touch-action:manipulation;-webkit-user-select:text;user-select:text;}
-.sticker textarea::placeholder{color:rgba(27,39,51,.42)}
-.sticker__more{
-  position:absolute;bottom:4px;right:8px;
-  font-size:10px;font-weight:800;color:rgba(27,39,51,.55);
-  pointer-events:none;display:none;
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  padding:11px 20px;border-radius:999px;z-index:10001;
+  background:var(--leaf-800);color:#fff;font-weight:700;font-size:13.5px;
+  box-shadow:var(--shadow-3);opacity:0;pointer-events:none;
+  transition:opacity .25s, transform .25s;
+  max-width:calc(100% - 40px);text-align:center;
 }
-.sticker.has-overflow .sticker__more{display:block}
-@media (max-width:899px){
-  .sticker{cursor:pointer}
-  .sticker textarea{pointer-events:none}
-  .sticker::after{
-    content:"👆 тапни, щоб редагувати";
-    position:absolute;bottom:2px;right:8px;
-    font-size:9px;font-weight:700;
-    color:rgba(27,39,51,.42);pointer-events:none;
-  }
-  .sticker.has-overflow::after{display:none}
-}
-
-.placed-icon{position:absolute;font-size:34px;line-height:1;padding:6px;
-  cursor:grab;pointer-events:auto;touch-action:none;
-  user-select:none;-webkit-user-select:none;
-  filter:drop-shadow(0 3px 8px rgba(0,0,0,.55));border-radius:50%;
-  transition:transform var(--dur) var(--ease), background var(--dur) var(--ease);}
-.placed-icon:active,.placed-icon.dragging{cursor:grabbing;transform:scale(1.15);
-  background:rgba(76,201,240,.25);}
-
-.data-label{
-  position:absolute;
-  display:inline-flex;align-items:center;gap:5px;
-  padding:6px 12px;border-radius:999px;
-  background:rgba(6,26,43,.95);
-  border:2px solid var(--sun);
-  color:#fff;font-size:13.5px;font-weight:800;
-  box-shadow:0 4px 14px rgba(0,0,0,.5);
-  cursor:grab;pointer-events:auto;touch-action:none;
-  user-select:none;-webkit-user-select:none;
-  white-space:nowrap;
-  transition:transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-}
-.data-label--temp{ border-color: var(--sun); }
-.data-label--rain{ border-color: var(--rain); }
-.data-label__emoji{ font-size:15px;line-height:1; }
-.data-label__value{ font-variant-numeric:tabular-nums; }
-.data-label:active,.data-label.dragging{
-  transform:scale(1.12);z-index:100;
-  box-shadow:0 8px 24px rgba(0,0,0,.7);
-}
-
-.zone-info{position:absolute;top:10px;left:10px;z-index:6;
-  max-width:min(340px, calc(100% - 20px));padding:10px 38px 10px 12px;
-  border-radius:var(--r-md);border:1px solid var(--line-strong);
-  border-left:4px solid var(--sun);background:rgba(6,26,43,.94);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  box-shadow:var(--shadow-1);font-size:12.5px;
-  max-height:calc(100% - 20px);overflow:auto;
-  transition:transform .25s var(--ease),opacity .25s var(--ease);}
-.zone-info[hidden]{display:none}
-.zone-info--hide{opacity:0;transform:translateY(10px);pointer-events:none;}
-.zone-info h2{margin:0 0 3px;font-size:13.5px;font-weight:700;
-  color:var(--sun-soft);letter-spacing:-.01em;}
-.zone-info p{margin:0;color:var(--text-dim);line-height:1.4}
-.zone-info__meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
-.zone-info__chip{display:inline-flex;align-items:center;gap:4px;
-  padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;
-  background:rgba(76,201,240,.14);border:1px solid var(--line);color:var(--rain-soft);}
-.zone-info__chip--warm{background:rgba(255,183,3,.16);
-  border-color:rgba(255,183,3,.3);color:var(--sun-soft);}
-.zone-info__chip--cool{background:rgba(143,220,245,.14);
-  border-color:rgba(143,220,245,.3);color:var(--rain-soft);}
-.zone-info__chip--fill{color:#03121f !important;
-  border:1px solid rgba(255,255,255,.35);}
-.zone-info__hint{display:block;margin-top:5px;font-size:11px;
-  color:var(--rain-soft);font-weight:600;}
-.zone-info__close{position:absolute;top:6px;right:6px;width:28px;height:28px;
-  display:flex;align-items:center;justify-content:center;border-radius:8px;
-  font-size:13px;color:var(--text-mute);}
-.zone-info__close:hover{background:rgba(76,201,240,.16);color:#fff}
-
-.zone-info__actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
-.zone-info__act{
-  flex:1 1 calc(50% - 3px);
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:9px 10px;border-radius:10px;
-  font-size:12.5px;font-weight:800;
-  background:rgba(15,58,95,.85);
-  color:#fff;border:1.5px solid var(--line-strong);
-  cursor:pointer;touch-action:manipulation;
-  transition:all var(--dur) var(--ease);
-  white-space:nowrap;
-}
-.zone-info__act:hover{background:rgba(31,110,166,.9);border-color:var(--rain)}
-.zone-info__act--temp{border-color:var(--sun);color:var(--sun-soft)}
-.zone-info__act--temp:hover{background:rgba(255,183,3,.25);border-color:var(--sun)}
-.zone-info__act--rain{border-color:var(--rain);color:var(--rain-soft)}
-.zone-info__act--rain:hover{background:rgba(76,201,240,.25);border-color:var(--rain)}
-.zone-info__act--note{
-  flex-basis:100%;
-  background:linear-gradient(135deg,var(--sun),#ff9500);
-  color:#25180a;border-color:transparent;
-}
-.zone-info__act--note:hover{filter:brightness(1.08);background:linear-gradient(135deg,var(--sun),#ff9500)}
-.zone-info__act[hidden]{display:none}
-
-.info-reopen{position:absolute;top:10px;left:10px;z-index:6;
-  width:42px;height:42px;border-radius:50%;
-  background:rgba(6,26,43,.94);border:1px solid var(--line-strong);
-  color:var(--sun-soft);font-size:19px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:var(--shadow-1);cursor:pointer;
-  transition:all var(--dur) var(--ease);}
-.info-reopen:hover{background:rgba(31,110,166,.85);color:#fff;transform:scale(1.08)}
-.info-reopen[hidden]{display:none}
-
-.first-hint{position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);z-index:8;
-  padding:12px 20px;border-radius:14px;
-  background:linear-gradient(135deg, rgba(255,183,3,.96), rgba(255,149,0,.96));
-  color:#25180a;font-size:13.5px;font-weight:700;
-  box-shadow:0 10px 40px rgba(0,0,0,.55);
-  display:flex;align-items:center;gap:8px;
-  animation:hintPulse 1.6s ease-in-out infinite;
-  pointer-events:none;white-space:nowrap;max-width:90%;text-align:center;}
-.first-hint[hidden]{display:none}
-@keyframes hintPulse{
-  0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1}
-  50%{transform:translate(-50%,-50%) scale(1.06);opacity:.92}}
-@media (max-width:500px){.first-hint{font-size:12px;padding:10px 14px;
-  white-space:normal;max-width:80%}}
-
-.legend{position:absolute;top:10px;right:10px;z-index:6;
-  max-width:230px;padding:9px 11px;border-radius:var(--r-md);
-  background:rgba(6,26,43,.94);border:1px solid var(--line-strong);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  font-size:11px;line-height:1.35;color:var(--text-dim);
-  box-shadow:var(--shadow-1);max-height:calc(100% - 20px);overflow-y:auto;}
-.legend h4{margin:0 0 6px;font-size:11px;font-weight:800;
-  text-transform:uppercase;letter-spacing:.06em;color:var(--sun-soft);}
-.legend ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px}
-.legend li{display:flex;align-items:center;gap:6px;cursor:pointer;
-  padding:3px 4px;border-radius:5px;}
-.legend li:hover{background:rgba(76,201,240,.08)}
-.legend__swatch{flex:0 0 auto;width:14px;height:10px;border-radius:3px;
-  border:1px solid rgba(255,255,255,.28);}
-.legend__toggle{position:absolute;top:5px;right:5px;width:22px;height:22px;
-  display:flex;align-items:center;justify-content:center;border-radius:6px;
-  font-size:12px;color:var(--text-mute);}
-.legend__toggle:hover{background:rgba(76,201,240,.16);color:#fff}
-.legend[data-collapsed="true"] ul{display:none}
-.legend[data-collapsed="true"]{max-width:120px}
-
-.layers{position:absolute;top:10px;right:10px;z-index:7;
-  display:flex;flex-direction:column;gap:5px;align-items:flex-end;}
-.layer-toggle{display:inline-flex;align-items:center;gap:5px;
-  padding:7px 11px;border-radius:999px;font-size:11px;font-weight:700;
-  background:rgba(6,26,43,.92);border:1px solid var(--line-strong);
-  color:var(--text-dim);transition:all var(--dur) var(--ease);
-  box-shadow:var(--shadow-1);white-space:nowrap;}
-.layer-toggle:hover{color:#fff;background:rgba(31,110,166,.85)}
-.layer-toggle[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
-  color:#03121f;border-color:transparent;}
-.layer-toggle[aria-pressed="false"]{opacity:.75}
-.layer-toggle__dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:0 0 auto;}
-
-.status{position:absolute;bottom:10px;right:10px;z-index:6;
-  max-width:calc(100% - 20px);padding:6px 12px;border-radius:999px;
-  font-size:11px;font-weight:700;background:rgba(46,196,182,.92);color:#04231f;
-  box-shadow:var(--shadow-1);opacity:1;
-  transition:opacity .35s var(--ease), transform .35s var(--ease);}
-.status[data-state="warn"]{background:rgba(255,183,3,.94);color:#2a1c00}
-.status[data-state="error"]{background:rgba(255,84,112,.94);color:#fff}
-.status[data-state="busy"]{background:rgba(76,201,240,.94);color:#03121f}
-.status[data-hide="true"]{opacity:0;transform:translateY(6px);pointer-events:none}
-
-.export-stamp{position:absolute;bottom:12px;left:12px;z-index:999;
-  padding:10px 16px;border-radius:12px;
-  background:linear-gradient(135deg, rgba(6,26,43,.96), rgba(15,58,95,.96));
-  border:2px solid var(--sun);color:#fff;font-family:var(--font);
-  box-shadow:0 8px 30px rgba(0,0,0,.55);
-  text-align:left;pointer-events:none;max-width:60%;}
-.export-stamp__name{font-size:17px;font-weight:800;letter-spacing:.04em;
-  color:var(--sun-soft);margin-bottom:3px;line-height:1.2;}
-.export-stamp__author{font-size:13px;font-weight:600;color:#fff;
-  margin-bottom:4px;line-height:1.3;}
-.export-stamp__time{font-size:11px;font-weight:500;color:var(--rain-soft);
-  font-variant-numeric:tabular-nums;}
-@media (max-width:520px){
-  .export-stamp{padding:8px 12px}
-  .export-stamp__name{font-size:14px}
-  .export-stamp__author{font-size:11.5px}
-  .export-stamp__time{font-size:10px}}
-
-.toast{position:absolute;bottom:60px;left:50%;
-  transform:translateX(-50%) translateY(20px);z-index:9;
-  padding:10px 18px;border-radius:999px;
-  font-size:13px;font-weight:700;color:#03121f;
-  background:linear-gradient(135deg,var(--sun-soft),var(--sun));
-  box-shadow:0 8px 30px rgba(0,0,0,.5);
-  opacity:0;pointer-events:none;
-  transition:opacity .25s var(--ease), transform .25s var(--ease);
-  max-width:calc(100% - 40px);text-align:center;}
 .toast[data-show="true"]{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.map-container.is-exporting .layers,
-.map-container.is-exporting .legend,
-.map-container.is-exporting .status,
-.map-container.is-exporting .toast,
-.map-container.is-exporting .info-reopen,
-.map-container.is-exporting .first-hint,
-.map-container.is-exporting .zone-info,
-.map-container.is-exporting .zoom-controls,
-.map-container.is-exporting .mobile-fabs{
-  visibility:hidden !important;
-}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
-.zoom-controls{position:absolute;bottom:10px;left:10px;z-index:6;
-  display:flex;flex-direction:column;gap:4px;}
-.zoom-btn{width:34px;height:34px;border-radius:9px;
-  background:rgba(6,26,43,.94);border:1px solid var(--line-strong);
-  color:var(--text);font-size:16px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:var(--shadow-1);cursor:pointer;
-  transition:all var(--dur) var(--ease);}
-.zoom-btn:hover{background:rgba(31,110,166,.9);color:#fff}
-.zoom-btn:active{transform:scale(.92)}
-
-.mobile-fabs{display:none;position:absolute;right:10px;bottom:10px;
-  z-index:20;flex-direction:column;gap:6px;}
-.fab{width:42px;height:42px;border-radius:50%;
-  background:rgba(6,26,43,.96);border:1px solid var(--line-strong);
-  color:var(--sun-soft);font-size:19px;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 6px 24px rgba(0,0,0,.55);cursor:pointer;
-  transition:all var(--dur) var(--ease);}
-.fab:hover{background:rgba(31,110,166,.9);color:#fff}
-.fab:active{transform:scale(.92)}
-.fab[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
-  color:#03121f;border-color:transparent;
-  box-shadow:0 6px 24px rgba(76,201,240,.55);}
-
-.toolbar{display:flex;align-items:center;gap:5px;padding:7px 10px;
-  padding-bottom:calc(7px + env(safe-area-inset-bottom));
-  padding-left:max(10px, env(safe-area-inset-left));
-  padding-right:max(10px, env(safe-area-inset-right));
-  background:linear-gradient(180deg, rgba(8,33,54,.92), rgba(6,26,43,.98));
-  border-top:1px solid var(--line);overflow-x:auto;overflow-y:hidden;
-  scrollbar-width:none;-webkit-overflow-scrolling:touch;z-index:20;}
-.toolbar::-webkit-scrollbar{display:none}
-.tool-group{display:flex;align-items:center;gap:5px;flex:0 0 auto;
-  padding-right:7px;margin-right:2px;border-right:1px solid var(--line);}
-.tool-group:last-child{border-right:0;padding-right:0;margin-right:0}
-.tool-btn{display:inline-flex;align-items:center;gap:5px;
-  min-height:40px;padding:0 12px;border-radius:var(--r-md);
-  font-size:13px;font-weight:600;color:var(--text-dim);
-  background:rgba(15,58,95,.62);border:1px solid transparent;
-  transition:all var(--dur) var(--ease);white-space:nowrap;}
-.tool-btn:hover{background:rgba(31,110,166,.75);color:#fff}
-.tool-btn:active{transform:scale(.96)}
-.tool-btn[aria-pressed="true"]{background:linear-gradient(135deg,var(--rain),#1f9ec9);
-  color:#03121f;font-weight:700;box-shadow:0 3px 14px rgba(76,201,240,.3);}
-.tool-btn[data-tool="idle"][aria-pressed="true"]{
-  background:linear-gradient(135deg,#a0c4e0,#7ea6c8);
-  color:#03121f;box-shadow:0 3px 14px rgba(160,196,224,.3);}
-
-.color-picker-wrap{
-  position:relative;flex:0 0 auto;
-  display:flex;align-items:center;gap:8px;
-}
-input[type="color"].color-big{
-  width:44px;height:44px;
-  border:3px solid #fff;border-radius:50%;
-  background:transparent;cursor:pointer;padding:0;
-  -webkit-appearance:none;appearance:none;
-  box-shadow:0 4px 12px rgba(0,0,0,.4);
-  transition:transform var(--dur) var(--ease);
-}
-input[type="color"].color-big:hover{transform:scale(1.08)}
-input[type="color"].color-big::-webkit-color-swatch-wrapper{padding:2px}
-input[type="color"].color-big::-webkit-color-swatch{border:0;border-radius:50%}
-input[type="color"].color-big::-moz-color-swatch{border:0;border-radius:50%}
-.color-hint{
-  font-size:11px;font-weight:700;color:var(--text-mute);
-  text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;
-}
-@media (max-width:400px){.color-hint{display:none}}
-
-input[type="range"]{-webkit-appearance:none;appearance:none;
-  width:70px;height:32px;background:transparent;cursor:pointer;flex:0 0 auto;}
-input[type="range"]::-webkit-slider-runnable-track{height:6px;border-radius:999px;
-  background:linear-gradient(90deg,var(--rain),var(--sun));}
-input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
-  margin-top:-7px;border-radius:50%;background:#fff;border:2px solid var(--sky-800);}
-input[type="range"]::-moz-range-track{height:6px;border-radius:999px;
-  background:linear-gradient(90deg,var(--rain),var(--sun));}
-input[type="range"]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;
-  background:#fff;border:2px solid var(--sky-800);}
-.size-label{font-size:12px;font-variant-numeric:tabular-nums;
-  color:var(--text-mute);min-width:18px;text-align:center;font-weight:700;}
-
-@media (min-width:900px){
-  .workspace{flex-direction:row}
-  .icon-gallery{flex-direction:column;width:64px;padding:8px 0;
-    border-bottom:0;border-right:1px solid var(--line);
-    overflow-x:hidden;overflow-y:auto;align-items:center;}
-  .icon-item{width:48px;height:48px;font-size:24px}
-  .toolbar{flex-wrap:wrap;overflow:visible}
-  .zone-info{max-width:400px;font-size:13px}
-  .zone-info h2{font-size:14.5px}
-  .legend{max-width:250px}
-  .mobile-fabs{display:none !important}
-  .map-viewport{border-radius:0}
-}
-
-@media (max-width:899px){
-  .icon-gallery{display:none;position:absolute;left:10px;right:10px;bottom:64px;
-    max-width:500px;margin:0 auto;padding:10px;border-radius:14px;
-    background:rgba(6,26,43,.97);border:1px solid var(--line-strong);
-    box-shadow:0 10px 40px rgba(0,0,0,.6);
-    flex-wrap:wrap;gap:6px;max-height:50vh;overflow-y:auto;overflow-x:hidden;
-    justify-content:center;z-index:22;}
-  .icon-gallery.open{display:flex}
-  .icon-item{width:46px;height:46px;font-size:22px}
-
-  .legend{display:none;position:absolute;top:50%;left:50%;
-    transform:translate(-50%,-50%);
-    max-width:min(340px, calc(100% - 24px));max-height:70%;
-    z-index:30;padding:14px;border:2px solid var(--line-strong);
-    border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.75);
-    font-size:13px;overflow-y:auto;}
-  .legend.open{display:block}
-  .legend h4{font-size:13px;margin-bottom:8px}
-  .legend ul{gap:6px}
-  .legend__swatch{width:18px;height:12px}
-  .legend__toggle{width:28px;height:28px;font-size:14px}
-  .legend[data-collapsed="true"] ul{display:flex}
-  .legend[data-collapsed="true"]{max-width:min(340px, calc(100% - 24px))}
-
-  .layers{display:none;top:auto;bottom:64px;right:10px;z-index:25;}
-  .layers.open{display:flex}
-  .layer-toggle{padding:9px 13px;font-size:12px}
-
-  .mobile-fabs{display:flex}
-
-  .zone-info{top:auto;left:10px;right:10px;bottom:118px;
-    max-width:calc(100% - 20px);max-height:42vh;
-    padding:10px 38px 10px 12px;font-size:12.5px;
-    border-left-width:4px;z-index:15;}
-  .zone-info h2{font-size:13.5px}
-  .zone-info__chip{font-size:10.5px;padding:2px 7px}
-  .zone-info__hint{font-size:10.5px}
-  .zone-info__act{font-size:12px;padding:8px 8px}
-
-  .info-reopen{top:auto;bottom:118px;left:10px;
-    width:40px;height:40px;font-size:18px;z-index:16;}
-
-  .status{top:8px;right:8px;bottom:auto;font-size:10.5px;padding:5px 10px;z-index:16;}
-  .zoom-controls{bottom:auto;top:50%;left:8px;transform:translateY(-50%);z-index:14;}
-  .zoom-btn{width:36px;height:36px;font-size:17px}
-  .toast{bottom:auto;top:50%;}
-
-  .sticker{width:160px;max-height:160px}
-  .sticker__bar{min-height:32px}
-  .sticker__del{width:36px;height:36px;font-size:15px}
-}
-
-@media (max-width:400px){
-  .app-title__text{display:none}
-  .btn-label{display:none}
-  .btn{padding:0 10px}
-  .zoom-btn{width:34px;height:34px;font-size:15px}
-  .fab{width:40px;height:40px;font-size:18px}
-  .zone-info{font-size:12px}
-  .note-editor__textarea{font-size:16px}
-  .author-credit{font-size:10px;padding:2px 8px}
-}
-@media (orientation:landscape) and (max-height:520px){
-  .student-bar{padding-top:4px;padding-bottom:4px}
-  .icon-item{width:38px;height:38px;font-size:19px}
-  .toolbar{padding-top:4px;padding-bottom:calc(4px + env(safe-area-inset-bottom))}
-  .tool-btn{min-height:36px;padding:0 10px;font-size:12px}
-  .zone-info{max-height:50vh;bottom:100px}
-  .author-line{padding:2px 8px}
-  .author-credit{font-size:9.5px}
+@media print{
+  body,html{overflow:visible;background:#fff}
+  .header,.drawer,.quick-bar,.author-line,.drawer-backdrop{display:none!important}
+  .app{display:block;height:auto}
+  .workspace{display:block}
+  .board-wrap{position:static;height:auto}
+  .board{position:static;min-height:800px}
 }
 </style>
 </head>
 <body>
 
-<!-- ЕКРАН ВИБОРУ УЧНЯ -->
-<div class="student-picker" id="studentPicker" hidden>
-  <div class="student-picker__header">
-    <span class="student-picker__icon">🌍</span>
-    <h1 class="student-picker__title">Кліматична лабораторія</h1>
-    <p class="student-picker__subtitle">Обери своє ім'я, щоб відкрити власну карту</p>
-  </div>
-  <div class="student-grid" id="studentGrid"></div>
-</div>
-
-<!-- РЕДАКТОР НОТАТКИ -->
-<div class="note-editor" id="noteEditor" hidden>
-  <div class="note-editor__header">
-    <button class="note-editor__btn" id="noteEditorClose" type="button">
-      <span aria-hidden="true">✕</span> Скасувати
+<div class="app" id="app">
+  <header class="header">
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="Меню">
+      <span aria-hidden="true">☰</span>
     </button>
-    <h3 class="note-editor__title">✏️ Нотатка</h3>
-    <button class="note-editor__btn note-editor__btn--save" id="noteEditorSave" type="button">
-      <span aria-hidden="true">✓</span> Готово
-    </button>
-  </div>
-  <textarea class="note-editor__textarea" id="noteEditorText"
-            placeholder="Пиши тут…&#10;&#10;Наприклад:&#10;— Який клімат?&#10;— Що цікавого?&#10;— Що запам'ятав?"></textarea>
-  <div class="note-editor__hint" id="noteEditorHint"></div>
-</div>
-
-<!-- ПАНЕЛЬ ВЧИТЕЛЯ -->
-<div class="teacher-panel" id="teacherPanel" hidden>
-  <div class="teacher-panel__content">
-    <h2 class="teacher-panel__title">🔐 Панель вчителя</h2>
-    <p class="teacher-panel__sub">Олеся Бохонок</p>
-    <div class="teacher-panel__actions">
-      <button class="teacher-btn teacher-btn--sync" id="teacherSyncAll" type="button">
-        <span class="teacher-btn__emoji" aria-hidden="true">🔄</span>
-        <span class="teacher-btn__text">
-          <span class="teacher-btn__label">Синхронізувати всіх</span>
-          <span class="teacher-btn__desc">Перечитати дані всіх 25 учнів з Firebase</span>
-        </span>
-      </button>
-      <button class="teacher-btn teacher-btn--save" id="teacherSaveAll" type="button">
-        <span class="teacher-btn__emoji" aria-hidden="true">📸</span>
-        <span class="teacher-btn__text">
-          <span class="teacher-btn__label">Зберегти PNG всіх</span>
-          <span class="teacher-btn__desc">Знімок карти кожного учня (25 файлів)</span>
-        </span>
-      </button>
-      <button class="teacher-btn teacher-btn--clear" id="teacherClearAll" type="button">
-        <span class="teacher-btn__emoji" aria-hidden="true">♻️</span>
-        <span class="teacher-btn__text">
-          <span class="teacher-btn__label">Очистити ВСІ дошки</span>
-          <span class="teacher-btn__desc">Видалити всі 25 дощок — для нового класу</span>
-        </span>
-      </button>
-      <button class="teacher-btn teacher-btn--close" id="teacherClose" type="button">
-        Закрити
-      </button>
-    </div>
-    <div class="teacher-progress" id="teacherProgress">
-      <div class="teacher-progress__text" id="teacherProgressText">Обробка…</div>
-      <div class="teacher-progress__bar">
-        <div class="teacher-progress__fill" id="teacherProgressFill"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ОСНОВНИЙ ЗАСТОСУНОК -->
-<div class="app" id="app" hidden>
-  <header class="app-header">
-    <h1 class="app-title">
-      <span class="app-title__icon" aria-hidden="true">🌍</span>
-      <span class="app-title__text">Кліматична лабораторія</span>
+    <h1 class="header__title">
+      <span class="header__title-icon">🌿</span>
+      <span class="header__title-text">Записник природи</span>
     </h1>
-    <div class="header-controls">
-      <span class="net-indicator" id="netIndicator" data-online="unknown"
-            role="status" aria-live="polite" title="Стан синхронізації">
-        <span class="net-indicator__dot" aria-hidden="true"></span>
-        <span id="netLabel">З’єднання…</span>
-      </span>
-      <div class="timer" id="timer" role="timer" aria-label="Залишилось часу">20:00</div>
-      <button class="btn btn--ghost" id="timerBtn" type="button"
-              aria-label="Пауза таймера" aria-pressed="false">
-        <span aria-hidden="true" id="timerBtnIcon">⏸</span>
-      </button>
-      <button class="btn btn--ghost" id="syncBtn" type="button" aria-label="Синхронізувати">
-        <span aria-hidden="true">🔄</span>
-      </button>
-      <button class="btn btn--primary" id="exportBtn" type="button" aria-label="Зберегти PNG">
-        <span aria-hidden="true">📸</span><span class="btn-label">PNG</span>
+    <div class="header__name">
+      <label for="authorNameInput">Ім'я</label>
+      <input type="text" id="authorNameInput" placeholder="Як тебе звати?" maxlength="40" autocomplete="off">
+    </div>
+    <div class="header__controls">
+      <div class="hbtn-wrap">
+        <button class="hbtn" id="syncBtn" type="button" aria-label="Синхронізувати" title="Синхронізувати">
+          <span aria-hidden="true">🔄</span>
+        </button>
+        <span class="net-dot" id="netDot" data-online="unknown"></span>
+      </div>
+      <button class="hbtn hbtn--primary" id="exportBtn" type="button" aria-label="Зберегти PNG" title="Зберегти як PNG">
+        <span aria-hidden="true">📸</span>
       </button>
     </div>
   </header>
 
-  <!-- ═══════════ ПІДПИС АВТОРА — завжди видно, тап → панель вчителя ═══════════ -->
-  <div class="author-line">
-    <span class="author-credit" id="authorCredit" role="presentation">
-      © Авторка Олеся Бохонок
-    </span>
-  </div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer__inner">
 
-  <div class="student-bar">
-    <div class="student-bar__avatar" id="studentAvatar">1</div>
-    <div class="student-bar__field">
-      <label class="student-bar__label" for="authorNameInput">Виконавець роботи</label>
-      <input type="text" class="student-bar__input" id="authorNameInput"
-             placeholder="Впиши своє ім'я та прізвище"
-             maxlength="50" autocomplete="off" spellcheck="false">
-    </div>
-    <button class="student-bar__change" id="changeStudentBtn" type="button">
-      <span aria-hidden="true">👥</span>
-      <span>Змінити</span>
-    </button>
-  </div>
+      <section class="dsection">
+        <div class="dsection__title">
+          <span class="dsection__title-icon">🌍</span> Природні тіла
+        </div>
+        <div class="icon-tabs" id="iconTabs"></div>
+        <div class="icon-grid" id="iconGrid"></div>
+      </section>
 
-  <main class="workspace">
-    <div class="icon-gallery" id="iconGallery" role="group" aria-label="Погодні іконки"></div>
-
-    <div class="map-container" id="mapContainer" role="tabpanel" aria-label="Інтерактивна карта світу">
-
-      <div class="map-viewport" id="mapViewport">
-        <svg id="svgMap" xmlns="http://www.w3.org/2000/svg"
-             aria-label="Реальна географічна карта світу" role="img">
-          <defs>
-            <radialGradient id="oceanGrad" cx="50%" cy="45%" r="75%">
-              <stop offset="0%" stop-color="#0d3f6b"/>
-              <stop offset="45%" stop-color="#082a4a"/>
-              <stop offset="100%" stop-color="#04162a"/>
-            </radialGradient>
-            <radialGradient id="oceanGlow" cx="50%" cy="45%" r="60%">
-              <stop offset="0%" stop-color="#2a72b0" stop-opacity=".35"/>
-              <stop offset="70%" stop-color="#0a3d68" stop-opacity="0"/>
-              <stop offset="100%" stop-color="#020a14" stop-opacity="0"/>
-            </radialGradient>
-          </defs>
-          <g id="mapRoot"></g>
-        </svg>
-
-        <canvas id="drawCanvas" data-tool="idle" aria-label="Полотно для малювання">
-          Ваш браузер не підтримує полотно.
-        </canvas>
-
-        <div id="stickersLayer"></div>
-      </div>
-
-      <div class="first-hint" id="firstHint" hidden>
-        <span aria-hidden="true">👆</span>
-        <span>Потягни карту пальцем. Торкнись країни — додай температуру чи опади.</span>
-      </div>
-
-      <div class="zoom-controls" role="group" aria-label="Масштаб">
-        <button class="zoom-btn" id="zoomIn" type="button" aria-label="Збільшити">＋</button>
-        <button class="zoom-btn" id="zoomOut" type="button" aria-label="Зменшити">−</button>
-        <button class="zoom-btn" id="zoomFit" type="button" aria-label="Скинути">⊡</button>
-      </div>
-
-      <div class="mobile-fabs" role="group" aria-label="Мобільні панелі">
-        <button class="fab" id="fabIcons" type="button" aria-pressed="false" aria-label="Іконки">🎨</button>
-        <button class="fab" id="fabLayers" type="button" aria-pressed="false" aria-label="Шари">⚙️</button>
-        <button class="fab" id="fabLegend" type="button" aria-pressed="false" aria-label="Легенда">📋</button>
-      </div>
-
-      <div class="layers" id="layers" role="group" aria-label="Шари карти">
-        <button class="layer-toggle" id="zonesToggle" type="button"
-                aria-pressed="false" aria-label="Зафарбування поясів">
-          <span class="layer-toggle__dot" aria-hidden="true"></span>
-          <span>Зафарбування</span>
-        </button>
-        <button class="layer-toggle" id="labelsToggle" type="button"
-                aria-pressed="false" aria-label="Підписи поясів">
-          <span aria-hidden="true">🔤</span><span>Підписи</span>
-        </button>
-        <button class="layer-toggle" id="bordersToggle" type="button"
-                aria-pressed="false" aria-label="Межі поясів">
-          <span aria-hidden="true">━━</span><span>Межі</span>
-        </button>
-      </div>
-
-      <aside class="legend" id="legend" data-collapsed="true" aria-label="Легенда кліматичних поясів">
-        <button class="legend__toggle" id="legendToggle" type="button"
-                aria-label="Розгорнути легенду" aria-expanded="false">+</button>
-        <h4>Кліматичні пояси</h4>
-        <ul id="legendList"></ul>
-      </aside>
-
-      <button class="info-reopen" id="infoReopen" type="button" hidden
-              aria-label="Показати картку">ℹ️</button>
-
-      <div class="zone-info" id="zoneInfo">
-        <button class="zone-info__close" type="button" id="zoneInfoClose"
-                aria-label="Закрити">✕</button>
-        <h2 id="zoneInfoTitle">🌍 Вітаю!</h2>
-        <p id="zoneInfoDesc">Торкнись країни — додай температуру, опади або нотатку.</p>
-        <div class="zone-info__meta" id="zoneInfoMeta"></div>
-        <span class="zone-info__hint" id="zoneInfoHint"></span>
-        <div class="zone-info__actions" id="zoneInfoActions">
-          <button class="zone-info__act zone-info__act--temp" id="addTempLabel" type="button" hidden>
-            <span aria-hidden="true">📌</span> <span>🌡 Поставити</span>
+      <section class="dsection">
+        <div class="dsection__title">
+          <span class="dsection__title-icon">✏️</span> Малювання
+        </div>
+        <div class="tool-row" id="toolRow">
+          <button class="tool-chip" type="button" data-tool="idle" aria-pressed="true">
+            <span class="tool-chip__icon">✋</span> Огляд
           </button>
-          <button class="zone-info__act zone-info__act--rain" id="addRainLabel" type="button" hidden>
-            <span aria-hidden="true">📌</span> <span>💧 Поставити</span>
+          <button class="tool-chip" type="button" data-tool="brush" aria-pressed="false">
+            <span class="tool-chip__icon">🖌️</span> Пензель
           </button>
-          <button class="zone-info__act zone-info__act--note" id="addNoteFromCard" type="button" hidden>
-            <span aria-hidden="true">📝</span> Додати нотатку
+          <button class="tool-chip" type="button" data-tool="eraser" aria-pressed="false">
+            <span class="tool-chip__icon">🧽</span> Ластик
           </button>
         </div>
-      </div>
 
-      <div class="status" id="status" role="status" aria-live="polite">🟢 Синхронізовано</div>
-      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <div class="color-row">
+          <div class="color-swatches" id="colorSwatches"></div>
+          <input type="color" class="color-custom" id="colorCustom" value="#2f6b42" aria-label="Свій колір">
+        </div>
+
+        <div class="size-row">
+          <span style="font-size:12px;font-weight:800;color:var(--leaf-700)">Товщина</span>
+          <input type="range" id="brushSize" min="1" max="60" value="5">
+          <span class="size-val" id="sizeVal">5</span>
+        </div>
+      </section>
+
+      <section class="dsection">
+        <div class="dsection__title">
+          <span class="dsection__title-icon">➕</span> Додати
+        </div>
+        <button class="action-btn action-btn--primary" type="button" id="addTextBtn">
+          <span class="action-btn__icon">📝</span> Додати текст
+        </button>
+        <button class="action-btn" type="button" id="addStickerBtn">
+          <span class="action-btn__icon">🗒️</span> Додати нотатку
+        </button>
+      </section>
+
+      <section class="dsection">
+        <div class="dsection__title">
+          <span class="dsection__title-icon">🎨</span> Фон
+        </div>
+        <div class="bg-grid" id="bgGrid">
+          <button class="bg-opt" type="button" data-bg="line">
+            <span class="bg-opt__swatch bg-opt__swatch--line"></span> Лінійка
+          </button>
+          <button class="bg-opt" type="button" data-bg="grid">
+            <span class="bg-opt__swatch bg-opt__swatch--grid"></span> Клітинка
+          </button>
+          <button class="bg-opt" type="button" data-bg="white">
+            <span class="bg-opt__swatch bg-opt__swatch--white"></span> Чистий
+          </button>
+          <button class="bg-opt" type="button" data-bg="sky">
+            <span class="bg-opt__swatch bg-opt__swatch--sky"></span> Небо
+          </button>
+          <button class="bg-opt" type="button" data-bg="forest">
+            <span class="bg-opt__swatch bg-opt__swatch--forest"></span> Ліс
+          </button>
+        </div>
+      </section>
+
+      <section class="dsection">
+        <button class="action-btn action-btn--danger" type="button" id="clearBoardBtn">
+          <span class="action-btn__icon">🗑️</span> Очистити дошку
+        </button>
+      </section>
+
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <div class="board-wrap" id="boardWrap">
+      <div class="board" id="board" data-bg="line">
+        <canvas id="drawCanvas" data-tool="idle"></canvas>
+        <div id="objectsLayer"></div>
+      </div>
+    </div>
+
+    <div class="quick-bar">
+      <button class="quick-btn" type="button" data-qtool="idle" aria-pressed="true" title="Огляд">✋</button>
+      <button class="quick-btn" type="button" data-qtool="brush" aria-pressed="false" title="Пензель">🖌️</button>
+      <button class="quick-btn" type="button" data-qtool="eraser" aria-pressed="false" title="Ластик">🧽</button>
+      <button class="quick-btn" type="button" id="qAddText" title="Додати текст">📝</button>
+      <button class="quick-btn" type="button" id="qAddSticker" title="Додати нотатку">🗒️</button>
+      <button class="quick-btn" type="button" id="qMenu" title="Меню">☰</button>
+    </div>
+
+    <div class="author-line">
+      <span class="author-credit" id="authorCredit">© Авторка Олеся Бохонок</span>
     </div>
   </main>
-
-  <footer class="toolbar" aria-label="Інструменти">
-    <div class="tool-group" role="group" aria-label="Інструмент">
-      <button class="tool-btn" type="button" data-tool="idle" aria-pressed="true">
-        <span aria-hidden="true">✋</span><span class="btn-label">Огляд</span>
-      </button>
-      <button class="tool-btn" type="button" data-tool="brush" aria-pressed="false">
-        <span aria-hidden="true">✏️</span><span class="btn-label">Пензель</span>
-      </button>
-      <button class="tool-btn" type="button" data-tool="fill" aria-pressed="false">
-        <span aria-hidden="true">🎨</span><span class="btn-label">Пояс</span>
-      </button>
-      <button class="tool-btn" type="button" data-tool="eraser" aria-pressed="false">
-        <span aria-hidden="true">🧽</span><span class="btn-label">Ластик</span>
-      </button>
-    </div>
-
-    <div class="tool-group" role="group" aria-label="Колір">
-      <div class="color-picker-wrap">
-        <input type="color" class="color-big" id="colorPicker" value="#ffb703"
-               aria-label="Обрати колір">
-        <span class="color-hint">Колір</span>
-      </div>
-    </div>
-
-    <div class="tool-group">
-      <label class="sr-only" for="brushSize">Розмір</label>
-      <input type="range" id="brushSize" min="1" max="60" value="5" step="1"
-             aria-valuemin="1" aria-valuemax="60" aria-valuenow="5">
-      <span class="size-label" id="sizeLabel" aria-hidden="true">5</span>
-    </div>
-
-    <div class="tool-group">
-      <button class="tool-btn" type="button" id="addStickerBtn">
-        <span aria-hidden="true">📝</span><span class="btn-label">Стікер</span>
-      </button>
-      <button class="tool-btn" type="button" id="clearBtn">
-        <span aria-hidden="true">🗑</span><span class="btn-label">Очистити</span>
-      </button>
-    </div>
-  </footer>
 </div>
 
-<noscript>
-  <p style="padding:24px;color:#eaf4fb;font-family:sans-serif">
-    Для роботи потрібно увімкнути JavaScript.
-  </p>
-</noscript>
+<div class="modal-back" id="adminPanel" hidden>
+  <div class="modal">
+    <h2>🔐 Панель адміна</h2>
+    <p class="sub">Олеся Бохонок</p>
+    <div class="modal__actions">
+      <button class="modal-btn" id="adminReload" type="button">
+        <span class="modal-btn__emoji">🔄</span>
+        <span class="modal-btn__text">
+          <span class="modal-btn__label">Перечитати з сервера</span>
+          <span class="modal-btn__desc">Завантажити останню версію дошки</span>
+        </span>
+      </button>
+      <button class="modal-btn modal-btn--primary" id="adminSavePNG" type="button">
+        <span class="modal-btn__emoji">📸</span>
+        <span class="modal-btn__text">
+          <span class="modal-btn__label">Зберегти PNG</span>
+          <span class="modal-btn__desc">Знімок дошки одним файлом</span>
+        </span>
+      </button>
+      <button class="modal-btn modal-btn--danger" id="adminClearAll" type="button">
+        <span class="modal-btn__emoji">♻️</span>
+        <span class="modal-btn__text">
+          <span class="modal-btn__label">Очистити все</span>
+          <span class="modal-btn__desc">Видалити всю дошку для нового класу</span>
+        </span>
+      </button>
+      <button class="modal-btn modal-btn--close" id="adminClose" type="button">Закрити</button>
+    </div>
+    <div class="progress" id="adminProgress">
+      <div id="adminProgressText">Обробка…</div>
+      <div class="progress__bar"><div class="progress__fill" id="adminProgressFill"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   НАЛАШТУВАННЯ
-   ============================================================ */
-const STUDENT_NAMES = [
-  'Учень 1',  'Учень 2',  'Учень 3',  'Учень 4',  'Учень 5',
-  'Учень 6',  'Учень 7',  'Учень 8',  'Учень 9',  'Учень 10',
-  'Учень 11', 'Учень 12', 'Учень 13', 'Учень 14', 'Учень 15',
-  'Учень 16', 'Учень 17', 'Учень 18', 'Учень 19', 'Учень 20',
-  'Учень 21', 'Учень 22', 'Учень 23', 'Учень 24', 'Учень 25'
-];
-const TIMER_MINUTES = 20;
-const INFO_CARD_AUTOHIDE_MS = 9000;
+/* ═══════════ КОНСТАНТИ ═══════════ */
+const NATURE_ICONS = {
+  sky:     { label:'Небо',    icons:['☀️','🌤️','⛅','🌥️','☁️','🌙','⭐','🌟','✨','🌌','🌠','☄️'] },
+  weather: { label:'Погода',  icons:['🌧️','⛈️','🌦️','❄️','🌨️','🌪️','💨','🌫️','🌈','💧','☃️','🌊'] },
+  plants:  { label:'Рослини', icons:['🌳','🌲','🌴','🌵','🌿','🍀','🌸','🌻','🌹','🌷','🍄','🌰','🍁','🌱','🌾','🪴','🎋','🍃'] },
+  animals: { label:'Тварини', icons:['🦋','🐝','🐞','🐦','🦊','🐻','🐸','🐟','🦌','🐇','🐿️','🦔','🐌','🐛','🐜','🦉','🐺','🦅','🐢','🐍','🦎','🦆','🐠','🐙','🐬','🦈','🐋'] },
+  land:    { label:'Рельєф',  icons:['🏔️','⛰️','🌋','🪨','🌄','🌅','🏜️','🏞️','🏝️','🏕️','🕳️','⛲','🌉','🏰'] },
+  water:   { label:'Вода',    icons:['🌊','💧','🏞️','🐚','🦀','🦐','🐠','🐡','🐙','🦑','🐬','🦈','🐳','🐋','⛵','🚤'] }
+};
 
-/* ============================================================
-   FIREBASE
-   ============================================================ */
-const firebaseConfig = {
+const COLOR_SWATCHES = [
+  '#1f2a24', '#5a3e2b', '#a8763e', '#e63946',
+  '#ff6b35', '#ffb703', '#84cc16', '#2f6b42',
+  '#4cc9f0', '#3a86ff', '#8338ec', '#e91e8c',
+  '#ffffff', '#8a9a90'
+];
+
+const STICKER_COLORS = ['#ffe066','#a8e6cf','#ffb4a2','#c8e8ff','#e8d5ff','#ffd6a5','#d4f1c9','#ffcad4'];
+
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyAIqa_MF4sevTfg7Za8Fly3EK97dVYm_Q8",
   authDomain: "realtime-6af79.firebaseapp.com",
   databaseURL: "https://realtime-6af79-default-rtdb.europe-west1.firebasedatabase.app",
@@ -1113,2085 +780,854 @@ const firebaseConfig = {
   messagingSenderId: "154142013253",
   appId: "1:154142013253:web:2b3bfde1a8ecea5565f02c"
 };
-let db = null;
+
+const BOARD_PATH = 'notebook/main';
+const CLIENT_ID = Math.random().toString(36).slice(2, 11);
+
+/* ═══════════ DOM ═══════════ */
+const $  = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+
+const app            = $('#app');
+const drawer         = $('#drawer');
+const drawerBackdrop = $('#drawerBackdrop');
+const menuBtn        = $('#menuBtn');
+const board          = $('#board');
+const boardWrap      = $('#boardWrap');
+const canvas         = $('#drawCanvas');
+const ctx            = canvas.getContext('2d', { alpha:true });
+const objectsLayer   = $('#objectsLayer');
+const iconTabs       = $('#iconTabs');
+const iconGrid       = $('#iconGrid');
+const toolRow        = $('#toolRow');
+const colorSwatches  = $('#colorSwatches');
+const colorCustom    = $('#colorCustom');
+const brushSizeEl    = $('#brushSize');
+const sizeValEl      = $('#sizeVal');
+const bgGrid         = $('#bgGrid');
+const toastEl        = $('#toast');
+const netDot         = $('#netDot');
+const authorInput    = $('#authorNameInput');
+const adminPanel     = $('#adminPanel');
+const adminProgress  = $('#adminProgress');
+const adminProgressText = $('#adminProgressText');
+const adminProgressFill = $('#adminProgressFill');
+
+/* ═══════════ СТАН ═══════════ */
+const state = {
+  data: { canvas:null, icons:[], texts:[], stickers:[], background:'line', name:'' },
+  tool: 'idle',
+  color: '#2f6b42',
+  size: 5,
+  activeIconTab: 'sky',
+  selectedObjId: null,
+  drawing: false,
+  lastX: 0, lastY: 0,
+  dirty: false,
+  saveTimer: null,
+  lastLocalCanvas: null,
+  pendingCanvas: undefined,
+  db: null,
+  ref: null,
+  handler: null,
+  listenersActive: false,
+  isOnline: false,
+  adminBusy: false,
+  suppressSave: false
+};
+
+let dpr = 1;
+let canvasRenderToken = 0;
+let resizeRaf = null;
+
+/* ═══════════ УТИЛІТИ ═══════════ */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+function showToast(msg, ms=2200){
+  toastEl.textContent = msg;
+  toastEl.dataset.show = 'true';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => { toastEl.dataset.show = 'false'; }, ms);
+}
+function setAdminProgress(text, percent){
+  if (text === null){ adminProgress.dataset.show = 'false'; return; }
+  adminProgress.dataset.show = 'true';
+  adminProgressText.textContent = text;
+  adminProgressFill.style.width = (percent || 0) + '%';
+}
+function emptyData(){
+  return { canvas:null, icons:[], texts:[], stickers:[], background:'line', name:'' };
+}
+function isMobile(){ return window.innerWidth < 1025; }
+
+/* ═══════════ FIREBASE ═══════════ */
 function initFirebase(){
   try {
     if (typeof firebase === 'undefined') throw new Error('Firebase SDK не завантажено');
-    if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
+    if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    state.db = firebase.database();
+    state.ref = state.db.ref(BOARD_PATH);
     return true;
   } catch (err){ console.warn('[Firebase]', err); return false; }
 }
 
-/* ============================================================
-   КЛІМАТИЧНІ ДАНІ
-   ============================================================ */
-const ZONE_BASE_OPACITY = 0.13;
-const ZONE_USER_OPACITY = 0.68;
-
-const CLIMATE_BANDS = [
-  { id:'arctic',        name:'Арктичний',          short:'АРКТ.',        lat:[ 66.5,  90 ], color:'#bfe6ff',
-    desc:'Полярна ніч і день, вічна мерзлота, t° ≈ −30…0 °C.' },
-  { id:'subarctic',     name:'Субарктичний',       short:'СУБАРКТ.',     lat:[ 50,   66.5], color:'#79c8e8',
-    desc:'Коротке прохолодне літо, сувора зима, тайга.' },
-  { id:'temperate_n',   name:'Помірний (пн.)',     short:'ПОМІРНИЙ ПН.', lat:[ 35,   50   ], color:'#7fd07f',
-    desc:'Чотири пори року, помірні опади, ліси й степи.' },
-  { id:'subtropical_n', name:'Субтропічний (пн.)', short:'СУБТРОП. ПН.', lat:[ 23.5, 35   ], color:'#f6c945',
-    desc:'Спекотне літо, м’яка зима, сухі й вологі області.' },
-  { id:'tropical_n',    name:'Тропічний (пн.)',    short:'ТРОП. ПН.',    lat:[ 10,   23.5 ], color:'#ffa94d',
-    desc:'Спекотно цілий рік, сухий сезон, пустелі й савани північної півкулі.' },
-  { id:'equatorial',    name:'Екваторіальний',     short:'ЕКВАТОР.',     lat:[-10,   10   ], color:'#ff4d2e',
-    desc:'Найспекотніший і найвологіший пояс: +27 °C і до 2500 мм опадів. Тропічні ліси Амазонії, Конго, Індонезії.' },
-  { id:'tropical_s',    name:'Тропічний (пд.)',    short:'ТРОП. ПД.',    lat:[-23.5,-10   ], color:'#ffa94d',
-    desc:'Спекотно цілий рік, сухий сезон, савани й пустелі південної півкулі.' },
-  { id:'subtropical_s', name:'Субтропічний (пд.)', short:'СУБТРОП. ПД.', lat:[-35,  -23.5 ], color:'#f6c945',
-    desc:'Спекотне літо, м’яка зима, середземноморський клімат.' },
-  { id:'temperate_s',   name:'Помірний (пд.)',     short:'ПОМІРНИЙ ПД.', lat:[-50,  -35   ], color:'#7fd07f',
-    desc:'Прохолодне літо, помірні опади, океанічний вплив.' },
-  { id:'subantarctic',  name:'Субантарктичний',    short:'СУБАНТАРКТ.',  lat:[-66.5,-50   ], color:'#79c8e8',
-    desc:'Холодне літо, сильні вітри, тундра.' },
-  { id:'antarctic',     name:'Антарктичний',       short:'АНТАРКТ.',     lat:[-90,  -66.5 ], color:'#bfe6ff',
-    desc:'Крижаний щит, t° до −60 °C, полярні станції.' }
-];
-
-const ZONE_BOUNDARIES = [
-  { lat: 66.5, type:'polar' }, { lat: 50, type:'mid' }, { lat: 35, type:'mid' },
-  { lat: 23.5, type:'tropic' }, { lat: 10, type:'tropic' }, { lat: 0, type:'equator' },
-  { lat:-10, type:'tropic' }, { lat:-23.5, type:'tropic' }, { lat:-35, type:'mid' },
-  { lat:-50, type:'mid' }, { lat:-66.5, type:'polar' }
-];
-
-const LAT_LABELS = [
-  { lat: 66.5, label:'Полярне коло (66.5°N)' },
-  { lat: 23.5, label:'Тропік Рака (23.5°N)' },
-  { lat: 10,   label:'10°N' },
-  { lat: 0,    label:'ЕКВАТОР (0°)', equator:true },
-  { lat:-10,   label:'10°S' },
-  { lat:-23.5, label:'Тропік Козерога (23.5°S)' },
-  { lat:-66.5, label:'Полярне коло (66.5°S)' }
-];
-
-const COUNTRY_CLIMATE = {
-  'Ukraine':{uk:'Україна',zone:'Помірний континентальний',t:'+8 °C',tShort:'+8°',rain:'600 мм/рік',rainShort:'600',note:'Чотири пори року, чорноземи.'},
-  'Poland':{uk:'Польща',zone:'Помірний',t:'+8 °C',tShort:'+8°',rain:'600 мм/рік',rainShort:'600',note:'Перехідний між морським і континентальним.'},
-  'Germany':{uk:'Німеччина',zone:'Помірний',t:'+9 °C',tShort:'+9°',rain:'700 мм/рік',rainShort:'700',note:'Морський вплив Атлантики.'},
-  'France':{uk:'Франція',zone:'Помірний / субтропічний',t:'+11 °C',tShort:'+11°',rain:'750 мм/рік',rainShort:'750',note:'Океанічний на заході, середземноморський на півдні.'},
-  'Spain':{uk:'Іспанія',zone:'Середземноморський',t:'+15 °C',tShort:'+15°',rain:'500 мм/рік',rainShort:'500',note:'Спекотне сухе літо.'},
-  'Italy':{uk:'Італія',zone:'Середземноморський',t:'+15 °C',tShort:'+15°',rain:'700 мм/рік',rainShort:'700',note:'Типовий субтропічний.'},
-  'United Kingdom':{uk:'Велика Британія',zone:'Помірний морський',t:'+10 °C',tShort:'+10°',rain:'1000 мм/рік',rainShort:'1000',note:'М’яка зима, прохолодне літо.'},
-  'Norway':{uk:'Норвегія',zone:'Субарктичний / помірний',t:'+3 °C',tShort:'+3°',rain:'800 мм/рік',rainShort:'800',note:'Фіорди, тепла течія Гольфстрім.'},
-  'Sweden':{uk:'Швеція',zone:'Помірний / субарктичний',t:'+3 °C',tShort:'+3°',rain:'600 мм/рік',rainShort:'600',note:'Довга зима на півночі.'},
-  'Finland':{uk:'Фінляндія',zone:'Субарктичний',t:'+2 °C',tShort:'+2°',rain:'600 мм/рік',rainShort:'600',note:'Тисячі озер, полярні ночі.'},
-  'Russia':{uk:'Росія',zone:'Від арктичного до субтроп.',t:'−5 °C',tShort:'−5°',rain:'450 мм/рік',rainShort:'450',note:'Найбільша країна за площею.'},
-  'Turkey':{uk:'Туреччина',zone:'Середземноморський / контин.',t:'+12 °C',tShort:'+12°',rain:'600 мм/рік',rainShort:'600',note:'Між Європою та Азією.'},
-  'Egypt':{uk:'Єгипет',zone:'Тропічний пустельний',t:'+25 °C',tShort:'+25°',rain:'25 мм/рік',rainShort:'25',note:'Долина Нілу — оаза життя.'},
-  'Morocco':{uk:'Марокко',zone:'Середземноморський / пустельний',t:'+18 °C',tShort:'+18°',rain:'300 мм/рік',rainShort:'300',note:'Атлас, Сахара.'},
-  'Nigeria':{uk:'Нігерія',zone:'Тропічний',t:'+27 °C',tShort:'+27°',rain:'1200 мм/рік',rainShort:'1200',note:'Савана й тропічні ліси.'},
-  'Kenya':{uk:'Кенія',zone:'Екваторіальний (височинний)',t:'+22 °C',tShort:'+22°',rain:'700 мм/рік',rainShort:'700',note:'Савана, Великий рифт.'},
-  'South Africa':{uk:'ПАР',zone:'Субтропічний / помірний',t:'+17 °C',tShort:'+17°',rain:'500 мм/рік',rainShort:'500',note:'Мис Доброї Надії.'},
-  'Ethiopia':{uk:'Ефіопія',zone:'Екваторіальний (височинний)',t:'+22 °C',tShort:'+22°',rain:'800 мм/рік',rainShort:'800',note:'Нагір’я, витоки Нілу.'},
-  'Saudi Arabia':{uk:'Саудівська Аравія',zone:'Тропічний пустельний',t:'+28 °C',tShort:'+28°',rain:'60 мм/рік',rainShort:'60',note:'Найбільша пустеля — Руб-ель-Халі.'},
-  'Iran':{uk:'Іран',zone:'Субтропічний / пустельний',t:'+17 °C',tShort:'+17°',rain:'250 мм/рік',rainShort:'250',note:'Плато, гори Ельбурс.'},
-  'India':{uk:'Індія',zone:'Тропічний / субтропічний',t:'+25 °C',tShort:'+25°',rain:'1100 мм/рік',rainShort:'1100',note:'Мусони, Гімалаї.'},
-  'China':{uk:'Китай',zone:'Від помірного до тропічного',t:'+13 °C',tShort:'+13°',rain:'600 мм/рік',rainShort:'600',note:'Найбільша різноманітність клімату.'},
-  'Japan':{uk:'Японія',zone:'Помірний / субтропічний',t:'+15 °C',tShort:'+15°',rain:'1700 мм/рік',rainShort:'1700',note:'Острівний, мусонний.'},
-  'South Korea':{uk:'Південна Корея',zone:'Помірний',t:'+12 °C',tShort:'+12°',rain:'1300 мм/рік',rainShort:'1300',note:'Мусони, гори.'},
-  'Thailand':{uk:'Таїланд',zone:'Тропічний мусонний',t:'+28 °C',tShort:'+28°',rain:'1600 мм/рік',rainShort:'1600',note:'Тропічні ліси, мусони.'},
-  'Vietnam':{uk:'В’єтнам',zone:'Тропічний мусонний',t:'+25 °C',tShort:'+25°',rain:'1800 мм/рік',rainShort:'1800',note:'Довга берегова лінія.'},
-  'Indonesia':{uk:'Індонезія',zone:'Екваторіальний',t:'+27 °C',tShort:'+27°',rain:'2500 мм/рік',rainShort:'2500',note:'Найбільший архіпелаг світу.'},
-  'Australia':{uk:'Австралія',zone:'Від тропічного до помірного',t:'+22 °C',tShort:'+22°',rain:'450 мм/рік',rainShort:'450',note:'Пустелі в центрі, тропіки на півночі.'},
-  'New Zealand':{uk:'Нова Зеландія',zone:'Помірний морський',t:'+12 °C',tShort:'+12°',rain:'1200 мм/рік',rainShort:'1200',note:'Океанічний, м’який.'},
-  'Mexico':{uk:'Мексика',zone:'Тропічний / субтропічний',t:'+22 °C',tShort:'+22°',rain:'700 мм/рік',rainShort:'700',note:'Від пустель до тропіків.'},
-  'Brazil':{uk:'Бразилія',zone:'Екваторіальний / тропічний',t:'+25 °C',tShort:'+25°',rain:'1700 мм/рік',rainShort:'1700',note:'Амазонія — «легені планети».'},
-  'Argentina':{uk:'Аргентина',zone:'Помірний / субтропічний',t:'+15 °C',tShort:'+15°',rain:'600 мм/рік',rainShort:'600',note:'Пампаси, Анди.'},
-  'Chile':{uk:'Чилі',zone:'Від пустельного до субантарктичного',t:'+10 °C',tShort:'+10°',rain:'500 мм/рік',rainShort:'500',note:'Найдовша країна світу.'},
-  'Peru':{uk:'Перу',zone:'Екваторіальний (височинний)',t:'+20 °C',tShort:'+20°',rain:'400 мм/рік',rainShort:'400',note:'Анди, узбережжя Тихого океану.'},
-  'Colombia':{uk:'Колумбія',zone:'Екваторіальний',t:'+26 °C',tShort:'+26°',rain:'2500 мм/рік',rainShort:'2500',note:'Дві океанські берегові лінії.'},
-  'Venezuela':{uk:'Венесуела',zone:'Екваторіальний / тропічний',t:'+27 °C',tShort:'+27°',rain:'1500 мм/рік',rainShort:'1500',note:'Водоспад Анхель.'},
-  'Cuba':{uk:'Куба',zone:'Тропічний',t:'+26 °C',tShort:'+26°',rain:'1300 мм/рік',rainShort:'1300',note:'Карибський острів.'},
-  'Canada':{uk:'Канада',zone:'Субарктичний / помірний',t:'−4 °C',tShort:'−4°',rain:'500 мм/рік',rainShort:'500',note:'Друга за площею країна.'},
-  'United States of America':{uk:'США',zone:'Від помірного до тропічного',t:'+10 °C',tShort:'+10°',rain:'700 мм/рік',rainShort:'700',note:'Різноманіття від Аляски до Флориди.'},
-  'United States':{uk:'США',zone:'Від помірного до тропічного',t:'+10 °C',tShort:'+10°',rain:'700 мм/рік',rainShort:'700',note:'Різноманіття від Аляски до Флориди.'},
-  'Greenland':{uk:'Гренландія',zone:'Арктичний',t:'−20 °C',tShort:'−20°',rain:'200 мм/рік',rainShort:'200',note:'Крижаний щит, 80% льоду.'},
-  'Iceland':{uk:'Ісландія',zone:'Субарктичний морський',t:'+4 °C',tShort:'+4°',rain:'700 мм/рік',rainShort:'700',note:'Вулкани, гейзери, льодовики.'},
-  'Kazakhstan':{uk:'Казахстан',zone:'Помірний континентальний',t:'+6 °C',tShort:'+6°',rain:'250 мм/рік',rainShort:'250',note:'Степи, напівпустелі.'},
-  'Mongolia':{uk:'Монголія',zone:'Різко континентальний',t:'+1 °C',tShort:'+1°',rain:'250 мм/рік',rainShort:'250',note:'Найхолодніша столиця світу.'},
-  'Uzbekistan':{uk:'Узбекистан',zone:'Помірний пустельний',t:'+14 °C',tShort:'+14°',rain:'200 мм/рік',rainShort:'200',note:'Аральське море.'},
-  'Afghanistan':{uk:'Афганістан',zone:'Субтропічний / контин.',t:'+13 °C',tShort:'+13°',rain:'300 мм/рік',rainShort:'300',note:'Гіндукуш.'},
-  'Pakistan':{uk:'Пакистан',zone:'Тропічний / субтропічний',t:'+22 °C',tShort:'+22°',rain:'300 мм/рік',rainShort:'300',note:'Каракорум, Інд.'},
-  'Bangladesh':{uk:'Бангладеш',zone:'Тропічний мусонний',t:'+26 °C',tShort:'+26°',rain:'2500 мм/рік',rainShort:'2500',note:'Дельта Гангу.'},
-  'Myanmar':{uk:'М’янма',zone:'Тропічний мусонний',t:'+26 °C',tShort:'+26°',rain:'2200 мм/рік',rainShort:'2200',note:'Південно-Східна Азія.'},
-  'Antarctica':{uk:'Антарктида',zone:'Антарктичний',t:'−50 °C',tShort:'−50°',rain:'< 50 мм/рік',rainShort:'<50',note:'Найхолодніший континент.'}
-};
-
-const ICONS = [
-  { e:'☀️', l:'сонце' },{ e:'🌤️', l:'мінлива хмарність' },{ e:'☁️', l:'хмарно' },
-  { e:'🌧️', l:'дощ' },{ e:'⛈️', l:'гроза' },{ e:'❄️', l:'сніг' },
-  { e:'🌡️', l:'температура' },{ e:'💧', l:'вологість' },{ e:'🌪️', l:'ураган' },
-  { e:'🔥', l:'спека' },{ e:'🌊', l:'повінь' },{ e:'🌴', l:'тропіки' },
-  { e:'🏔️', l:'гори' },{ e:'🌫️', l:'туман' },{ e:'🌈', l:'райдуга' }
-];
-
-const STICKER_COLORS = ['#ffd166','#8fdcf5','#a8e6cf','#ffb4a2','#e0c3fc','#cfe3f2'];
-const CLIENT_ID = Math.random().toString(36).slice(2, 11);
-const TOTAL_TIMER_SECONDS = TIMER_MINUTES * 60;
-
-/* ============================================================
-   СТАН
-   ============================================================ */
-const state = {
-  studentId: null,
-  studentName: '',
-  tool: 'idle',
-  color: '#ffb703', size: 5,
-  data: emptyData(),
-  refDrawing: null, refBoard: null,
-  handlerDrawing: null, handlerBoard: null,
-  saveTimer: {}, dirtyDrawing: false, dirtyBoard: false,
-  lastLocalCanvas: null, isDrawing: false, pendingCanvas: undefined,
-  timerSeconds: 0, timerRunning: true,
-  mapReady: false, countriesGeo: null,
-  showZones: false, showLabels: false, showBorders: false,
-  listenersActive: false, syncInProgress: false,
-  lastInfo: null,
-  zoom: 1, panX: 0, panY: 0,
-  teacherBusy: false
-};
-function emptyData(){
-  return {
-    canvas:null, stickers:[], icons:[], labels:[], zoneFills:{},
-    authorName: '',
-    layerState: null
-  };
-}
-
-/* ============================================================
-   DOM
-   ============================================================ */
-const $  = (s, r=document) => r.querySelector(s);
-const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
-
-const studentPicker = $('#studentPicker');
-const studentGrid   = $('#studentGrid');
-const appRoot       = $('#app');
-const studentAvatar = $('#studentAvatar');
-const authorInput   = $('#authorNameInput');
-
-const noteEditor     = $('#noteEditor');
-const noteEditorText = $('#noteEditorText');
-const noteEditorHint = $('#noteEditorHint');
-
-const teacherPanel        = $('#teacherPanel');
-const teacherProgress     = $('#teacherProgress');
-const teacherProgressText = $('#teacherProgressText');
-const teacherProgressFill = $('#teacherProgressFill');
-
-const canvas        = $('#drawCanvas');
-const ctx           = canvas.getContext('2d', { alpha:true });
-const stickersLayer = $('#stickersLayer');
-const mapContainer  = $('#mapContainer');
-const mapViewport   = $('#mapViewport');
-const svgMap        = $('#svgMap');
-const iconGallery   = $('#iconGallery');
-const statusEl      = $('#status');
-const netIndicator  = $('#netIndicator');
-const netLabel      = $('#netLabel');
-const zoneInfoEl    = $('#zoneInfo');
-const zoneInfoTitle = $('#zoneInfoTitle');
-const zoneInfoDesc  = $('#zoneInfoDesc');
-const zoneInfoMeta  = $('#zoneInfoMeta');
-const zoneInfoHint  = $('#zoneInfoHint');
-const addTempBtn    = $('#addTempLabel');
-const addRainBtn    = $('#addRainLabel');
-const addNoteBtn    = $('#addNoteFromCard');
-const infoReopenBtn = $('#infoReopen');
-const firstHint     = $('#firstHint');
-const toastEl       = $('#toast');
-const timerEl       = $('#timer');
-const legendEl      = $('#legend');
-const layersEl      = $('#layers');
-
-const stickerEls = new Map();
-const iconEls    = new Map();
-const labelEls   = new Map();
-
-let dpr = 1, canvasRenderToken = 0, resizeRaf = null;
-let infoHideTimer = null;
-let editingStickerId = null;
-let editingPrefillForNew = null;
-
-/* ============================================================
-   УТИЛІТИ
-   ============================================================ */
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-function hexToRgba(hex, alpha){
-  let h = String(hex).replace('#','');
-  if (h.length === 3) h = h.split('').map(c => c + c).join('');
-  const n = parseInt(h, 16);
-  if (Number.isNaN(n)) return `rgba(255,255,255,${alpha})`;
-  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`;
-}
-function setStatus(msg, variant){ statusEl.textContent = msg; statusEl.dataset.state = variant || 'ok'; }
-let statusTimer = null, statusHideTimer = null;
-function flashStatus(msg, variant, revertMs = 2600){
-  clearTimeout(statusTimer); clearTimeout(statusHideTimer);
-  statusEl.dataset.hide = 'false';
-  setStatus(msg, variant);
-  statusTimer = setTimeout(() => {
-    setStatus(isOnline ? '🟢 Синхронізовано' : '🔴 Офлайн', isOnline ? 'ok' : 'warn');
-    if (window.innerWidth < 900){
-      statusHideTimer = setTimeout(() => { statusEl.dataset.hide = 'true'; }, 2500);
-    }
-  }, revertMs);
-}
-let toastTimer = null;
-function showToast(msg, ms = 2200){
-  clearTimeout(toastTimer);
-  toastEl.textContent = msg;
-  toastEl.dataset.show = 'true';
-  toastTimer = setTimeout(() => { toastEl.dataset.show = 'false'; }, ms);
-}
-let isOnline = false;
-function setNetIndicator(online, text){
-  isOnline = online;
-  netIndicator.dataset.online = online ? 'true' : (text === 'unknown' ? 'unknown' : 'false');
-  netLabel.textContent = text;
-}
-function syncInfoReopenBtn(){ infoReopenBtn.hidden = !zoneInfoEl.hidden; }
-function setTeacherProgress(text, percent){
-  if (text === null){ teacherProgress.dataset.show = 'false'; return; }
-  teacherProgress.dataset.show = 'true';
-  teacherProgressText.textContent = text;
-  teacherProgressFill.style.width = (percent || 0) + '%';
-}
-
-/* ============================================================
-   АВТО-ПРИХОВУВАННЯ ІНФО-КАРТКИ
-   ============================================================ */
-function scheduleInfoHide(){
-  clearTimeout(infoHideTimer);
-  if (window.innerWidth >= 900) return;
-  infoHideTimer = setTimeout(() => {
-    if (!noteEditor.hidden) return;
-    zoneInfoEl.classList.add('zone-info--hide');
-    setTimeout(() => {
-      zoneInfoEl.hidden = true;
-      zoneInfoEl.classList.remove('zone-info--hide');
-      syncInfoReopenBtn();
-    }, 260);
-  }, INFO_CARD_AUTOHIDE_MS);
-}
-function cancelInfoHide(){
-  clearTimeout(infoHideTimer);
-  zoneInfoEl.classList.remove('zone-info--hide');
-}
-
-/* ============================================================
-   DRAG + TAP + LONG-PRESS
-   ============================================================ */
-function attachDragHandlers(el, id, findFn, onTap, onLongPress){
-  let drag = null;
-  let longPressTimer = null;
-  let longPressFired = false;
-  function getLayoutPoint(clientX, clientY){
-    const rect = stickersLayer.getBoundingClientRect();
-    const scale = state.zoom || 1;
-    return { x: (clientX - rect.left) / scale, y: (clientY - rect.top) / scale };
-  }
-  function layoutBounds(){
-    const rect = stickersLayer.getBoundingClientRect();
-    const scale = state.zoom || 1;
-    return { w: rect.width / scale, h: rect.height / scale };
-  }
-  function startDrag(clientX, clientY, pointerId){
-    const data = findFn(id);
-    if (!data) return false;
-    const p = getLayoutPoint(clientX, clientY);
-    drag = { pointerId, startX: clientX, startY: clientY,
-             offsetX: p.x - data.x, offsetY: p.y - data.y, moved: false };
-    el.classList.add('dragging');
-    return true;
-  }
-  function moveDrag(clientX, clientY){
-    if (!drag) return;
-    const dx = clientX - drag.startX, dy = clientY - drag.startY;
-    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) drag.moved = true;
-    if (!drag.moved) return;
-    const data = findFn(id);
+function attachFirebaseListeners(){
+  if (!state.db || !state.ref) return;
+  state.handler = state.ref.on('value', snap => {
+    const data = snap.val();
     if (!data) return;
-    const p = getLayoutPoint(clientX, clientY);
-    const b = layoutBounds();
-    data.x = Math.max(-20, Math.min(b.w - 40, p.x - drag.offsetX));
-    data.y = Math.max(-10, Math.min(b.h - 30, p.y - drag.offsetY));
-    el.style.left = data.x + 'px';
-    el.style.top  = data.y + 'px';
-  }
-  function endDrag(){
-    if (!drag) return;
-    const moved = drag.moved;
-    drag = null;
-    el.classList.remove('dragging');
-    if (moved){
-      state.dirtyBoard = true;
-      scheduleSave('board');
-    } else if (!longPressFired && onTap){
-      onTap();
-    }
-    longPressFired = false;
-  }
-  function cancelLongPress(){ if (longPressTimer){ clearTimeout(longPressTimer); longPressTimer = null; } }
-  function startLongPress(){
-    if (!onLongPress) return;
-    cancelLongPress();
-    longPressTimer = setTimeout(() => { longPressFired = true; onLongPress(); }, 700);
-  }
-  el.addEventListener('touchstart', e => {
-    if (e.target.closest('textarea, button')) return;
-    if (e.touches.length !== 1) return;
-    const t = e.touches[0];
-    if (startDrag(t.clientX, t.clientY, t.identifier)){ e.preventDefault(); startLongPress(); }
-  }, { passive: false });
-  el.addEventListener('touchmove', e => {
-    cancelLongPress();
-    if (!drag) return;
-    const t = Array.from(e.touches).find(x => x.identifier === drag.pointerId);
-    if (!t) return;
-    e.preventDefault();
-    moveDrag(t.clientX, t.clientY);
-  }, { passive: false });
-  const endTouch = () => { cancelLongPress(); if (drag) endDrag(); };
-  el.addEventListener('touchend', endTouch);
-  el.addEventListener('touchcancel', () => { cancelLongPress(); if (drag) endDrag(); });
-  el.addEventListener('mousedown', e => {
-    if (e.target.closest('textarea, button')) return;
-    if (e.button !== 0) return;
-    if (startDrag(e.clientX, e.clientY, 'mouse')){
-      e.preventDefault();
-      document.addEventListener('mousemove', onDocMouseMove);
-      document.addEventListener('mouseup', onDocMouseUp);
-      startLongPress();
-    }
-  });
-  function onDocMouseMove(e){
-    if (!drag || drag.pointerId !== 'mouse') return;
-    cancelLongPress();
-    e.preventDefault();
-    moveDrag(e.clientX, e.clientY);
-  }
-  function onDocMouseUp(){
-    if (!drag || drag.pointerId !== 'mouse') return;
-    cancelLongPress();
-    document.removeEventListener('mousemove', onDocMouseMove);
-    document.removeEventListener('mouseup', onDocMouseUp);
-    endDrag();
-  }
-}
+    if (state.dirty) return;
+    applyRemoteData(data);
+  }, err => { console.warn('[Sync]', err); netDot.dataset.online = 'false'; });
+  state.listenersActive = true;
 
-/* ============================================================
-   ВИБІР УЧНЯ
-   ============================================================ */
-function buildStudentPicker(){
-  studentGrid.innerHTML = '';
-  STUDENT_NAMES.forEach((name, i) => {
-    const id = i + 1;
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'student-tile';
-    btn.innerHTML = `<span class="student-tile__num">${id}</span>
-                     <span class="student-tile__name">${name}</span>`;
-    btn.addEventListener('click', () => selectStudent(id, name));
-    studentGrid.appendChild(btn);
-  });
-}
-function showStudentPicker(){
-  studentPicker.hidden = false;
-  appRoot.hidden = true;
-  detachListeners();
-  renderCanvas(null);
-  stickerEls.forEach(el => el.remove()); stickerEls.clear();
-  iconEls.forEach(el => el.remove());    iconEls.clear();
-  labelEls.forEach(el => el.remove());   labelEls.clear();
-}
-function hideStudentPicker(){
-  studentPicker.hidden = true;
-  appRoot.hidden = false;
-}
-function selectStudent(id, name){
-  if (id < 1 || id > STUDENT_NAMES.length) return;
-  state.studentId = id;
-  state.studentName = name;
-  studentAvatar.textContent = id;
-  try { localStorage.setItem('climateLab_studentId', String(id)); } catch(_){}
-  hideStudentPicker();
-  openStudentBoard(id);
-  flashStatus(`👋 Вітаю, ${name}!`, 'busy', 2000);
-  showFirstHintIfNeeded(id);
-}
-
-/* ============================================================
-   РЕДАКТОР НОТАТОК
-   ============================================================ */
-function openNoteEditor(stickerId){
-  const s = findSticker(stickerId);
-  if (!s) return;
-  cancelInfoHide();
-  editingStickerId = stickerId;
-  editingPrefillForNew = null;
-  noteEditorText.value = s.text || '';
-  noteEditorHint.textContent = 'Все збережеться автоматично.';
-  noteEditor.hidden = false;
-  document.body.style.overflow = 'hidden';
-  setTimeout(() => {
-    noteEditorText.focus();
-    try { noteEditorText.setSelectionRange(noteEditorText.value.length, noteEditorText.value.length); } catch(_){}
-  }, 100);
-}
-function openNoteEditorForNew(prefillText){
-  cancelInfoHide();
-  editingStickerId = null;
-  editingPrefillForNew = prefillText || '';
-  noteEditorText.value = prefillText || '';
-  noteEditorHint.textContent = 'Це нова нотатка. Допиши або зміни текст.';
-  noteEditor.hidden = false;
-  document.body.style.overflow = 'hidden';
-  setTimeout(() => {
-    noteEditorText.focus();
-    try { noteEditorText.setSelectionRange(noteEditorText.value.length, noteEditorText.value.length); } catch(_){}
-  }, 100);
-}
-function closeNoteEditor(save){
-  if (save){
-    const text = noteEditorText.value;
-    if (editingStickerId){
-      const s = findSticker(editingStickerId);
-      if (s){
-        s.text = text;
-        const el = stickerEls.get(editingStickerId);
-        const ta = el?.querySelector('textarea');
-        if (ta) ta.value = text;
-      }
-    } else if (editingPrefillForNew !== null){
-      addStickerWithText(text);
-    }
-    state.dirtyBoard = true;
-    scheduleSave('board');
-  }
-  editingStickerId = null;
-  editingPrefillForNew = null;
-  noteEditor.hidden = true;
-  document.body.style.overflow = '';
-}
-
-/* ============================================================
-   ГАЛЕРЕЯ / ЛЕГЕНДА
-   ============================================================ */
-function buildIconGallery(){
-  const frag = document.createDocumentFragment();
-  ICONS.forEach(({ e, l }) => {
-    const btn = document.createElement('button');
-    btn.type = 'button'; btn.className = 'icon-item'; btn.textContent = e;
-    btn.setAttribute('aria-label', `Додати: ${l}`);
-    btn.addEventListener('click', () => {
-      addIcon(e);
-      if (window.innerWidth < 900) toggleIconsPanel(false);
-    });
-    frag.appendChild(btn);
-  });
-  iconGallery.appendChild(frag);
-}
-function buildLegend(){
-  const list = $('#legendList');
-  list.innerHTML = '';
-  CLIMATE_BANDS.forEach(band => {
-    const li = document.createElement('li');
-    li.setAttribute('role', 'button');
-    li.setAttribute('tabindex', '0');
-    const sw = document.createElement('span');
-    sw.className = 'legend__swatch';
-    sw.style.background = hexToRgba(band.color, .85);
-    const txt = document.createElement('span');
-    txt.textContent = band.name;
-    li.append(sw, txt);
-    const activate = () => {
-      showClimateInfo(band);
-      if (window.innerWidth < 900) toggleLegend(false);
-    };
-    li.addEventListener('click', activate);
-    li.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(); }
-    });
-    list.appendChild(li);
+  state.db.ref('.info/connected').on('value', snap => {
+    const online = !!snap.val();
+    state.isOnline = online;
+    netDot.dataset.online = online ? 'true' : 'false';
+    netDot.title = online ? 'Онлайн' : 'Офлайн';
   });
 }
 
-/* ============================================================
-   КАРТА
-   ============================================================ */
-function positionViewport(){
-  const cont = mapContainer.getBoundingClientRect();
-  if (cont.width < 1 || cont.height < 1) return;
-  const ratio = 2;
-  let vw, vh;
-  if (cont.width / cont.height > ratio){ vh = cont.height; vw = vh * ratio; }
-  else { vw = cont.width; vh = vw / ratio; }
-  mapViewport.style.width  = vw + 'px';
-  mapViewport.style.height = vh + 'px';
-  mapViewport.style.left   = ((cont.width  - vw) / 2) + 'px';
-  mapViewport.style.top    = ((cont.height - vh) / 2) + 'px';
-  applyViewportTransform();
-}
-function applyViewportTransform(){
-  mapViewport.style.transform = `translate(${state.panX}px, ${state.panY}px) scale(${state.zoom})`;
-}
-function getMapSize(){
-  const r = mapViewport.getBoundingClientRect();
-  const s = state.zoom || 1;
-  return { w: Math.max(320, Math.round(r.width / s)), h: Math.max(160, Math.round(r.height / s)) };
-}
+function applyRemoteData(data){
+  if (Array.isArray(data.icons)) state.data.icons = data.icons;
+  if (Array.isArray(data.texts)) state.data.texts = data.texts;
+  if (Array.isArray(data.stickers)) state.data.stickers = data.stickers;
+  if (data.background) state.data.background = data.background;
+  if (typeof data.name === 'string') state.data.name = data.name;
+  if (authorInput) authorInput.value = state.data.name;
+  board.dataset.bg = state.data.background || 'line';
+  updateBgButtons();
+  renderAllObjects();
 
-function renderMap(){
-  if (typeof d3 === 'undefined' || typeof topojson === 'undefined'){ return; }
-  positionViewport();
-  const { w, h } = getMapSize();
-  svgMap.setAttribute('viewBox', `0 0 ${w} ${h}`);
-  svgMap.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-
-  const svg = d3.select('#svgMap');
-  const root = svg.select('#mapRoot');
-  root.selectAll('*').remove();
-
-  const projection = d3.geoEquirectangular()
-    .fitExtent([[4, 4], [w - 4, h - 4]], { type:'Sphere' });
-  const geoPath = d3.geoPath(projection);
-
-  function bandPathD(latS, latN){
-    const steps = 40, pts = [];
-    for (let i = 0; i <= steps; i++){
-      const lon = -180 + 360 * i / steps;
-      const p = projection([lon, latN]); if (p) pts.push(p);
-    }
-    for (let i = steps; i >= 0; i--){
-      const lon = -180 + 360 * i / steps;
-      const p = projection([lon, latS]); if (p) pts.push(p);
-    }
-    if (pts.length < 3) return '';
-    return 'M' + pts.map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' L') + ' Z';
+  // Малюнок
+  const url = data.drawing || null;
+  if (url !== state.lastLocalCanvas){
+    state.data.canvas = url;
+    state.lastLocalCanvas = url;
+    renderCanvas(url);
   }
-  function latLinePathD(lat){
-    const steps = 80, pts = [];
-    for (let i = 0; i <= steps; i++){
-      const lon = -180 + 360 * i / steps;
-      const p = projection([lon, lat]); if (p) pts.push(p);
-    }
-    if (pts.length < 2) return '';
-    return 'M' + pts.map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' L');
-  }
+}
 
-  root.append('path').datum({ type:'Sphere' }).attr('class', 'ocean-sphere').attr('d', geoPath);
-  root.append('path').datum({ type:'Sphere' }).attr('class', 'ocean-glow').attr('d', geoPath);
-  root.append('path').datum(d3.geoGraticule().step([30, 30])())
-    .attr('class', 'graticule').attr('d', geoPath);
-  root.append('path').datum(d3.geoGraticule().step([60, 30])())
-    .attr('class', 'graticule graticule--major').attr('d', geoPath);
+function scheduleSave(){
+  state.dirty = true;
+  clearTimeout(state.saveTimer);
+  state.saveTimer = setTimeout(() => flushSave(), 500);
+}
 
-  const countriesG = root.append('g').attr('class', 'countries');
-  const drawCountries = (geo) => {
-    countriesG.selectAll('path.country').data(geo.features).enter()
-      .append('path')
-      .attr('class', d => {
-        const key = normalizeName(d.properties?.name || '');
-        return 'country' + (COUNTRY_CLIMATE_BY_KEY.has(key) ? ' country--has-data' : '');
-      })
-      .attr('data-country', d => d.properties?.name || '')
-      .attr('d', geoPath);
-    countriesG.selectAll('circle.country-dot')
-      .data(geo.features.filter(d => COUNTRY_CLIMATE_BY_KEY.has(normalizeName(d.properties?.name || ''))))
-      .enter().append('circle')
-      .attr('class', 'country-dot')
-      .attr('cx', d => geoPath.centroid(d)[0])
-      .attr('cy', d => geoPath.centroid(d)[1])
-      .attr('r', 1.8);
-    state.mapReady = true;
-    applyZoneFills();
-    applyLayerVisibility();
+/* ОСНОВНЕ ВИПРАВЛЕННЯ: update() для головного + завжди set() на drawing */
+function flushSave(opts = {}){
+  if (!state.db || !state.ref) return;
+  if (!state.dirty && !opts.force) return;
+
+  const payload = {
+    icons: state.data.icons,
+    texts: state.data.texts,
+    stickers: state.data.stickers,
+    background: state.data.background,
+    name: state.data.name,
+    updatedAt: Date.now(),
+    by: CLIENT_ID
   };
 
-  if (state.countriesGeo){ drawCountries(state.countriesGeo); }
-  else {
-    d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
-      .then(world => {
-        const geo = topojson.feature(world, world.objects.countries);
-        state.countriesGeo = geo;
-        const { w: w2, h: h2 } = getMapSize();
-        if (w2 !== w || h2 !== h){ renderMap(); return; }
-        drawCountries(geo);
-      })
-      .catch(err => { console.warn('Map:', err); state.mapReady = true; });
-  }
-
-  const zonesG = root.append('g').attr('class', 'climate-zones');
-  CLIMATE_BANDS.forEach(band => {
-    const latS = Math.min(band.lat[0], band.lat[1]);
-    const latN = Math.max(band.lat[0], band.lat[1]);
-    zonesG.append('path')
-      .attr('class', 'climate-zone')
-      .attr('data-zone', band.id)
-      .attr('d', bandPathD(latS, latN))
-      .attr('fill', band.color)
-      .attr('fill-opacity', ZONE_BASE_OPACITY);
+  // update() НЕ видаляє інші поля (drawing залишається, якщо його не чіпати)
+  state.ref.update(payload).then(() => {
+    state.dirty = false;
+  }).catch(err => {
+    console.warn('[Save]', err);
+    setTimeout(() => { state.dirty = true; flushSave(); }, 1500);
   });
 
-  const bordersG = root.append('g').attr('class', 'zone-borders');
-  ZONE_BOUNDARIES.forEach(b => {
-    let cls = 'zone-boundary';
-    if (b.type === 'equator') cls += ' zone-boundary--equator';
-    else if (b.type === 'tropic') cls += ' zone-boundary--tropic';
-    bordersG.append('path').attr('class', cls).attr('d', latLinePathD(b.lat));
-  });
-
-  const labelsG = root.append('g').attr('class', 'climate-labels');
-  CLIMATE_BANDS.forEach(band => {
-    const latMid = (band.lat[0] + band.lat[1]) / 2;
-    const center = projection([0, latMid]);
-    if (!center) return;
-    const span = Math.abs(band.lat[1] - band.lat[0]);
-    const isSmall = span < 12;
-    labelsG.append('text')
-      .attr('class', 'climate-zone__label' + (isSmall ? ' climate-zone__label--small' : ''))
-      .attr('x', center[0]).attr('y', center[1] + 3)
-      .attr('data-zone', band.id).attr('fill', band.color)
-      .text(isSmall ? band.short : band.name);
-  });
-
-  const latG = root.append('g').attr('class', 'lat-lines');
-  LAT_LABELS.forEach(line => {
-    const p = projection([-172, line.lat]);
-    if (!p) return;
-    latG.append('text')
-      .attr('class', 'lat-label' + (line.equator ? ' lat-label--equator' : ''))
-      .attr('x', p[0]).attr('y', p[1] - 4)
-      .text(line.label);
-  });
-
-  applyZoneFills();
-  applyLayerVisibility();
-}
-
-function normalizeName(s){
-  return String(s || '').toLowerCase().replace(/^the\s+/, '').replace(/[^a-z]/g, '');
-}
-const COUNTRY_CLIMATE_BY_KEY = new Map(
-  Object.entries(COUNTRY_CLIMATE).map(([k, v]) => [normalizeName(k), v])
-);
-
-/* ============================================================
-   ШАРИ
-   ============================================================ */
-function applyLayerVisibility(){
-  const svg = d3.select('#svgMap');
-  svg.selectAll('.climate-zone').style('display', state.showZones ? null : 'none');
-  svg.selectAll('.climate-zone__label').style('display',
-    (state.showZones && state.showLabels) ? null : 'none');
-  svg.selectAll('.zone-boundary').style('display', state.showBorders ? null : 'none');
-  svg.selectAll('.lat-label').style('display', state.showBorders ? null : 'none');
-  $('#zonesToggle').setAttribute('aria-pressed', state.showZones ? 'true' : 'false');
-  $('#labelsToggle').setAttribute('aria-pressed', state.showLabels ? 'true' : 'false');
-  $('#bordersToggle').setAttribute('aria-pressed', state.showBorders ? 'true' : 'false');
-}
-function applyZoneFills(){
-  const svg = d3.select('#svgMap');
-  svg.selectAll('.climate-zone').each(function(){
-    const el = d3.select(this);
-    const id = el.attr('data-zone');
-    const userColor = state.data.zoneFills[id];
-    const band = CLIMATE_BANDS.find(b => b.id === id);
-    if (userColor){
-      el.attr('fill', userColor)
-        .attr('fill-opacity', ZONE_USER_OPACITY)
-        .attr('stroke', userColor)
-        .attr('stroke-width', 2.2);
-    } else {
-      el.attr('fill', band ? band.color : '#fff')
-        .attr('fill-opacity', ZONE_BASE_OPACITY)
-        .attr('stroke', 'rgba(255,255,255,.05)')
-        .attr('stroke-width', 0.5);
-    }
-  });
-  svg.selectAll('.climate-zone__label').each(function(){
-    const el = d3.select(this);
-    const id = el.attr('data-zone');
-    const userColor = state.data.zoneFills[id];
-    const band = CLIMATE_BANDS.find(b => b.id === id);
-    el.attr('fill', userColor || (band ? band.color : '#fff'));
-  });
-}
-function attachMapEvents(){
-  svgMap.addEventListener('click', e => {
-    const zoneEl = e.target.closest?.('.climate-zone');
-    if (zoneEl){
-      if (state.tool === 'fill'){
-        const id = zoneEl.dataset.zone;
-        if (state.data.zoneFills[id] === state.color) delete state.data.zoneFills[id];
-        else state.data.zoneFills[id] = state.color;
-        applyZoneFills();
-        state.dirtyBoard = true;
-        scheduleSave('board');
-        return;
-      }
-      if (state.tool === 'idle'){
-        const band = CLIMATE_BANDS.find(b => b.id === zoneEl.dataset.zone);
-        if (band) showClimateInfo(band);
-      }
-      return;
-    }
-    const country = e.target.closest?.('.country');
-    if (country && state.tool === 'idle'){
-      showCountryInfo(country.dataset.country);
-    }
+  // drawing завжди синхронізуємо окремо — null очищає малюнок
+  state.lastLocalCanvas = state.data.canvas || null;
+  state.ref.child('drawing').set(state.data.canvas || null).catch(err => {
+    console.warn('[Save drawing]', err);
   });
 }
 
-function showClimateInfo(band){
-  state.lastInfo = { type:'zone', band };
-  cancelInfoHide();
-  zoneInfoEl.hidden = false;
-  zoneInfoEl.classList.remove('zone-info--hide');
-  syncInfoReopenBtn();
-  zoneInfoTitle.textContent = band.name + ' пояс';
-  zoneInfoDesc.textContent  = band.desc;
-  const span = Math.abs(band.lat[1] - band.lat[0]);
-  const userColor = state.data.zoneFills[band.id];
-  zoneInfoMeta.innerHTML = `
-    <span class="zone-info__chip zone-info__chip--cool">${band.lat[0]}°…${band.lat[1]}°</span>
-    <span class="zone-info__chip">≈${span.toFixed(1)}°</span>
-    ${userColor ? `<span class="zone-info__chip zone-info__chip--fill" style="background:${userColor}">● Ваш</span>` : ''}
-  `;
-  addTempBtn.hidden = true;
-  addRainBtn.hidden = true;
-  addNoteBtn.hidden = true;
-  updateZoneHint();
-  scheduleInfoHide();
-}
-function showCountryInfo(rawName){
-  state.lastInfo = { type:'country', rawName };
-  cancelInfoHide();
-  zoneInfoEl.hidden = false;
-  zoneInfoEl.classList.remove('zone-info--hide');
-  syncInfoReopenBtn();
-  const key = normalizeName(rawName);
-  const data = COUNTRY_CLIMATE_BY_KEY.get(key);
-  if (data){
-    zoneInfoTitle.textContent = `🌍 ${data.uk}`;
-    zoneInfoDesc.textContent  = data.note;
-    zoneInfoMeta.innerHTML = `
-      <span class="zone-info__chip">🌡 ${data.t}</span>
-      <span class="zone-info__chip zone-info__chip--cool">💧 ${data.rain}</span>
-      <span class="zone-info__chip zone-info__chip--warm">${data.zone}</span>
-    `;
-    addTempBtn.hidden = false;
-    addRainBtn.hidden = false;
-    addNoteBtn.hidden = false;
-  } else {
-    zoneInfoTitle.textContent = `🌍 ${rawName || 'Країна'}`;
-    zoneInfoDesc.textContent  = 'Дані для цієї країни не внесені до довідника.';
-    zoneInfoMeta.innerHTML = '';
-    addTempBtn.hidden = true;
-    addRainBtn.hidden = true;
-    addNoteBtn.hidden = true;
-  }
-  updateZoneHint();
-  scheduleInfoHide();
-}
-function reopenInfoCard(){
-  const info = state.lastInfo;
-  if (info && info.type === 'zone'){ showClimateInfo(info.band); return; }
-  if (info && info.type === 'country'){ showCountryInfo(info.rawName); return; }
-  cancelInfoHide();
-  zoneInfoEl.hidden = false;
-  zoneInfoEl.classList.remove('zone-info--hide');
-  zoneInfoTitle.textContent = '🌍 Вітаю!';
-  zoneInfoDesc.textContent  = 'Торкнись країни — додай температуру, опади або нотатку.';
-  zoneInfoMeta.innerHTML = '';
-  addTempBtn.hidden = true;
-  addRainBtn.hidden = true;
-  addNoteBtn.hidden = true;
-  updateZoneHint();
-  syncInfoReopenBtn();
-}
-function updateZoneHint(){
-  const hints = {
-    idle:   '✋ Потягни карту пальцем. Торкнись країни.',
-    brush:  '✏️ Малюй пальцем. Натисни ✏️ знову, щоб вимкнути.',
-    eraser: '🧽 Проведи по лінії, щоб стерти.',
-    fill:   '🎨 Торкнись поясу, щоб зафарбувати.'
-  };
-  zoneInfoHint.textContent = hints[state.tool] || '';
+function forceSyncNow(){
+  if (!state.db || !state.ref){ showToast('❌ Синхронізація недоступна'); return; }
+  showToast('🔄 Синхронізація…');
+  state.dirty = true;
+  flushSave({ force:true });
+  state.ref.once('value').then(snap => {
+    const data = snap.val();
+    if (data) applyRemoteData(data);
+    showToast('✅ Готово');
+  }).catch(err => {
+    console.warn('[Sync]', err);
+    showToast('⚠️ Помилка синхронізації');
+  });
 }
 
-/* ============================================================
-   ПОЛОТНО
-   ============================================================ */
+/* ═══════════ ФОН ═══════════ */
+function setBackground(bg){
+  state.data.background = bg;
+  board.dataset.bg = bg;
+  updateBgButtons();
+  state.dirty = true;
+  scheduleSave();
+}
+function updateBgButtons(){
+  $$('.bg-opt').forEach(b => b.classList.toggle('on', b.dataset.bg === state.data.background));
+}
+
+/* ═══════════ ПОЛОТНО ═══════════ */
 function resizeCanvasBacking(){
-  const layoutW = canvas.offsetWidth;
-  const layoutH = canvas.offsetHeight;
-  if (layoutW < 1 || layoutH < 1) return;
+  const w = canvas.offsetWidth;
+  const h = canvas.offsetHeight;
+  if (w < 1 || h < 1) return;
   dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const w = Math.round(layoutW * dpr);
-  const h = Math.round(layoutH * dpr);
-  if (canvas.width === w && canvas.height === h) return;
-  canvas.width  = w;
-  canvas.height = h;
+  const cw = Math.round(w * dpr);
+  const ch = Math.round(h * dpr);
+  if (canvas.width === cw && canvas.height === ch) return;
+  canvas.width = cw;
+  canvas.height = ch;
   renderCanvas(state.data.canvas);
 }
+
 function renderCanvas(url){
   const token = ++canvasRenderToken;
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.setTransform(1,0,0,1,0,0);
   ctx.globalCompositeOperation = 'source-over';
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (!url) return;
   const img = new Image();
-  img.decoding = 'async';
   img.onload = () => {
     if (token !== canvasRenderToken) return;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalCompositeOperation = 'source-over';
+    ctx.setTransform(1,0,0,1,0,0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   };
   img.src = url;
 }
+
 function encodeCanvas(){
   try {
     const webp = canvas.toDataURL('image/webp', 0.82);
     if (webp && webp.indexOf('data:image/webp') === 0) return webp;
-  } catch (_){}
+  } catch(_){}
   return canvas.toDataURL('image/png');
 }
-let lastX = 0, lastY = 0;
-function beginStrokeAt(x, y){
-  if (state.tool === 'idle' || state.tool === 'fill') return;
-  state.isDrawing = true;
-  lastX = x; lastY = y;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+function getCanvasPoint(e){
+  const r = canvas.getBoundingClientRect();
+  return { x: (e.clientX||0) - r.left, y: (e.clientY||0) - r.top };
+}
+function beginStroke(x, y){
+  if (state.tool !== 'brush' && state.tool !== 'eraser') return;
+  state.drawing = true;
+  state.lastX = x; state.lastY = y;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = state.size;
-  if (state.tool === 'eraser'){
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.strokeStyle = 'rgba(0,0,0,1)';
-  } else {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = state.color;
-  }
+  if (state.tool === 'eraser') ctx.globalCompositeOperation = 'destination-out';
+  else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = state.color; }
   ctx.beginPath();
-  ctx.arc(x, y, state.size / 2, 0, Math.PI * 2);
+  ctx.arc(x, y, state.size/2, 0, Math.PI*2);
   ctx.fillStyle = state.tool === 'eraser' ? 'rgba(0,0,0,1)' : state.color;
   ctx.fill();
 }
-function moveStrokeTo(x, y){
-  if (!state.isDrawing) return;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+function moveStroke(x, y){
+  if (!state.drawing) return;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = state.size;
-  if (state.tool === 'eraser'){
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.strokeStyle = 'rgba(0,0,0,1)';
-  } else {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.strokeStyle = state.color;
-  }
+  if (state.tool === 'eraser'){ ctx.globalCompositeOperation = 'destination-out'; ctx.strokeStyle = 'rgba(0,0,0,1)'; }
+  else { ctx.globalCompositeOperation = 'source-over'; ctx.strokeStyle = state.color; }
   ctx.beginPath();
-  ctx.moveTo(lastX, lastY);
+  ctx.moveTo(state.lastX, state.lastY);
   ctx.lineTo(x, y);
   ctx.stroke();
-  lastX = x; lastY = y;
+  state.lastX = x; state.lastY = y;
 }
 function endStroke(){
-  if (!state.isDrawing) return;
-  state.isDrawing = false;
+  if (!state.drawing) return;
+  state.drawing = false;
   ctx.globalCompositeOperation = 'source-over';
-  const url = encodeCanvas();
-  state.data.canvas = url;
-  state.lastLocalCanvas = url;
-  state.dirtyDrawing = true;
-  scheduleSave('drawing');
-  if (state.pendingCanvas !== undefined){
-    const pending = state.pendingCanvas;
-    state.pendingCanvas = undefined;
-    if (pending !== url) renderCanvas(pending);
-  }
+  state.data.canvas = encodeCanvas();
+  state.lastLocalCanvas = state.data.canvas;
+  state.dirty = true;
+  scheduleSave();
 }
 function attachCanvasEvents(){
-  function getPoint(e){
-    const r = canvas.getBoundingClientRect();
-    let cx, cy;
-    if (e.touches && e.touches.length > 0){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-    else if (e.changedTouches && e.changedTouches.length > 0){ cx = e.changedTouches[0].clientX; cy = e.changedTouches[0].clientY; }
-    else { cx = e.clientX; cy = e.clientY; }
-    const layoutW = canvas.offsetWidth || r.width;
-    const layoutH = canvas.offsetHeight || r.height;
-    const scaleX = layoutW / r.width;
-    const scaleY = layoutH / r.height;
-    return { x: (cx - r.left) * scaleX, y: (cy - r.top) * scaleY };
+  canvas.addEventListener('pointerdown', e => {
+    if (state.tool !== 'brush' && state.tool !== 'eraser') return;
+    e.preventDefault();
+    try { canvas.setPointerCapture(e.pointerId); } catch(_){}
+    const p = getCanvasPoint(e);
+    beginStroke(p.x, p.y);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!state.drawing) return;
+    e.preventDefault();
+    moveStroke(getCanvasPoint(e).x, getCanvasPoint(e).y);
+  });
+  canvas.addEventListener('pointerup', () => endStroke());
+  canvas.addEventListener('pointercancel', () => endStroke());
+  canvas.addEventListener('pointerleave', () => { if (state.drawing) endStroke(); });
+}
+
+/* ═══════════ ОБ'ЄКТИ ═══════════ */
+function clearSelection(){
+  if (state.selectedObjId){
+    const el = document.querySelector(`.obj[data-id="${state.selectedObjId}"]`);
+    if (el) el.classList.remove('selected');
+    state.selectedObjId = null;
   }
-  let touching = false;
-  canvas.addEventListener('touchstart', e => {
-    if (state.tool === 'idle' || state.tool === 'fill') return;
-    if (e.touches.length !== 1) return;
-    e.preventDefault();
-    touching = true;
-    const p = getPoint(e);
-    beginStrokeAt(p.x, p.y);
-  }, { passive: false });
-  canvas.addEventListener('touchmove', e => {
-    if (!touching || !state.isDrawing) return;
-    e.preventDefault();
-    const p = getPoint(e);
-    moveStrokeTo(p.x, p.y);
-  }, { passive: false });
-  const endTouch = () => { if (!touching) return; touching = false; endStroke(); };
-  canvas.addEventListener('touchend', endTouch, { passive: false });
-  canvas.addEventListener('touchcancel', endTouch, { passive: false });
-  canvas.addEventListener('mousedown', e => {
-    if (state.tool === 'idle' || state.tool === 'fill') return;
-    if (e.button !== 0) return;
-    e.preventDefault();
-    const p = getPoint(e);
-    beginStrokeAt(p.x, p.y);
-  });
-  canvas.addEventListener('mousemove', e => {
-    if (!state.isDrawing) return;
-    const p = getPoint(e);
-    moveStrokeTo(p.x, p.y);
-  });
-  canvas.addEventListener('mouseup', () => { if (state.isDrawing) endStroke(); });
-  canvas.addEventListener('mouseleave', () => { if (state.isDrawing) endStroke(); });
+}
+function selectObj(id){
+  clearSelection();
+  state.selectedObjId = id;
+  const el = document.querySelector(`.obj[data-id="${id}"]`);
+  if (el) el.classList.add('selected');
+}
+function getVisibleCenter(){
+  const r = boardWrap.getBoundingClientRect();
+  return { x: Math.round(r.width/2 - 60), y: Math.round(r.height/2 - 30) };
 }
 
-/* ============================================================
-   PAN
-   ============================================================ */
-let panState = null;
-function startPan(clientX, clientY, pointerId){
-  panState = { pointerId, startX: clientX, startY: clientY,
-               startPanX: state.panX, startPanY: state.panY, moved: false };
+/* ─── ІКОНКА ─── */
+function createIconEl(icon){
+  const el = document.createElement('div');
+  el.className = 'obj obj-icon';
+  el.dataset.id = icon.id;
+  el.dataset.kind = 'icon';
+  el.style.left = icon.x + 'px';
+  el.style.top = icon.y + 'px';
+  el.style.fontSize = (icon.size || 48) + 'px';
+  el.textContent = icon.emoji;
+  el.title = 'Перетягни. Подвійний тап — видалити.';
+
+  const handle = document.createElement('div');
+  handle.className = 'obj-icon__resize';
+  el.appendChild(handle);
+
+  attachDrag(el, icon, 'icon');
+  attachResize(handle, el, icon, 'icon');
+
+  el.addEventListener('dblclick', e => {
+    e.stopPropagation();
+    removeObj(icon.id, 'icon');
+  });
+  return el;
 }
-function movePan(clientX, clientY){
-  if (!panState) return;
-  const dx = clientX - panState.startX, dy = clientY - panState.startY;
-  if (Math.abs(dx) > 5 || Math.abs(dy) > 5) panState.moved = true;
-  if (!panState.moved) return;
-  state.panX = panState.startPanX + dx;
-  state.panY = panState.startPanY + dy;
-  applyViewportTransform();
+
+/* ─── ТЕКСТ (textarea + драг-хендл) ─── */
+function createTextEl(item){
+  const el = document.createElement('div');
+  el.className = 'obj obj-text';
+  el.dataset.id = item.id;
+  el.dataset.kind = 'text';
+  el.style.left = item.x + 'px';
+  el.style.top = item.y + 'px';
+  el.style.fontSize = (item.fontSize || 22) + 'px';
+  el.style.color = item.color || '#1f2a24';
+
+  const ta = document.createElement('textarea');
+  ta.className = 'obj-text__input';
+  ta.value = item.text || '';
+  ta.placeholder = 'Текст…';
+  ta.rows = 1;
+  ta.spellcheck = false;
+  ta.style.color = item.color || '#1f2a24';
+
+  const dragHandle = document.createElement('div');
+  dragHandle.className = 'obj-text__drag';
+  dragHandle.title = 'Перетягнути';
+
+  const resizeHandle = document.createElement('div');
+  resizeHandle.className = 'obj-text__resize';
+  resizeHandle.title = 'Змінити розмір';
+
+  el.append(ta, dragHandle, resizeHandle);
+
+  attachDrag(el, item, 'text', dragHandle);
+  attachResize(resizeHandle, el, item, 'text');
+
+  ta.addEventListener('input', () => {
+    item.text = ta.value;
+    autoSizeTextArea(ta);
+    state.dirty = true;
+    scheduleSave();
+  });
+  ta.addEventListener('focus', () => selectObj(item.id));
+  ta.addEventListener('pointerdown', e => e.stopPropagation());
+  ta.addEventListener('pointermove', e => e.stopPropagation());
+  ta.addEventListener('keydown', e => e.stopPropagation());
+
+  requestAnimationFrame(() => autoSizeTextArea(ta));
+  return el;
 }
-function endPan(){ panState = null; }
-function attachPanHandlers(){
-  const isInteractive = el =>
-    el.closest('.sticker, .placed-icon, .data-label, .zone-info, .legend, .layers, .mobile-fabs, .zoom-controls, .icon-gallery, .note-editor, .teacher-panel');
-  mapContainer.addEventListener('touchstart', e => {
-    if (state.tool !== 'idle') return;
-    if (e.touches.length !== 1) return;
-    if (isInteractive(e.target)) return;
-    const t = e.touches[0];
-    startPan(t.clientX, t.clientY, t.identifier);
-  }, { passive: true });
-  mapContainer.addEventListener('touchmove', e => {
-    if (!panState) return;
-    const t = Array.from(e.touches).find(x => x.identifier === panState.pointerId);
-    if (!t) return;
-    if (panState.moved || Math.abs(t.clientX - panState.startX) > 5 || Math.abs(t.clientY - panState.startY) > 5){
-      e.preventDefault();
+function autoSizeTextArea(ta){
+  ta.style.height = 'auto';
+  ta.style.height = Math.max(ta.scrollHeight, 30) + 'px';
+}
+
+/* ─── СТІКЕР ─── */
+function createStickerEl(st){
+  const el = document.createElement('div');
+  el.className = 'obj obj-sticker';
+  el.dataset.id = st.id;
+  el.dataset.kind = 'sticker';
+  el.style.left = st.x + 'px';
+  el.style.top = st.y + 'px';
+  el.style.background = st.color || STICKER_COLORS[0];
+  el.style.width = (st.width || 180) + 'px';
+  el.style.color = '#1b2733';
+
+  const bar = document.createElement('div');
+  bar.className = 'obj-sticker__bar';
+  const grip = document.createElement('span');
+  grip.className = 'obj-sticker__grip';
+  grip.textContent = '⋮⋮';
+  const del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'obj-sticker__del';
+  del.textContent = '✕';
+  del.setAttribute('aria-label', 'Видалити');
+  bar.append(grip, del);
+
+  const ta = document.createElement('textarea');
+  ta.className = 'obj-sticker__text';
+  ta.value = st.text || '';
+  ta.placeholder = 'Пиши тут…';
+  ta.rows = 3;
+
+  const handle = document.createElement('div');
+  handle.className = 'obj-sticker__resize';
+
+  el.append(bar, ta, handle);
+
+  attachDrag(el, st, 'sticker', bar);
+  attachResize(handle, el, st, 'sticker');
+
+  del.addEventListener('click', e => {
+    e.stopPropagation(); e.preventDefault();
+    removeObj(st.id, 'sticker');
+  });
+  ta.addEventListener('input', () => {
+    st.text = ta.value;
+    state.dirty = true;
+    scheduleSave();
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 240) + 'px';
+  });
+  ta.addEventListener('pointerdown', e => e.stopPropagation());
+  ta.addEventListener('keydown', e => e.stopPropagation());
+
+  requestAnimationFrame(() => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 240) + 'px';
+  });
+  return el;
+}
+
+/* ─── DRAG ─── */
+function attachDrag(el, item, kind, handleEl){
+  const dragTarget = handleEl || el;
+  let start = null;
+
+  function startDrag(e){
+    if (e.target.closest('.obj-sticker__del, .obj-sticker__text, .obj-text__input, .obj-text__resize, .obj-icon__resize, .obj-sticker__resize')) return;
+    selectObj(item.id);
+    start = { x:e.clientX, y:e.clientY, l:item.x, t:item.y };
+    el.classList.add('dragging');
+    try { dragTarget.setPointerCapture(e.pointerId); } catch(_){}
+    e.stopPropagation(); e.preventDefault();
+  }
+  function moveDrag(e){
+    if (!start) return;
+    item.x = Math.max(-40, start.l + (e.clientX - start.x));
+    item.y = Math.max(-40, start.t + (e.clientY - start.y));
+    el.style.left = item.x + 'px';
+    el.style.top = item.y + 'px';
+  }
+  function endDrag(){
+    if (!start) return;
+    start = null;
+    el.classList.remove('dragging');
+    state.dirty = true;
+    scheduleSave();
+  }
+  dragTarget.addEventListener('pointerdown', startDrag);
+  dragTarget.addEventListener('pointermove', moveDrag);
+  dragTarget.addEventListener('pointerup', endDrag);
+  dragTarget.addEventListener('pointercancel', endDrag);
+}
+
+/* ─── RESIZE ─── */
+function attachResize(handle, el, item, kind){
+  let start = null;
+  handle.addEventListener('pointerdown', e => {
+    e.stopPropagation(); e.preventDefault();
+    selectObj(item.id);
+    start = {
+      x: e.clientX, y: e.clientY,
+      baseSize: kind === 'text' ? (item.fontSize||22) : kind === 'icon' ? (item.size||48) : (item.width||180)
+    };
+    try { handle.setPointerCapture(e.pointerId); } catch(_){}
+  });
+  handle.addEventListener('pointermove', e => {
+    if (!start) return;
+    e.stopPropagation();
+    const d = ((e.clientX - start.x) + (e.clientY - start.y)) / 2;
+    if (kind === 'text'){
+      const s = Math.max(10, Math.min(140, start.baseSize + d * 0.6));
+      item.fontSize = s; el.style.fontSize = s + 'px';
+    } else if (kind === 'icon'){
+      const s = Math.max(20, Math.min(200, start.baseSize + d * 0.8));
+      item.size = s; el.style.fontSize = s + 'px';
+    } else {
+      const w = Math.max(100, Math.min(400, start.baseSize + (e.clientX - start.x)));
+      item.width = w; el.style.width = w + 'px';
     }
-    movePan(t.clientX, t.clientY);
-  }, { passive: false });
-  mapContainer.addEventListener('touchend', endPan);
-  mapContainer.addEventListener('touchcancel', endPan);
-  mapContainer.addEventListener('mousedown', e => {
-    if (state.tool !== 'idle') return;
-    if (e.button !== 0) return;
-    if (isInteractive(e.target)) return;
-    startPan(e.clientX, e.clientY, 'mouse');
+    state.dirty = true;
   });
-  document.addEventListener('mousemove', e => {
-    if (!panState || panState.pointerId !== 'mouse') return;
-    movePan(e.clientX, e.clientY);
-  });
-  document.addEventListener('mouseup', () => {
-    if (panState && panState.pointerId === 'mouse') endPan();
-  });
+  handle.addEventListener('pointerup', () => { if (start){ start = null; scheduleSave(); } });
+  handle.addEventListener('pointercancel', () => { start = null; });
 }
 
-/* ============================================================
-   ІНСТРУМЕНТИ
-   ============================================================ */
+function removeObj(id, kind){
+  if (!confirm('Видалити?')) return;
+  if (kind === 'icon') state.data.icons = state.data.icons.filter(o => o.id !== id);
+  else if (kind === 'text') state.data.texts = state.data.texts.filter(o => o.id !== id);
+  else if (kind === 'sticker') state.data.stickers = state.data.stickers.filter(o => o.id !== id);
+  const el = document.querySelector(`.obj[data-id="${id}"]`);
+  if (el) el.remove();
+  state.dirty = true;
+  scheduleSave();
+}
+
+function renderAllObjects(){
+  objectsLayer.innerHTML = '';
+  state.data.icons.forEach(o => objectsLayer.appendChild(createIconEl(o)));
+  state.data.texts.forEach(o => objectsLayer.appendChild(createTextEl(o)));
+  state.data.stickers.forEach(o => objectsLayer.appendChild(createStickerEl(o)));
+}
+
+function addIcon(emoji){
+  const c = getVisibleCenter();
+  const n = state.data.icons.length;
+  const icon = { id:uid(), emoji, x:c.x + (n%5)*24, y:c.y + (n%5)*20, size:48 };
+  state.data.icons.push(icon);
+  objectsLayer.appendChild(createIconEl(icon));
+  state.dirty = true;
+  scheduleSave();
+}
+
+function addText(){
+  const c = getVisibleCenter();
+  const item = { id:uid(), text:'', x:c.x, y:c.y, fontSize:22, color:state.color };
+  state.data.texts.push(item);
+  const el = createTextEl(item);
+  objectsLayer.appendChild(el);
+  selectObj(item.id);
+  state.dirty = true;
+  scheduleSave();
+  setTimeout(() => {
+    const ta = el.querySelector('.obj-text__input');
+    if (ta) ta.focus();
+  }, 80);
+}
+
+function addSticker(){
+  const c = getVisibleCenter();
+  const n = state.data.stickers.length;
+  const st = {
+    id:uid(), text:'',
+    x:c.x + (n%4)*18, y:c.y + (n%4)*18,
+    color:STICKER_COLORS[n % STICKER_COLORS.length], width:180
+  };
+  state.data.stickers.push(st);
+  const el = createStickerEl(st);
+  objectsLayer.appendChild(el);
+  selectObj(st.id);
+  state.dirty = true;
+  scheduleSave();
+  setTimeout(() => {
+    const ta = el.querySelector('textarea');
+    if (ta) ta.focus();
+  }, 80);
+}
+
+/* ═══════════ DRAWER ═══════════ */
+function openDrawer(){
+  app.classList.add('drawer-open');
+  app.classList.remove('drawer-collapsed');
+}
+function closeDrawer(){
+  app.classList.remove('drawer-open');
+}
+function toggleDrawerCollapsed(){
+  app.classList.toggle('drawer-collapsed');
+}
+
+menuBtn.addEventListener('click', () => {
+  if (isMobile()){
+    if (app.classList.contains('drawer-open')) closeDrawer();
+    else openDrawer();
+  } else {
+    toggleDrawerCollapsed();
+  }
+});
+drawerBackdrop.addEventListener('click', closeDrawer);
+
+/* ═══════════ UI BUILD ═══════════ */
+function buildIconTabs(){
+  iconTabs.innerHTML = '';
+  Object.entries(NATURE_ICONS).forEach(([key, val]) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'icon-tab' + (key === state.activeIconTab ? ' on' : '');
+    btn.textContent = val.label;
+    btn.dataset.tab = key;
+    btn.addEventListener('click', () => {
+      state.activeIconTab = key;
+      $$('.icon-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === key));
+      buildIconGrid();
+    });
+    iconTabs.appendChild(btn);
+  });
+}
+function buildIconGrid(){
+  iconGrid.innerHTML = '';
+  const list = NATURE_ICONS[state.activeIconTab]?.icons || [];
+  list.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'icon-pick';
+    btn.textContent = emoji;
+    btn.addEventListener('click', () => {
+      addIcon(emoji);
+      if (isMobile()) closeDrawer();
+    });
+    iconGrid.appendChild(btn);
+  });
+}
+function buildColorSwatches(){
+  colorSwatches.innerHTML = '';
+  COLOR_SWATCHES.forEach(col => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'color-sw' + (col === state.color ? ' on' : '');
+    b.style.background = col;
+    b.dataset.color = col;
+    b.addEventListener('click', () => setColor(col));
+    colorSwatches.appendChild(b);
+  });
+}
+function setColor(col){
+  state.color = col;
+  $$('.color-sw').forEach(s => s.classList.toggle('on', s.dataset.color === col));
+  colorCustom.value = col;
+}
+colorCustom.addEventListener('input', e => {
+  state.color = e.target.value;
+  $$('.color-sw').forEach(s => s.classList.remove('on'));
+});
+
 function setTool(tool){
   if (state.tool === tool && tool !== 'idle') tool = 'idle';
   state.tool = tool;
   canvas.dataset.tool = tool;
-  $$('.tool-btn[data-tool]').forEach(b => {
-    b.setAttribute('aria-pressed', b.dataset.tool === tool ? 'true' : 'false');
-  });
-  updateZoneHint();
-  if (tool === 'fill' || tool === 'brush' || tool === 'eraser'){
-    cancelInfoHide();
-    zoneInfoEl.hidden = true;
-    syncInfoReopenBtn();
-  }
-}
-function setColor(color){
-  state.color = color;
-  const picker = $('#colorPicker');
-  if (picker && picker.value.toLowerCase() !== color.toLowerCase()) picker.value = color;
+  $$('.tool-chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.tool === tool ? 'true' : 'false'));
+  $$('.quick-btn[data-qtool]').forEach(b => b.setAttribute('aria-pressed', b.dataset.qtool === tool ? 'true' : 'false'));
+  if (tool === 'idle') clearSelection();
 }
 
-/* ============================================================
-   СТІКЕРИ / ІКОНКИ / МІТКИ
-   ============================================================ */
-const findSticker = id => state.data.stickers.find(s => s.id === id);
-const findIcon    = id => state.data.icons.find(i => i.id === id);
-const findLabel   = id => state.data.labels.find(l => l.id === id);
-
-function createStickerEl(s){
-  const el = document.createElement('div');
-  el.className = 'sticker';
-  el.dataset.id = s.id;
-  el.style.left = s.x + 'px';
-  el.style.top  = s.y + 'px';
-  el.style.background = s.color;
-
-  const bar = document.createElement('div');
-  bar.className = 'sticker__bar';
-  const grip = document.createElement('span');
-  grip.className = 'sticker__grip';
-  grip.textContent = '⋮⋮';
-  grip.setAttribute('aria-hidden', 'true');
-  const del = document.createElement('button');
-  del.type = 'button';
-  del.className = 'sticker__del';
-  del.setAttribute('aria-label', 'Видалити');
-  del.textContent = '✕';
-  bar.append(grip, del);
-
-  const ta = document.createElement('textarea');
-  ta.value = s.text || '';
-  ta.placeholder = 'Пишіть…';
-  ta.setAttribute('aria-label', 'Текст нотатки');
-  ta.rows = 2;
-  ta.readOnly = window.innerWidth < 900;
-
-  const moreIndicator = document.createElement('span');
-  moreIndicator.className = 'sticker__more';
-  moreIndicator.textContent = '… тап щоб відкрити';
-  moreIndicator.setAttribute('aria-hidden', 'true');
-
-  const autosize = () => {
-    ta.style.height = 'auto';
-    const sh = ta.scrollHeight;
-    ta.style.height = Math.min(sh, 200) + 'px';
-    if (sh > 130) el.classList.add('has-overflow');
-    else el.classList.remove('has-overflow');
-  };
-  ta.addEventListener('input', () => {
-    const t = findSticker(s.id);
-    if (t) t.text = ta.value;
-    autosize();
-    state.dirtyBoard = true;
-    scheduleSave('board');
-  });
-  ta.addEventListener('keydown', e => e.stopPropagation());
-
-  del.addEventListener('click', e => {
-    e.stopPropagation();
-    e.preventDefault();
-    state.data.stickers = state.data.stickers.filter(x => x.id !== s.id);
-    stickerEls.get(s.id)?.remove();
-    stickerEls.delete(s.id);
-    state.dirtyBoard = true;
-    scheduleSave('board');
-  });
-
-  el.append(bar, ta, moreIndicator);
-  requestAnimationFrame(autosize);
-
-  const onTap = () => { if (window.innerWidth < 900) openNoteEditor(s.id); };
-  const onLongPress = () => {
-    if (window.innerWidth >= 900) return;
-    if (confirm('Видалити нотатку?')){
-      state.data.stickers = state.data.stickers.filter(x => x.id !== s.id);
-      stickerEls.get(s.id)?.remove();
-      stickerEls.delete(s.id);
-      state.dirtyBoard = true;
-      scheduleSave('board');
-    }
-  };
-  attachDragHandlers(el, s.id, findSticker, onTap, onLongPress);
-  return el;
-}
-function renderStickers(list){
-  const seen = new Set();
-  list.forEach(s => {
-    seen.add(s.id);
-    let el = stickerEls.get(s.id);
-    if (!el){
-      el = createStickerEl(s);
-      stickerEls.set(s.id, el);
-      stickersLayer.appendChild(el);
-    } else {
-      el.style.left = s.x + 'px';
-      el.style.top  = s.y + 'px';
-      el.style.background = s.color;
-      const ta = el.querySelector('textarea');
-      if (ta && document.activeElement !== ta && ta.value !== (s.text || '')) ta.value = s.text || '';
-    }
-  });
-  stickerEls.forEach((el, id) => { if (!seen.has(id)){ el.remove(); stickerEls.delete(id); } });
+function buildBgOptions(){
+  $$('.bg-opt').forEach(b => b.addEventListener('click', () => setBackground(b.dataset.bg)));
 }
 
-function getVisibleCenter(){
-  const contRect = mapContainer.getBoundingClientRect();
-  const layerRect = stickersLayer.getBoundingClientRect();
-  const s = state.zoom || 1;
-  return {
-    x: (contRect.left + contRect.width / 2 - layerRect.left) / s,
-    y: (contRect.top + contRect.height / 2 - layerRect.top) / s
-  };
-}
-function addStickerWithText(text){
-  const c = getVisibleCenter();
-  const n = state.data.stickers.length;
-  const s = {
-    id: uid(),
-    x: Math.max(10, Math.round(c.x - 90 + (n % 4) * 16)),
-    y: Math.max(10, Math.round(c.y - 35 + (n % 4) * 16)),
-    text: text || '',
-    color: STICKER_COLORS[n % STICKER_COLORS.length]
-  };
-  state.data.stickers.push(s);
-  renderStickers(state.data.stickers);
-  state.dirtyBoard = true;
-  scheduleSave('board');
-  return s;
-}
-function addSticker(){ openNoteEditorForNew(''); }
+brushSizeEl.addEventListener('input', e => {
+  state.size = Number(e.target.value);
+  sizeValEl.textContent = state.size;
+});
 
-function createIconEl(icon){
-  const el = document.createElement('div');
-  el.className = 'placed-icon';
-  el.dataset.id = icon.id;
-  el.textContent = icon.icon;
-  el.style.left = icon.x + 'px';
-  el.style.top  = icon.y + 'px';
-  el.tabIndex = 0;
-  el.setAttribute('role', 'img');
-
-  const onLongPress = () => {
-    if (window.innerWidth >= 900) return;
-    if (confirm(`Видалити ${icon.icon}?`)){
-      state.data.icons = state.data.icons.filter(i => i.id !== icon.id);
-      el.remove(); iconEls.delete(icon.id);
-      state.dirtyBoard = true; scheduleSave('board');
-    }
-  };
-  attachDragHandlers(el, icon.id, findIcon, null, onLongPress);
-
-  el.addEventListener('dblclick', () => {
-    state.data.icons = state.data.icons.filter(i => i.id !== icon.id);
-    el.remove(); iconEls.delete(icon.id);
-    state.dirtyBoard = true; scheduleSave('board');
-  });
-  return el;
-}
-function renderIcons(list){
-  const seen = new Set();
-  list.forEach(icon => {
-    seen.add(icon.id);
-    let el = iconEls.get(icon.id);
-    if (!el){
-      el = createIconEl(icon);
-      iconEls.set(icon.id, el);
-      stickersLayer.appendChild(el);
-    } else {
-      el.style.left = icon.x + 'px';
-      el.style.top  = icon.y + 'px';
-    }
-  });
-  iconEls.forEach((el, id) => { if (!seen.has(id)){ el.remove(); iconEls.delete(id); } });
-}
-function addIcon(emoji){
-  const c = getVisibleCenter();
-  const n = state.data.icons.length;
-  const icon = {
-    id: uid(), icon: emoji,
-    x: Math.max(10, Math.round(c.x - 20 + (n % 6) * 18)),
-    y: Math.max(10, Math.round(c.y - 20 + (n % 6) * 18))
-  };
-  state.data.icons.push(icon);
-  renderIcons(state.data.icons);
-  state.dirtyBoard = true;
-  scheduleSave('board');
-}
-
-function createLabelEl(label){
-  const el = document.createElement('div');
-  el.className = 'data-label data-label--' + label.kind;
-  el.dataset.id = label.id;
-  el.style.left = label.x + 'px';
-  el.style.top  = label.y + 'px';
-  el.innerHTML = `<span class="data-label__emoji">${label.emoji}</span>
-                  <span class="data-label__value">${label.value}</span>`;
-  const onLongPress = () => {
-    if (window.innerWidth >= 900) return;
-    if (confirm(`Видалити ${label.emoji} ${label.value}?`)){
-      state.data.labels = state.data.labels.filter(l => l.id !== label.id);
-      el.remove(); labelEls.delete(label.id);
-      state.dirtyBoard = true; scheduleSave('board');
-    }
-  };
-  attachDragHandlers(el, label.id, findLabel, null, onLongPress);
-  el.addEventListener('dblclick', () => {
-    state.data.labels = state.data.labels.filter(l => l.id !== label.id);
-    el.remove(); labelEls.delete(label.id);
-    state.dirtyBoard = true; scheduleSave('board');
-  });
-  return el;
-}
-function renderLabels(list){
-  const seen = new Set();
-  list.forEach(l => {
-    seen.add(l.id);
-    let el = labelEls.get(l.id);
-    if (!el){
-      el = createLabelEl(l);
-      labelEls.set(l.id, el);
-      stickersLayer.appendChild(el);
-    } else {
-      el.style.left = l.x + 'px';
-      el.style.top  = l.y + 'px';
-    }
-  });
-  labelEls.forEach((el, id) => { if (!seen.has(id)){ el.remove(); labelEls.delete(id); } });
-}
-function addDataLabel(emoji, value, kind){
-  const c = getVisibleCenter();
-  const n = state.data.labels.length;
-  const label = {
-    id: uid(), emoji, value, kind,
-    x: Math.max(20, Math.round(c.x - 40 + (n % 5) * 24)),
-    y: Math.max(20, Math.round(c.y - 18 + (n % 5) * 20))
-  };
-  state.data.labels.push(label);
-  renderLabels(state.data.labels);
-  state.dirtyBoard = true;
-  scheduleSave('board');
-}
-
-function renderBoard(){
-  renderStickers(state.data.stickers);
-  renderIcons(state.data.icons);
-  renderLabels(state.data.labels);
-  applyZoneFills();
-}
-
-/* ============================================================
-   FIREBASE
-   ============================================================ */
-const refsFor = (studentId) => {
-  const base = `students/student${studentId}`;
-  return { drawing: db.ref(base + '/drawing'), board: db.ref(base + '/board') };
-};
-function detachListeners(){
-  if (state.refDrawing && state.handlerDrawing) state.refDrawing.off('value', state.handlerDrawing);
-  if (state.refBoard && state.handlerBoard) state.refBoard.off('value', state.handlerBoard);
-  state.refDrawing = state.refBoard = null;
-  state.handlerDrawing = state.handlerBoard = null;
-  state.listenersActive = false;
-}
-function applyLoadedBoardData(data){
-  state.data.stickers   = Array.isArray(data.stickers)   ? data.stickers   : [];
-  state.data.icons      = Array.isArray(data.icons)      ? data.icons      : [];
-  state.data.labels     = Array.isArray(data.labels)     ? data.labels     : [];
-  state.data.zoneFills  = data.zoneFills || {};
-  state.data.authorName = data.authorName || '';
-  if (authorInput) authorInput.value = state.data.authorName;
-  const hasFills = Object.keys(state.data.zoneFills).length > 0;
-  if (data.layerState){
-    state.showZones   = !!data.layerState.zones;
-    state.showLabels  = !!data.layerState.labels;
-    state.showBorders = !!data.layerState.borders;
-  } else {
-    state.showZones   = hasFills;
-    state.showLabels  = hasFills;
-    state.showBorders = hasFills;
-  }
-  applyLayerVisibility();
-  renderBoard();
-}
-function attachListeners(){
-  if (!db || !state.studentId) return;
-  const r = refsFor(state.studentId);
-  state.refDrawing = r.drawing;
-  state.refBoard   = r.board;
-  state.handlerDrawing = r.drawing.on('value', snap => {
-    const url = snap.val() || null;
-    if (url === state.lastLocalCanvas) return;
-    if (state.isDrawing){ state.pendingCanvas = url; return; }
-    state.data.canvas = url;
-    renderCanvas(url);
-  }, err => { console.warn('[Sync]', err); setNetIndicator(false, 'Помилка'); });
-  state.handlerBoard = r.board.on('value', snap => {
-    const data = snap.val();
-    if (!data){ setLayersVisibility(false, false, false); return; }
-    if (state.dirtyBoard) return;
-    applyLoadedBoardData(data);
-  }, err => console.warn('[Sync]', err));
-  state.listenersActive = true;
-}
-function setLayersVisibility(z, l, b){
-  state.showZones = z; state.showLabels = l; state.showBorders = b;
-  applyLayerVisibility();
-}
-function scheduleSave(kind){
-  clearTimeout(state.saveTimer[kind]);
-  const delay = kind === 'drawing' ? 250 : 200;
-  state.saveTimer[kind] = setTimeout(() => flushSave(kind), delay);
-}
-function flushSave(kind, opts = {}){
-  if (!db || !state.studentId) return;
-  const kinds = kind ? [kind] : ['drawing', 'board'];
-  if (kinds.includes('drawing') && (state.dirtyDrawing || opts.force)){
-    if (!state.refDrawing){ setTimeout(() => flushSave('drawing', opts), 300); return; }
-    const toSave = state.data.canvas || null;
-    state.lastLocalCanvas = toSave;
-    state.refDrawing.set(toSave).then(() => { state.dirtyDrawing = false; })
-      .catch(err => { console.warn('[Save]', err);
-        setTimeout(() => { state.dirtyDrawing = true; flushSave('drawing'); }, 1000); });
-  }
-  if (kinds.includes('board') && (state.dirtyBoard || opts.force)){
-    if (!state.refBoard){ setTimeout(() => flushSave('board', opts), 300); return; }
-    state.refBoard.set({
-      stickers: state.data.stickers,
-      icons: state.data.icons,
-      labels: state.data.labels,
-      zoneFills: state.data.zoneFills,
-      authorName: state.data.authorName,
-      layerState: {
-        zones: state.showZones, labels: state.showLabels, borders: state.showBorders
-      },
-      updatedAt: Date.now(), by: CLIENT_ID
-    }).then(() => { state.dirtyBoard = false; })
-      .catch(err => { console.warn('[Save]', err);
-        setTimeout(() => { state.dirtyBoard = true; flushSave('board'); }, 1000); });
-  }
-}
-function forceSyncNow(){
-  if (!db || !state.studentId){ showToast('❌ Синхронізація недоступна'); return; }
-  if (state.syncInProgress) return;
-  state.syncInProgress = true;
-  flashStatus('🔄 Синхронізація…', 'busy', 3000);
-  state.dirtyDrawing = true; state.dirtyBoard = true;
-  flushSave(null, { force: true });
-  setTimeout(() => {
-    const r = refsFor(state.studentId);
-    r.drawing.once('value').then(snap => {
-      const url = snap.val() || null;
-      if (url && url !== state.lastLocalCanvas){
-        state.data.canvas = url; state.lastLocalCanvas = url; renderCanvas(url);
-      }
-    }).catch(()=>{});
-    r.board.once('value').then(snap => {
-      const data = snap.val();
-      if (data) applyLoadedBoardData(data);
-    }).catch(()=>{});
-    state.syncInProgress = false;
-    showToast('✅ Синхронізовано');
-    flashStatus('✅ Готово', 'ok', 1800);
-  }, 700);
-}
-
-/* ============================================================
-   ВІДКРИТТЯ ДОШКИ
-   ============================================================ */
-function openStudentBoard(studentId){
-  flushSave();
-  detachListeners();
-  state.studentId = studentId;
-  state.data  = emptyData();
-  state.dirtyDrawing = state.dirtyBoard = false;
-  state.lastLocalCanvas = null;
-  state.pendingCanvas = undefined;
-  state.panX = 0; state.panY = 0; state.zoom = 1;
-
-  stickerEls.forEach(el => el.remove()); stickerEls.clear();
-  iconEls.forEach(el => el.remove());    iconEls.clear();
-  labelEls.forEach(el => el.remove());   labelEls.clear();
-  renderCanvas(null);
-  renderBoard();
-
-  setTool('idle');
-  setLayersVisibility(false, false, false);
-  applyViewportTransform();
-
-  if (authorInput) authorInput.value = '';
-  cancelInfoHide();
-  zoneInfoEl.hidden = true;
-  syncInfoReopenBtn();
-
-  attachListeners();
-}
-
-/* ============================================================
-   ТАЙМЕР
-   ============================================================ */
-let timerInterval = null;
-function updateTimerDisplay(){
-  const remaining = Math.max(0, TOTAL_TIMER_SECONDS - state.timerSeconds);
-  const m = Math.floor(remaining / 60), s = remaining % 60;
-  timerEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-  timerEl.dataset.low = remaining <= 300 ? 'true' : 'false';
-}
-function startTimer(){
-  updateTimerDisplay();
-  clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (!state.timerRunning) return;
-    if (state.timerSeconds >= TOTAL_TIMER_SECONDS) return;
-    state.timerSeconds++;
-    updateTimerDisplay();
-    const remaining = TOTAL_TIMER_SECONDS - state.timerSeconds;
-    if (remaining === 300 || remaining === 60) flashStatus(`⏰ ${remaining/60} хв!`, 'warn', 5000);
-    if (remaining === 0) flashStatus('⏰ Час вийшов!', 'error', 8000);
-  }, 1000);
-}
-function toggleTimer(){
-  state.timerRunning = !state.timerRunning;
-  const btn = $('#timerBtn');
-  btn.setAttribute('aria-pressed', state.timerRunning ? 'false' : 'true');
-  $('#timerBtnIcon').textContent = state.timerRunning ? '⏸' : '▶';
-}
-
-/* ============================================================
-   ЗУМ
-   ============================================================ */
-function applyZoom(newZoom){
-  const old = state.zoom;
-  state.zoom = Math.max(0.5, Math.min(4, newZoom));
-  if (old !== 0){ state.panX *= state.zoom / old; state.panY *= state.zoom / old; }
-  applyViewportTransform();
-}
-function zoomIn(){ applyZoom(state.zoom * 1.35); }
-function zoomOut(){ applyZoom(state.zoom / 1.35); }
-function zoomFit(){ state.zoom = 1; state.panX = 0; state.panY = 0; applyViewportTransform(); }
-
-/* ============================================================
-   ЕКСПОРТ PNG
-   ============================================================ */
+/* ═══════════ EXPORT PNG ═══════════ */
 async function exportPNG(){
-  if (typeof html2canvas !== 'function'){ flashStatus('❌ Модуль не завантажено', 'error'); return; }
-  if (!state.studentId){ flashStatus('❌ Спочатку обери учня', 'error'); return; }
-  flashStatus('📸 Знімок…', 'busy', 8000);
-  const name = state.studentName || `Учень ${state.studentId}`;
-  const author = (state.data.authorName || '').trim();
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' });
-  const timeStr = now.toLocaleTimeString('uk-UA', { hour:'2-digit', minute:'2-digit' });
-  const savedZoom = state.zoom, savedPanX = state.panX, savedPanY = state.panY;
-  state.zoom = 1; state.panX = 0; state.panY = 0;
-  applyViewportTransform();
-  await new Promise(r => requestAnimationFrame(r));
-  const stamp = document.createElement('div');
-  stamp.className = 'export-stamp';
-  stamp.innerHTML = `
-    <div class="export-stamp__name">${author || name}</div>
-    ${author ? `<div class="export-stamp__author">Кабінет: ${name}</div>` : ''}
-    <div class="export-stamp__time">${dateStr} • ${timeStr}</div>
-  `;
-  mapViewport.appendChild(stamp);
-  mapContainer.classList.add('is-exporting');
+  if (typeof html2canvas !== 'function'){ showToast('❌ Модуль не завантажено'); return; }
+  showToast('📸 Готую знімок…');
+  clearSelection();
   try {
-    await new Promise(r => requestAnimationFrame(r));
-    const shot = await html2canvas(mapViewport, {
-      backgroundColor: '#04182e',
+    const shot = await html2canvas(board, {
+      backgroundColor: null,
       scale: Math.min(2.5, Math.max(1.5, window.devicePixelRatio || 1)),
       useCORS: true, logging: false, removeContainer: true
     });
-    stamp.remove();
-    mapContainer.classList.remove('is-exporting');
-    state.zoom = savedZoom; state.panX = savedPanX; state.panY = savedPanY;
-    applyViewportTransform();
-    const safeName = (author || name)
-      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F000}-\u{1F0FF}]/gu, '')
-      .replace(/[^\w\u0400-\u04FF]+/g, '-')
-      .replace(/^-+|-+$/g, '').replace(/-+/g, '-').trim() || `Учень${state.studentId}`;
-    const safeDate = dateStr.replace(/\./g, '-');
-    const fname = `Клімат-${safeName}-${safeDate}.png`;
+    const name = (state.data.name || 'Записник').replace(/[^\w\u0400-\u04FF]+/g, '-').trim() || 'Записник';
+    const d = new Date();
+    const dateStr = d.toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' }).replace(/\./g, '-');
     const link = document.createElement('a');
-    link.download = fname;
+    link.download = `Природа-${name}-${dateStr}.png`;
     link.href = shot.toDataURL('image/png');
     document.body.appendChild(link); link.click(); link.remove();
-    flashStatus('✅ PNG збережено', 'ok', 3000);
+    showToast('✅ Збережено');
   } catch (err){
-    stamp.remove();
-    mapContainer.classList.remove('is-exporting');
-    state.zoom = savedZoom; state.panX = savedPanX; state.panY = savedPanY;
-    applyViewportTransform();
     console.warn('[Export]', err);
-    flashStatus('❌ Помилка', 'error', 4000);
+    showToast('❌ Помилка збереження');
   }
 }
 
-/* ============================================================
-   ОЧИЩЕННЯ
-   ============================================================ */
-function clearCurrent(){
-  if (!state.studentId){ return; }
-  const name = state.studentName || `Учень ${state.studentId}`;
-  if (!window.confirm(`Очистити дошку «${name}»?\n\nВсі малюнки, стікери, іконки, мітки буде видалено.`)) return;
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const author = state.data.authorName;
-  state.data = emptyData();
-  state.data.authorName = author;
-  state.lastLocalCanvas = null;
-  stickerEls.forEach(el => el.remove()); stickerEls.clear();
-  iconEls.forEach(el => el.remove());    iconEls.clear();
-  labelEls.forEach(el => el.remove());   labelEls.clear();
-  applyZoneFills();
-  setLayersVisibility(false, false, false);
-  state.dirtyDrawing = true; state.dirtyBoard = true;
-  flushSave(null, { force: true });
-  flashStatus('🗑 Дошку очищено', 'warn', 2400);
-}
+/* ═══════════ ADMIN ═══════════ */
+function openAdmin(){ if (state.adminBusy) return; adminPanel.hidden = false; setAdminProgress(null); }
+function closeAdmin(){ if (state.adminBusy) return; adminPanel.hidden = true; }
 
-/* ============================================================
-   ПАНЕЛЬ ВЧИТЕЛЯ
-   ============================================================ */
-function openTeacherPanel(){
-  if (state.teacherBusy) return;
-  teacherPanel.hidden = false;
-  setTeacherProgress(null);
-}
-function closeTeacherPanel(){
-  if (state.teacherBusy) return;
-  teacherPanel.hidden = true;
-}
-function forceLayersVisible(){
-  state.showZones   = true;
-  state.showLabels  = true;
-  state.showBorders = true;
-  applyLayerVisibility();
-}
-async function teacherSyncAll(){
-  if (state.teacherBusy) return;
-  if (!db){ showToast('❌ Firebase недоступний'); return; }
-  state.teacherBusy = true;
-  const btn = $('#teacherSyncAll'); btn.disabled = true;
+async function adminReload(){
+  if (state.adminBusy) return;
+  state.adminBusy = true;
   try {
-    const currentId = state.studentId;
-    setTeacherProgress('🔄 Перечитуємо всі дошки…', 0);
-    let ok = 0, empty = 0, errors = 0;
-    for (let i = 1; i <= STUDENT_NAMES.length; i++){
-      setTeacherProgress(`🔄 Учень ${i} / 25 — перевіряємо…`, (i - 1) / 25 * 100);
-      try {
-        const r = refsFor(i);
-        const [drawingSnap, boardSnap] = await Promise.all([
-          r.drawing.once('value'), r.board.once('value')
-        ]);
-        const hasData = drawingSnap.exists() || boardSnap.exists();
-        if (hasData) ok++; else empty++;
-      } catch (e){ errors++; console.warn('[Teacher sync]', i, e); }
-    }
-    setTeacherProgress(
-      `✅ Синхронізовано: ${ok} робіт, ${empty} порожніх${errors ? `, ${errors} помилок` : ''}`, 100);
-    if (currentId){ openStudentBoard(currentId); }
-    await new Promise(r => setTimeout(r, 2000));
-    setTeacherProgress(null);
-  } finally { state.teacherBusy = false; btn.disabled = false; }
-}
-async function teacherSaveAllPNG(){
-  if (state.teacherBusy) return;
-  if (!db){ showToast('❌ Firebase недоступний'); return; }
-  if (typeof html2canvas !== 'function'){ showToast('❌ Модуль PNG не завантажено'); return; }
-  const okConfirm = window.confirm(
-    '📸 Зберегти PNG для всіх 25 учнів?\n\n' +
-    'Браузер завантажить 25 файлів. Це може зайняти до 1-2 хвилин.\n\n' +
-    'Продовжити?'
-  );
-  if (!okConfirm) return;
-  state.teacherBusy = true;
-  const btn = $('#teacherSaveAll'); btn.disabled = true;
-  const currentId = state.studentId;
-  const currentName = state.studentName;
-  const currentData = JSON.parse(JSON.stringify(state.data));
-  const currentLayers = { zones: state.showZones, labels: state.showLabels, borders: state.showBorders };
-  const currentPan = { zoom: state.zoom, panX: state.panX, panY: state.panY };
-  detachListeners();
-  state.dirtyBoard = false;
-  state.dirtyDrawing = false;
-  const dateStr = new Date().toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' });
-  const safeDate = dateStr.replace(/\./g, '-');
-  try {
-    state.zoom = 1; state.panX = 0; state.panY = 0;
-    applyViewportTransform();
-    forceLayersVisible();
-    let saved = 0, empty = 0, errors = 0;
-    for (let i = 1; i <= STUDENT_NAMES.length; i++){
-      const name = STUDENT_NAMES[i - 1];
-      setTeacherProgress(`📸 Учень ${i} / 25 — ${name}…`, (i - 1) / 25 * 100);
-      try {
-        const r = refsFor(i);
-        const [drawingSnap, boardSnap] = await Promise.all([
-          r.drawing.once('value'), r.board.once('value')
-        ]);
-        const drawingUrl = drawingSnap.val() || null;
-        const boardData = boardSnap.val();
-        const hasDrawing = !!drawingUrl;
-        const hasBoard = boardData && (
-          (boardData.stickers && boardData.stickers.length) ||
-          (boardData.icons && boardData.icons.length) ||
-          (boardData.labels && boardData.labels.length) ||
-          (boardData.zoneFills && Object.keys(boardData.zoneFills).length)
-        );
-        if (!hasDrawing && !hasBoard){ empty++; continue; }
-        state.studentId = i;
-        state.studentName = name;
-        state.data = {
-          canvas: drawingUrl,
-          stickers: Array.isArray(boardData?.stickers) ? boardData.stickers : [],
-          icons: Array.isArray(boardData?.icons) ? boardData.icons : [],
-          labels: Array.isArray(boardData?.labels) ? boardData.labels : [],
-          zoneFills: boardData?.zoneFills || {},
-          authorName: boardData?.authorName || ''
-        };
-        state.showZones = true; state.showLabels = true; state.showBorders = true;
-        applyLayerVisibility();
-        renderCanvas(drawingUrl);
-        renderBoard();
-        await new Promise(r => setTimeout(r, 350));
-        await new Promise(r => requestAnimationFrame(r));
-        const stamp = document.createElement('div');
-        stamp.className = 'export-stamp';
-        const author = (state.data.authorName || '').trim();
-        const timeStr = new Date().toLocaleTimeString('uk-UA', { hour:'2-digit', minute:'2-digit' });
-        stamp.innerHTML = `
-          <div class="export-stamp__name">${author || name}</div>
-          ${author ? `<div class="export-stamp__author">Кабінет: ${name}</div>` : ''}
-          <div class="export-stamp__time">${dateStr} • ${timeStr}</div>
-        `;
-        mapViewport.appendChild(stamp);
-        mapContainer.classList.add('is-exporting');
-        const shot = await html2canvas(mapViewport, {
-          backgroundColor: '#04182e',
-          scale: Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)),
-          useCORS: true, logging: false, removeContainer: true
-        });
-        stamp.remove();
-        mapContainer.classList.remove('is-exporting');
-        const safeName = (author || name)
-          .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F000}-\u{1F0FF}]/gu, '')
-          .replace(/[^\w\u0400-\u04FF]+/g, '-')
-          .replace(/^-+|-+$/g, '').replace(/-+/g, '-').trim() || `Учень${i}`;
-        const fname = `Клімат-${String(i).padStart(2,'0')}-${safeName}-${safeDate}.png`;
-        const link = document.createElement('a');
-        link.download = fname;
-        link.href = shot.toDataURL('image/png');
-        document.body.appendChild(link); link.click(); link.remove();
-        saved++;
-        await new Promise(r => setTimeout(r, 500));
-      } catch (e){
-        errors++;
-        console.warn('[Teacher save]', i, e);
-        const stamps = mapViewport.querySelectorAll('.export-stamp');
-        stamps.forEach(s => s.remove());
-        mapContainer.classList.remove('is-exporting');
-      }
-    }
-    setTeacherProgress(
-      `✅ Готово! Збережено ${saved}, порожніх ${empty}${errors ? `, помилок ${errors}` : ''}`, 100);
+    setAdminProgress('🔄 Читаю з сервера…', 40);
+    if (!state.db || !state.ref) throw new Error('Firebase недоступний');
+    const snap = await state.ref.once('value');
+    const data = snap.val();
+    state.dirty = false;
+    if (data) applyRemoteData(data);
+    setAdminProgress('✅ Готово', 100);
+    await new Promise(r => setTimeout(r, 800));
+    setAdminProgress(null);
+  } catch (e){
+    console.warn(e);
+    setAdminProgress('❌ Помилка', 100);
     await new Promise(r => setTimeout(r, 1500));
-    state.studentId = currentId;
-    state.studentName = currentName;
-    state.data = currentData;
-    state.zoom = currentPan.zoom;
-    state.panX = currentPan.panX;
-    state.panY = currentPan.panY;
-    applyViewportTransform();
-    state.showZones = currentLayers.zones;
-    state.showLabels = currentLayers.labels;
-    state.showBorders = currentLayers.borders;
-    applyLayerVisibility();
-    renderCanvas(currentData.canvas);
-    renderBoard();
-    if (authorInput) authorInput.value = currentData.authorName || '';
-    attachListeners();
-    await new Promise(r => setTimeout(r, 1000));
-    setTeacherProgress(null);
-    showToast(`📸 Збережено ${saved} файлів`);
-  } catch (e){
-    console.error('[Teacher save all]', e);
-    setTeacherProgress('❌ Помилка. Дивись консоль.');
-    await new Promise(r => setTimeout(r, 3000));
-    setTeacherProgress(null);
-  } finally { state.teacherBusy = false; btn.disabled = false; }
+    setAdminProgress(null);
+  } finally { state.adminBusy = false; }
 }
-async function teacherClearAll(){
-  if (state.teacherBusy) return;
-  if (!db){ showToast('❌ Firebase недоступний'); return; }
-  const ok = window.confirm(
-    '⚠️ УВАГА!\n\n' +
-    'Видалити ВСІ дошки ВСІХ 25 учнів?\n' +
-    'Малюнки, стікери, іконки, мітки, зафарбування — усе буде стерто.\n\n' +
-    'Цю дію НЕМОЖЛИВО скасувати.\n\n' +
-    'Точно продовжити?'
-  );
-  if (!ok) return;
-  const ok2 = window.confirm('⚠️ Останнє підтвердження!\n\nТочно видалити ВСЕ?');
-  if (!ok2) return;
-  state.teacherBusy = true;
-  const btn = $('#teacherClearAll'); btn.disabled = true;
+
+async function adminClearAll(){
+  if (state.adminBusy) return;
+  if (!confirm('⚠️ Видалити всю дошку?\n\nМалюнки, іконки, тексти, стікери буде стерто.\n\nПродовжити?')) return;
+  if (!confirm('⚠️ Останнє підтвердження!\n\nТочно очистити?')) return;
+  state.adminBusy = true;
   try {
-    setTeacherProgress('♻️ Очищаємо всі дошки…', 30);
-    await db.ref('students').remove();
-    setTeacherProgress('✅ Всі дошки очищено!', 100);
-    const author = state.data.authorName;
+    setAdminProgress('♻️ Очищаю…', 50);
+    if (state.db && state.ref) await state.ref.remove();
     state.data = emptyData();
-    state.data.authorName = author;
     state.lastLocalCanvas = null;
-    stickerEls.forEach(el => el.remove()); stickerEls.clear();
-    iconEls.forEach(el => el.remove());    iconEls.clear();
-    labelEls.forEach(el => el.remove());   labelEls.clear();
-    renderCanvas(null);
-    renderBoard();
-    setLayersVisibility(false, false, false);
-    if (authorInput) authorInput.value = author || '';
-    await new Promise(r => setTimeout(r, 2000));
-    setTeacherProgress(null);
-    showToast('✅ Всі дошки очищено');
+    board.dataset.bg = 'line';
+    updateBgButtons();
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    objectsLayer.innerHTML = '';
+    if (authorInput) authorInput.value = '';
+    state.dirty = false;
+    setAdminProgress('✅ Все очищено', 100);
+    await new Promise(r => setTimeout(r, 1200));
+    setAdminProgress(null);
+    showToast('✅ Дошку очищено');
   } catch (e){
-    console.error('[Teacher clear all]', e);
-    setTeacherProgress('❌ Не вдалося очистити');
-    await new Promise(r => setTimeout(r, 3000));
-    setTeacherProgress(null);
-  } finally { state.teacherBusy = false; btn.disabled = false; }
+    console.warn(e);
+    setAdminProgress('❌ Помилка', 100);
+    await new Promise(r => setTimeout(r, 1500));
+    setAdminProgress(null);
+  } finally { state.adminBusy = false; }
 }
 
-/* ============================================================
-   МЕРЕЖА
-   ============================================================ */
-function bindConnection(){
-  window.addEventListener('online', () => {
-    setNetIndicator(true, 'Онлайн');
-    flashStatus('🟢 Онлайн', 'ok');
-    flushSave(null, { force: true });
-  });
-  window.addEventListener('offline', () => {
-    setNetIndicator(false, 'Офлайн');
-    setStatus('🔴 Офлайн', 'warn');
-  });
-  if (navigator.onLine) setNetIndicator(true, 'Онлайн');
-  else setNetIndicator(false, 'Офлайн');
-  if (db){
-    db.ref('.info/connected').on('value', snap => {
-      const conn = !!snap.val();
-      if (conn) setNetIndicator(true, 'Онлайн');
-      else setNetIndicator(false, 'З’єднання…');
-      if (!statusTimer){
-        setStatus(conn ? '🟢 Синхронізовано' : '🟠 Офлайн', conn ? 'ok' : 'warn');
-        if (window.innerWidth < 900){
-          clearTimeout(statusHideTimer);
-          statusHideTimer = setTimeout(() => { statusEl.dataset.hide = 'true'; }, 2500);
-        }
-      }
-    }, err => { console.warn('[Firebase]', err); setNetIndicator(false, 'Помилка'); });
-  } else {
-    setNetIndicator(false, 'Firebase немає');
-  }
-}
-
-/* ============================================================
-   МОБІЛЬНІ ПАНЕЛІ
-   ============================================================ */
-const fabIcons  = $('#fabIcons');
-const fabLayers = $('#fabLayers');
-const fabLegend = $('#fabLegend');
-function toggleIconsPanel(force){
-  const open = force !== undefined ? force : !iconGallery.classList.contains('open');
-  iconGallery.classList.toggle('open', open);
-  fabIcons.setAttribute('aria-pressed', open ? 'true' : 'false');
-  if (open){ legendEl.classList.remove('open'); layersEl.classList.remove('open');
-    fabLegend.setAttribute('aria-pressed', 'false'); fabLayers.setAttribute('aria-pressed', 'false'); }
-}
-function toggleLayers(force){
-  const open = force !== undefined ? force : !layersEl.classList.contains('open');
-  layersEl.classList.toggle('open', open);
-  fabLayers.setAttribute('aria-pressed', open ? 'true' : 'false');
-  if (open){ iconGallery.classList.remove('open'); legendEl.classList.remove('open');
-    fabIcons.setAttribute('aria-pressed', 'false'); fabLegend.setAttribute('aria-pressed', 'false'); }
-}
-function toggleLegend(force){
-  const open = force !== undefined ? force : !legendEl.classList.contains('open');
-  legendEl.classList.toggle('open', open);
-  fabLegend.setAttribute('aria-pressed', open ? 'true' : 'false');
-  if (open){ iconGallery.classList.remove('open'); layersEl.classList.remove('open');
-    fabIcons.setAttribute('aria-pressed', 'false'); fabLayers.setAttribute('aria-pressed', 'false'); }
-}
-
-/* ============================================================
-   UI
-   ============================================================ */
+/* ═══════════ BIND UI ═══════════ */
 function bindUI(){
-  $$('.tool-btn[data-tool]').forEach(btn => {
-    btn.addEventListener('click', () => setTool(btn.dataset.tool));
+  toolRow.addEventListener('click', e => {
+    const b = e.target.closest('.tool-chip');
+    if (b) setTool(b.dataset.tool);
   });
-  $('#colorPicker').addEventListener('input', e => setColor(e.target.value));
-  const sizeInput = $('#brushSize');
-  sizeInput.addEventListener('input', e => {
-    state.size = Number(e.target.value);
-    $('#sizeLabel').textContent = state.size;
-    sizeInput.setAttribute('aria-valuenow', state.size);
-  });
-  authorInput.addEventListener('input', () => {
-    state.data.authorName = authorInput.value;
-    state.dirtyBoard = true;
-    scheduleSave('board');
-    try { localStorage.setItem('climateLab_author_' + state.studentId, authorInput.value); } catch(_){}
+  $$('.quick-btn[data-qtool]').forEach(b => b.addEventListener('click', () => setTool(b.dataset.qtool)));
+
+  $('#addTextBtn').addEventListener('click', () => { addText(); if (isMobile()) closeDrawer(); });
+  $('#addStickerBtn').addEventListener('click', () => { addSticker(); if (isMobile()) closeDrawer(); });
+  $('#qAddText').addEventListener('click', addText);
+  $('#qAddSticker').addEventListener('click', addSticker);
+  $('#qMenu').addEventListener('click', openDrawer);
+
+  /* ВИПРАВЛЕНО: очищення */
+  $('#clearBoardBtn').addEventListener('click', () => {
+    if (!confirm('Очистити дошку? Все, що є — зникне.')) return;
+    state.data = emptyData();
+    board.dataset.bg = 'line';
+    updateBgButtons();
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    objectsLayer.innerHTML = '';
+    // lastLocalCanvas навмисно НЕ чіпаємо — щоб flushSave побачив різницю і відправив null
+    state.dirty = true;
+    flushSave({ force:true });
+    showToast('🗑️ Дошку очищено');
   });
 
-  $('#addStickerBtn').addEventListener('click', addSticker);
-  $('#clearBtn').addEventListener('click', clearCurrent);
-  $('#timerBtn').addEventListener('click', toggleTimer);
-  $('#exportBtn').addEventListener('click', exportPNG);
   $('#syncBtn').addEventListener('click', forceSyncNow);
+  $('#exportBtn').addEventListener('click', exportPNG);
 
-  $('#changeStudentBtn').addEventListener('click', () => {
-    flushSave();
-    showStudentPicker();
+  authorInput.addEventListener('input', () => {
+    state.data.name = authorInput.value;
+    state.dirty = true;
+    scheduleSave();
   });
 
-  $('#zoneInfoClose').addEventListener('click', () => {
-    cancelInfoHide();
-    zoneInfoEl.hidden = true;
-    syncInfoReopenBtn();
-  });
-  infoReopenBtn.addEventListener('click', reopenInfoCard);
-
-  addTempBtn.addEventListener('click', () => {
-    const info = state.lastInfo;
-    if (!info || info.type !== 'country') return;
-    const data = COUNTRY_CLIMATE_BY_KEY.get(normalizeName(info.rawName));
-    if (!data) return;
-    addDataLabel('🌡', data.tShort, 'temp');
-    showToast(`🌡 ${data.tShort} на карті`);
-    scheduleInfoHide();
-  });
-  addRainBtn.addEventListener('click', () => {
-    const info = state.lastInfo;
-    if (!info || info.type !== 'country') return;
-    const data = COUNTRY_CLIMATE_BY_KEY.get(normalizeName(info.rawName));
-    if (!data) return;
-    addDataLabel('💧', data.rainShort, 'rain');
-    showToast(`💧 ${data.rainShort} на карті`);
-    scheduleInfoHide();
-  });
-  addNoteBtn.addEventListener('click', () => {
-    const info = state.lastInfo;
-    if (!info || info.type !== 'country') return;
-    const data = COUNTRY_CLIMATE_BY_KEY.get(normalizeName(info.rawName));
-    if (!data) return;
-    const prefill =
-`🌍 ${data.uk}
-Клімат: ${data.zone}
-🌡 ${data.t}   💧 ${data.rain}
-
-Що цікавого:`;
-    zoneInfoEl.hidden = true;
-    syncInfoReopenBtn();
-    openNoteEditorForNew(prefill);
+  // Клік по фону знімає виділення
+  boardWrap.addEventListener('pointerdown', e => {
+    if (e.target === boardWrap || e.target === board || e.target === canvas) clearSelection();
   });
 
-  $('#noteEditorClose').addEventListener('click', () => closeNoteEditor(false));
-  $('#noteEditorSave').addEventListener('click', () => closeNoteEditor(true));
+  // Admin
+  $('#authorCredit').addEventListener('click', openAdmin);
+  $('#adminClose').addEventListener('click', closeAdmin);
+  $('#adminReload').addEventListener('click', adminReload);
+  $('#adminSavePNG').addEventListener('click', async () => { closeAdmin(); await exportPNG(); });
+  $('#adminClearAll').addEventListener('click', adminClearAll);
+  adminPanel.addEventListener('click', e => { if (e.target === adminPanel) closeAdmin(); });
 
-  $('#zoomIn').addEventListener('click', zoomIn);
-  $('#zoomOut').addEventListener('click', zoomOut);
-  $('#zoomFit').addEventListener('click', zoomFit);
-
-  fabIcons.addEventListener('click', () => toggleIconsPanel());
-  fabLayers.addEventListener('click', () => toggleLayers());
-  fabLegend.addEventListener('click', () => toggleLegend());
-
-  zoneInfoEl.addEventListener('pointerdown', cancelInfoHide);
-  zoneInfoEl.addEventListener('click', cancelInfoHide);
-
-  mapContainer.addEventListener('click', e => {
-    if (window.innerWidth >= 900) return;
-    if (!e.target.closest('.icon-gallery, .legend, .layers, .mobile-fabs')){
-      iconGallery.classList.remove('open');
-      legendEl.classList.remove('open');
-      layersEl.classList.remove('open');
-      fabIcons.setAttribute('aria-pressed', 'false');
-      fabLegend.setAttribute('aria-pressed', 'false');
-      fabLayers.setAttribute('aria-pressed', 'false');
-    }
-  });
-
-  const zonesToggle = $('#zonesToggle');
-  zonesToggle.addEventListener('click', () => {
-    state.showZones = !state.showZones;
-    applyLayerVisibility();
-    state.dirtyBoard = true; scheduleSave('board');
-    showToast(state.showZones ? '🎨 Зафарбування увімкнено' : '🎨 Зафарбування вимкнено');
-  });
-  const labelsToggle = $('#labelsToggle');
-  labelsToggle.addEventListener('click', () => {
-    state.showLabels = !state.showLabels;
-    applyLayerVisibility();
-    state.dirtyBoard = true; scheduleSave('board');
-    showToast(state.showLabels ? '🔤 Підписи увімкнено' : '🔤 Підписи вимкнено');
-  });
-  const bordersToggle = $('#bordersToggle');
-  bordersToggle.addEventListener('click', () => {
-    state.showBorders = !state.showBorders;
-    applyLayerVisibility();
-    state.dirtyBoard = true; scheduleSave('board');
-    showToast(state.showBorders ? '━━ Межі увімкнено' : '━━ Межі вимкнено');
-  });
-
-  const legendToggle = $('#legendToggle');
-  legendToggle.addEventListener('click', () => {
-    const collapsed = legendEl.dataset.collapsed === 'true';
-    legendEl.dataset.collapsed = collapsed ? 'false' : 'true';
-    legendToggle.textContent = collapsed ? '−' : '+';
-  });
-
-  /* ─── СЕКРЕТНИЙ ПІДПИС АВТОРА → ПАНЕЛЬ ВЧИТЕЛЯ ─── */
-  const authorCredit = $('#authorCredit');
-  authorCredit.addEventListener('click', () => {
-    openTeacherPanel();
-  });
-  authorCredit.addEventListener('mousedown', e => e.preventDefault());
-
-  $('#teacherClose').addEventListener('click', closeTeacherPanel);
-  $('#teacherSyncAll').addEventListener('click', teacherSyncAll);
-  $('#teacherSaveAll').addEventListener('click', teacherSaveAllPNG);
-  $('#teacherClearAll').addEventListener('click', teacherClearAll);
-  teacherPanel.addEventListener('click', e => {
-    if (e.target === teacherPanel) closeTeacherPanel();
-  });
-
+  // Клавіші
   document.addEventListener('keydown', e => {
     const tag = (e.target.tagName || '').toLowerCase();
-    if (tag === 'textarea' || tag === 'input') return;
+    if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key === 'b' || e.key === 'B') setTool('brush');
     else if (e.key === 'e' || e.key === 'E') setTool('eraser');
-    else if (e.key === 'f' || e.key === 'F') setTool('fill');
-    else if (e.key === 'Escape'){
-      if (!teacherPanel.hidden) closeTeacherPanel();
-      else if (!noteEditor.hidden) closeNoteEditor(false);
-      else setTool('idle');
-    }
+    else if (e.key === 'Escape'){ setTool('idle'); closeAdmin(); closeDrawer(); }
     else if (e.key === 'n' || e.key === 'N') addSticker();
-    else if (e.key === '+' || e.key === '=') zoomIn();
-    else if (e.key === '-') zoomOut();
-    else if (e.key === '0') zoomFit();
+    else if (e.key === 't' || e.key === 'T') addText();
   });
 
-  window.addEventListener('beforeunload', () => {
-    if (db && state.refDrawing){ try { state.refDrawing.set(state.data.canvas || null); } catch(_){} }
-    if (db && state.refBoard){
-      try {
-        state.refBoard.set({
-          stickers: state.data.stickers,
-          icons: state.data.icons,
-          labels: state.data.labels,
-          zoneFills: state.data.zoneFills,
-          authorName: state.data.authorName,
-          layerState: { zones: state.showZones, labels: state.showLabels, borders: state.showBorders },
-          updatedAt: Date.now(), by: CLIENT_ID
-        });
-      } catch(_){}
-    }
-  });
-
+  window.addEventListener('beforeunload', () => flushSave({ force:true }));
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden'){
-      state.dirtyDrawing = true; state.dirtyBoard = true;
-      flushSave(null, { force: true });
-    } else if (state.studentId){
-      forceSyncNow();
+      state.dirty = true;
+      flushSave({ force:true });
     }
   });
 }
 
+/* ═══════════ RESIZE ═══════════ */
 function bindResize(){
   const schedule = () => {
     if (resizeRaf) cancelAnimationFrame(resizeRaf);
     resizeRaf = requestAnimationFrame(() => {
       resizeRaf = null;
-      positionViewport();
       resizeCanvasBacking();
-      renderMap();
     });
   };
-  if ('ResizeObserver' in window){ new ResizeObserver(schedule).observe(mapContainer); }
+  if ('ResizeObserver' in window) new ResizeObserver(schedule).observe(boardWrap);
   window.addEventListener('resize', schedule);
   window.addEventListener('orientationchange', () => setTimeout(schedule, 250));
 }
 
-/* ============================================================
-   ПІДКАЗКА
-   ============================================================ */
-function showFirstHintIfNeeded(studentId){
-  const key = 'climateLab_hint_v8_s' + studentId;
-  try {
-    if (localStorage.getItem(key) === '1') return;
-    localStorage.setItem(key, '1');
-  } catch(_){}
-  firstHint.hidden = false;
-  setTimeout(() => { firstHint.hidden = true; }, 5500);
-  const hide = () => { firstHint.hidden = true; };
-  firstHint.addEventListener('click', hide);
-  mapContainer.addEventListener('pointerdown', hide, { once: true });
-}
-
-/* ============================================================
-   ІНІЦІАЛІЗАЦІЯ
-   ============================================================ */
+/* ═══════════ INIT ═══════════ */
 function init(){
   initFirebase();
-  buildStudentPicker();
-  buildIconGallery();
-  buildLegend();
+  buildIconTabs();
+  buildIconGrid();
+  buildColorSwatches();
+  buildBgOptions();
+  setColor('#2f6b42');
+  setTool('idle');
   bindUI();
-  bindConnection();
   attachCanvasEvents();
-  attachPanHandlers();
-  attachMapEvents();
   bindResize();
 
-  setTool('idle');
-  setColor('#ffb703');
-  positionViewport();
-
-  let savedId = null;
-  try { savedId = Number(localStorage.getItem('climateLab_studentId')); } catch(_){}
-  if (savedId && savedId >= 1 && savedId <= STUDENT_NAMES.length){
-    setTimeout(() => {
-      const name = STUDENT_NAMES[savedId - 1];
-      const same = window.confirm(`Продовжити як ${name}?\n\n"OK" — так, "Скасувати" — обрати іншого.`);
-      if (same){ selectStudent(savedId, name); }
-      else { showStudentPicker(); }
-    }, 100);
-  } else {
-    showStudentPicker();
-  }
+  if (state.db) attachFirebaseListeners();
+  else { netDot.dataset.online = 'false'; netDot.title = 'Firebase недоступний'; }
 
   requestAnimationFrame(() => {
-    renderMap();
     resizeCanvasBacking();
-    if (window.innerWidth < 900){
-      setTimeout(() => { statusEl.dataset.hide = 'true'; }, 2500);
-    }
+    if (!isMobile()) app.classList.remove('drawer-collapsed');
   });
-
-  startTimer();
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
