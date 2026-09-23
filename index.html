@@ -17,7 +17,6 @@
   --leaf-600:#2f6b42; --leaf-500:#3d8b57; --leaf-400:#5cab72;
   --leaf-300:#8fd3a4; --leaf-200:#c8ebd3; --leaf-100:#eefaf1;
   --sun:#ffb703; --sun-soft:#ffd166;
-  --water:#4cc9f0;
   --paper:#fdfcf8; --paper-line:#dde7f0; --paper-grid:#e4eef7;
   --ink:#1f2a24; --ink-dim:#5c6b62; --ink-mute:#8a9a90;
   --danger:#e63946;
@@ -47,11 +46,8 @@ input,textarea{font:inherit;color:inherit}
 :focus{outline:none}
 :focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:6px}
 
-/* ─── APP ─── */
 .app{
-  display:grid;
-  height:var(--app-h);
-  width:100%;
+  display:grid;height:var(--app-h);width:100%;
   grid-template-columns:320px 1fr;
   grid-template-rows:auto 1fr;
   transition:grid-template-columns .25s var(--ease);
@@ -68,8 +64,7 @@ input,textarea{font:inherit;color:inherit}
   padding-right:max(12px, env(safe-area-inset-right));
   background:linear-gradient(180deg,#2f6b42,#1a3a26);
   color:#fff;z-index:100;box-shadow:var(--shadow-1);
-  position:relative;min-height:var(--header-h);
-  flex-shrink:0;
+  position:relative;min-height:var(--header-h);flex-shrink:0;
 }
 .menu-btn{
   width:42px;height:42px;flex:0 0 auto;border-radius:12px;
@@ -126,7 +121,7 @@ input,textarea{font:inherit;color:inherit}
   .hbtn,.menu-btn{width:38px;height:38px;font-size:16px}
 }
 
-/* ─── DRAWER (desktop) ─── */
+/* ─── DRAWER ─── */
 .drawer{
   grid-column:1;grid-row:2;
   background:#fff;border-right:1px solid var(--line);
@@ -312,6 +307,7 @@ input,textarea{font:inherit;color:inherit}
 .obj.dragging{z-index:1000 !important;filter:drop-shadow(0 12px 24px rgba(0,0,0,.28))}
 .obj.selected{outline:2px dashed var(--leaf-500);outline-offset:4px;border-radius:6px}
 
+/* Іконка */
 .obj-icon{
   display:flex;align-items:center;justify-content:center;
   line-height:1;padding:4px;cursor:grab;font-size:48px;
@@ -327,26 +323,32 @@ input,textarea{font:inherit;color:inherit}
 }
 .obj-icon.selected .obj-icon__resize{opacity:1}
 
-/* ─── ТЕКСТ ─── */
+/* ═══════════════════════════════════════════════════════════
+   ТЕКСТ — тепер з підлаштуванням під вміст.
+   Ширина/висота виставляються JS. Тут лише базові стилі.
+   ═══════════════════════════════════════════════════════════ */
 .obj-text{
-  min-width:100px;max-width:90%;
-  position:relative;
-  display:flex;flex-direction:column;
+  position:absolute;
+  padding:0;
+  display:block;
   border-radius:10px;
-  cursor:default;
+  /* width встановлюється JS */
 }
 .obj-text__input{
+  display:block;
   width:100%;
   padding:8px 12px;
   border:2px solid transparent;border-radius:10px;
   background:transparent;
   color:inherit;font-family:inherit;font-size:inherit;font-weight:700;
-  line-height:1.25;outline:none;resize:none;overflow:hidden;
-  min-height:1.6em;
+  line-height:1.25;outline:none;resize:none;
+  overflow:hidden;
   -webkit-user-select:text;user-select:text;
   touch-action:manipulation;
   transition:border-color .15s, background .15s;
   caret-color:var(--leaf-700);
+  white-space:pre-wrap;
+  word-break:break-word;
 }
 .obj-text__input::placeholder{color:rgba(15,36,24,.35);font-weight:600}
 .obj-text.selected .obj-text__input{
@@ -457,11 +459,10 @@ input,textarea{font:inherit;color:inherit}
   .quick-btn{width:38px;height:38px;font-size:17px}
 }
 
-/* ─── МОБІЛЬНА ВЕРСІЯ ─── */
+/* ─── МОБІЛЬНА ─── */
 @media (max-width:1024px){
   .quick-bar{display:flex}
 
-  /* Drawer — під шапкою, не накриває ☰ */
   .drawer{
     position:fixed !important;
     top:calc(var(--header-h) + env(safe-area-inset-top)) !important;
@@ -511,7 +512,6 @@ input,textarea{font:inherit;color:inherit}
 }
 
 @media (max-width:640px){
-  .obj-text{max-width:92%}
   .obj-sticker{width:160px}
   .obj-icon{font-size:40px}
 }
@@ -880,13 +880,11 @@ function emptyData(){
 }
 function isMobile(){ return window.innerWidth < 1025; }
 
-/* Firebase повертає масиви як об'єкти з цифровими ключами — конвертуємо назад */
 function toArray(val){
   if (Array.isArray(val)) return val;
   if (val && typeof val === 'object'){
     const keys = Object.keys(val);
     if (!keys.length) return [];
-    // Перевіряємо чи це послідовний масив 0..n-1
     const numeric = keys.every(k => /^\d+$/.test(k));
     if (numeric){
       keys.sort((a,b) => Number(a) - Number(b));
@@ -894,6 +892,19 @@ function toArray(val){
     }
   }
   return [];
+}
+
+/* ─── Дзеркало для вимірювання тексту ─── */
+let _mirror = null;
+function getMirror(){
+  if (!_mirror){
+    _mirror = document.createElement('span');
+    _mirror.style.cssText =
+      'position:absolute;visibility:hidden;white-space:pre;top:-99999px;left:-99999px;' +
+      'pointer-events:none;padding:0;margin:0;border:0;font-family:inherit;';
+    document.body.appendChild(_mirror);
+  }
+  return _mirror;
 }
 
 /* ═══════════ FIREBASE ═══════════ */
@@ -912,7 +923,6 @@ function attachFirebaseListeners(){
   state.handler = state.ref.on('value', snap => {
     const data = snap.val();
     if (!data){
-      // Дошку очищено іншим користувачем — скидаємо локально
       if (!state.dirty){
         state.data = emptyData();
         state.lastLocalCanvas = null;
@@ -984,7 +994,6 @@ function flushSave(opts = {}){
     setTimeout(() => { state.dirty = true; flushSave(); }, 1500);
   });
 
-  // Малюнок надсилаємо окремо — і тільки якщо справді змінився
   const currentCanvas = state.data.canvas || null;
   if (currentCanvas !== state.lastLocalCanvas || opts.force){
     state.lastLocalCanvas = currentCanvas;
@@ -1136,7 +1145,7 @@ function getVisibleCenter(){
   return { x: Math.round(r.width/2 - 60), y: Math.round(r.height/2 - 30) };
 }
 
-/* ─── Довге натискання (для тачскріна) ─── */
+/* ─── Довге натискання ─── */
 function attachLongPress(el, callback, ms = 650){
   let timer = null;
   const start = () => {
@@ -1177,7 +1186,9 @@ function createIconEl(icon){
   return el;
 }
 
-/* ─── ТЕКСТ ─── */
+/* ═══════════════════════════════════════════════════════════
+   ТЕКСТ — автопідлаштування розміру під вміст
+   ═══════════════════════════════════════════════════════════ */
 function createTextEl(item){
   const el = document.createElement('div');
   el.className = 'obj obj-text';
@@ -1212,7 +1223,7 @@ function createTextEl(item){
 
   ta.addEventListener('input', () => {
     item.text = ta.value;
-    autoSizeTextArea(ta);
+    autoSizeText(el, ta, item);
     state.dirty = true;
     scheduleSave();
   });
@@ -1221,12 +1232,64 @@ function createTextEl(item){
   ta.addEventListener('pointermove', e => e.stopPropagation());
   ta.addEventListener('keydown', e => e.stopPropagation());
 
-  requestAnimationFrame(() => autoSizeTextArea(ta));
+  // Перший вимір — після того, як елемент уже в DOM
+  requestAnimationFrame(() => autoSizeText(el, ta, item));
   return el;
 }
-function autoSizeTextArea(ta){
+
+/**
+ * Вимірює ширину тексту через приховане дзеркало і встановлює
+ * розмір textarea + обгортки точно під вміст.
+ */
+function autoSizeText(el, ta, item){
+  if (!el.isConnected || !ta) return;
+
+  // 1. Ширина тексту без переносу
+  const mirror = getMirror();
+  const cs = getComputedStyle(ta);
+  mirror.style.font = cs.font || `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  mirror.style.fontSize = cs.fontSize;
+  mirror.style.fontFamily = cs.fontFamily;
+  mirror.style.fontWeight = cs.fontWeight;
+  mirror.style.letterSpacing = cs.letterSpacing;
+
+  // Для порожнього — беремо placeholder як орієнтир
+  const measureText = ta.value && ta.value.length ? ta.value : 'Текст…';
+  // Розбиваємо по \n, міряємо найдовший рядок
+  const lines = measureText.split('\n');
+  let maxLineW = 0;
+  lines.forEach(line => {
+    mirror.textContent = line || ' ';
+    if (mirror.offsetWidth > maxLineW) maxLineW = mirror.offsetWidth;
+  });
+
+  // 2. Обчислюємо межі
+  const padX = 12 * 2;              // padding left + right на textarea
+  const borderX = 2 * 2;            // border left + right
+  const chrome = padX + borderX;
+  const minW = 90;
+  const wrapWidth = boardWrap.clientWidth || 400;
+  const maxW = Math.max(140, Math.floor(wrapWidth * 0.9));
+
+  // 3. Фінальна ширина обгортки (включає padding і border textarea)
+  let finalW = maxLineW + chrome;
+  if (finalW < minW) finalW = minW;
+  if (finalW > maxW) finalW = maxW;
+
+  // 4. Застосовуємо ширину
+  el.style.width = finalW + 'px';
+  // textarea має box-sizing: border-box → ширина співпадає з обгорткою
+  ta.style.width = '100%';
+
+  // 5. Висота — рахуємо від scrollHeight
   ta.style.height = 'auto';
-  ta.style.height = Math.max(ta.scrollHeight, 30) + 'px';
+  // невеликий reflow, щоб scrollHeight врахував перенос
+  const scrollH = ta.scrollHeight;
+  const finalH = Math.max(scrollH, 30);
+  ta.style.height = finalH + 'px';
+
+  // 6. Висота обгортки = висота textarea (без handles, вони absolute)
+  el.style.height = 'auto';
 }
 
 /* ─── СТІКЕР ─── */
@@ -1268,7 +1331,6 @@ function createStickerEl(st){
 
   el.append(inner, handle);
 
-  // Тягнеться за будь-яку частину, окрім textarea і хрестика
   attachDrag(el, st, 'sticker');
   attachResize(handle, el, st, 'sticker');
 
@@ -1297,8 +1359,6 @@ function createStickerEl(st){
 function attachDrag(el, item, kind, handleEl){
   const dragTarget = handleEl || el;
   let start = null;
-  let longPressTimer = null;
-  let longPressFired = false;
 
   function startDrag(e){
     if (e.target.closest('.obj-sticker__del, .obj-sticker__text, .obj-text__input, .obj-text__resize, .obj-icon__resize, .obj-sticker__resize')) return;
@@ -1348,6 +1408,9 @@ function attachResize(handle, el, item, kind){
     if (kind === 'text'){
       const s = Math.max(10, Math.min(140, start.baseSize + d * 0.6));
       item.fontSize = s; el.style.fontSize = s + 'px';
+      // Пере-вимірюємо розмір після зміни кегля
+      const ta = el.querySelector('.obj-text__input');
+      if (ta) autoSizeText(el, ta, item);
     } else if (kind === 'icon'){
       const s = Math.max(20, Math.min(200, start.baseSize + d * 0.8));
       item.size = s; el.style.fontSize = s + 'px';
@@ -1377,6 +1440,16 @@ function renderAllObjects(){
   state.data.icons.forEach(o => objectsLayer.appendChild(createIconEl(o)));
   state.data.texts.forEach(o => objectsLayer.appendChild(createTextEl(o)));
   state.data.stickers.forEach(o => objectsLayer.appendChild(createStickerEl(o)));
+}
+
+/** Пере-вимірює всі тексти (при зміні розміру вікна, завантаженні з Firebase тощо) */
+function reflowAllTexts(){
+  state.data.texts.forEach(item => {
+    const el = document.querySelector(`.obj-text[data-id="${item.id}"]`);
+    if (!el) return;
+    const ta = el.querySelector('.obj-text__input');
+    if (ta) autoSizeText(el, ta, item);
+  });
 }
 
 function addIcon(emoji){
@@ -1673,12 +1746,9 @@ function bindResize(){
   const setAppHeight = () => {
     const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
     document.documentElement.style.setProperty('--app-h', h + 'px');
-    // Вимірюємо висоту шапки
     if (headerEl){
       const hh = headerEl.offsetHeight;
-      if (hh > 0){
-        document.documentElement.style.setProperty('--header-h', hh + 'px');
-      }
+      if (hh > 0) document.documentElement.style.setProperty('--header-h', hh + 'px');
     }
   };
   setAppHeight();
@@ -1689,12 +1759,11 @@ function bindResize(){
     resizeRaf = requestAnimationFrame(() => {
       resizeRaf = null;
       resizeCanvasBacking();
+      reflowAllTexts();
     });
   };
 
-  if ('ResizeObserver' in window){
-    new ResizeObserver(schedule).observe(boardWrap);
-  }
+  if ('ResizeObserver' in window) new ResizeObserver(schedule).observe(boardWrap);
   window.addEventListener('resize', schedule);
   window.addEventListener('orientationchange', () => setTimeout(schedule, 250));
 
@@ -1723,6 +1792,7 @@ function init(){
   requestAnimationFrame(() => {
     resizeCanvasBacking();
     if (!isMobile()) app.classList.remove('drawer-collapsed');
+    reflowAllTexts();
   });
 }
 
